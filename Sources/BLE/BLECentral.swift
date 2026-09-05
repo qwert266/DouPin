@@ -37,9 +37,19 @@ final class BLECentral: NSObject, ObservableObject {
 
     private var central: CBCentralManager!
     private var peripheral: CBPeripheral?
+    // A950 协议特征（首选）
+    private var a951: CBCharacteristic?
+    private var a952: CBCharacteristic?
+    private var a953: CBCharacteristic?
+    // AE00 协议特征（部分板型仅有此服务，同协议跑不同 UUID）
+    private var ae01: CBCharacteristic?
+    private var ae02: CBCharacteristic?
+    /// 实际生效的通道（解析后）
     private var cmdChar: CBCharacteristic?
     private var dataChar: CBCharacteristic?
     private var notifyChar: CBCharacteristic?
+    /// 是否已经完成通道选择（防止特征乱序到达时重复触发）
+    private var channelsResolved = false
 
     private var centralReady = false
     private var pendingConnectID: UUID?
@@ -283,6 +293,9 @@ extension BLECentral: CBCentralManagerDelegate, CBPeripheralDelegate {
             connectTimeoutTask?.cancel()
             let wasConnected = self.peripheral?.identifier == peripheral.identifier
             cmdChar = nil; dataChar = nil; notifyChar = nil
+            a951 = nil; a952 = nil; a953 = nil
+            ae01 = nil; ae02 = nil
+            channelsResolved = false
             if wasConnected {
                 linkState = .idle
                 connectedName = ""
@@ -302,6 +315,10 @@ extension BLECentral: CBCentralManagerDelegate, CBPeripheralDelegate {
                 linkState = .idle
                 return
             }
+            channelsResolved = false
+            a951 = nil; a952 = nil; a953 = nil
+            ae01 = nil; ae02 = nil
+            cmdChar = nil; dataChar = nil; notifyChar = nil
             pendingCharDiscovery = list.count
             for svc in list {
                 log("服务：\(svc.uuid)")
@@ -320,32 +337,55 @@ extension BLECentral: CBCentralManagerDelegate, CBPeripheralDelegate {
             }
             for c in service.characteristics ?? [] {
                 log("  特征：\(c.uuid)  props=\(c.properties)")
-                if c.uuid == BLEProtocol.cmdUUID { cmdChar = c }
-                if c.uuid == BLEProtocol.dataUUID { dataChar = c }
-                if c.uuid == BLEProtocol.notifyUUID {
-                    notifyChar = c
-                    peripheral.setNotifyValue(true, for: c)
-                }
+                if c.uuid == BLEProtocol.cmdUUID { a951 = c }
+                if c.uuid == BLEProtocol.dataUUID { a952 = c }
+                if c.uuid == BLEProtocol.notifyUUID { a953 = c }
+                if c.uuid == BLEProtocol.vendorWriteUUID { ae01 = c }
+                if c.uuid == BLEProtocol.vendorNotifyUUID { ae02 = c }
             }
-            if cmdChar != nil && dataChar != nil && notifyChar != nil && linkState != .connected {
-                linkState = .connected
-                connectedName = peripheral.name ?? peripheral.identifier.uuidString
-                log("拼豆板就绪（A950 特征齐全），最大单包写入 \(maxWriteLength) 字节")
-                drainNotifications()
+            // A950 三特征齐全 → 立即就绪（快速路径）
+            if let n = a953 {
+                peripheral.setNotifyValue(true, for: n)
+            }
+            if a951 != nil && a952 != nil && a953 != nil {
+                resolveChannels(cmd: a951!, data: a952!, notify: a953!, mode: "A950")
             }
             pendingCharDiscovery = max(0, pendingCharDiscovery - 1)
             checkCharDiscoveryDone()
         }
     }
 
-    /// 全部服务特征发现完毕仍不齐 A950 三特征时，给出明确报错
-    private func checkCharDiscoveryDone() {
-        guard pendingCharDiscovery == 0, linkState == .connecting else { return }
-        if cmdChar == nil || dataChar == nil || notifyChar == nil {
-            log("板子不支持 A950 协议（缺少 \(cmdChar == nil ? "A951 " : "")\(dataChar == nil ? "A952 " : "")\(notifyChar == nil ? "A953" : "")特征）。这是非 PIXDOU 固件的板子，当前版本暂不支持")
-            if let p = peripheral { central.cancelPeripheralConnection(p) }
-            linkState = .idle
+    private func resolveChannels(cmd: CBCharacteristic, data: CBCharacteristic,
+                                notify: CBCharacteristic, mode: String) {
+        guard !channelsResolved else { return }
+        channelsResolved = true
+        cmdChar = cmd
+        dataChar = data
+        notifyChar = notify
+        // AE02 也开通知（官方 App 两路都开，无害）
+        if let v = ae02, v != notify {
+            peripheral?.setNotifyValue(true, for: v)
         }
+        linkState = .connected
+        connectedName = peripheral?.name ?? peripheral?.identifier.uuidString ?? ""
+        log("拼豆板就绪（\(mode) 协议），最大单包写入 \(maxWriteLength) 字节")
+        drainNotifications()
+    }
+
+    /// 全部特征发现完毕后：A950 不齐则回退 AE00 双特征；再不行才报错
+    private func checkCharDiscoveryDone() {
+        guard pendingCharDiscovery == 0, linkState == .connecting, !channelsResolved else { return }
+        if let w = ae01, let n = ae02 {
+            // AE00 模式：AE01 同时承担指令与数据写入
+            peripheral?.setNotifyValue(true, for: n)
+            resolveChannels(cmd: w, data: w, notify: n, mode: "AE00")
+            return
+        }
+        let missing = [(a951 == nil, "A951"), (a952 == nil, "A952"), (a953 == nil, "A953"),
+                       (ae01 == nil, "AE01"), (ae02 == nil, "AE02")].filter(\.0).map(\.1)
+        log("板子不支持已知协议（缺少 \(missing.joined(separator: " "))特征）。请把上方服务/特征日志截图反馈")
+        if let p = peripheral { central.cancelPeripheralConnection(p) }
+        linkState = .idle
     }
 
     nonisolated func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {

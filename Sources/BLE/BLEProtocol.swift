@@ -16,8 +16,10 @@ enum BLEProtocol {
     static let cmdUUID      = CBUUID(string: "0000A951-0000-1000-8000-00805F9B34FB")   // A951
     static let dataUUID     = CBUUID(string: "0000A952-0000-1000-8000-00805F9B34FB")   // A952
     static let notifyUUID   = CBUUID(string: "0000A953-0000-1000-8000-00805F9B34FB")   // A953
-    /// AE00 厂商元数据服务（显示不需要，扫描识别用）
+    /// AE00 厂商服务（部分板型仅暴露此服务，同一套 0x54 协议跑在 AE01/AE02 上）
     static let vendorServiceUUID = CBUUID(string: "0000AE00-0000-1000-8000-00805F9B34FB")
+    static let vendorWriteUUID   = CBUUID(string: "0000AE01-0000-1000-8000-00805F9B34FB")   // AE01
+    static let vendorNotifyUUID  = CBUUID(string: "0000AE02-0000-1000-8000-00805F9B34FB")   // AE02
 
     static let opcode: UInt8 = 0x54
 

@@ -24,7 +24,7 @@ final class BoardSession: ObservableObject {
     let central = BLECentral()
 
     /// 分块大小：A952 分块帧开销 12 字节（4 头 + 4 seq + 2 len + 2 校验）
-    private var chunkSize: Int { max(32, min(492, central.maxWriteLength - 12)) }
+    private var chunkSize: Int { max(8, min(492, central.maxWriteLength - 12)) }
 
     var isConnected: Bool { central.linkState == .connected }
 
