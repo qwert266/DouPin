@@ -8,9 +8,9 @@ struct ConvertView: View {
 
     @State private var pickedItem: PhotosPickerItem?
     @State private var image: UIImage?
-    @State private var maxSide = 52
-    @State private var colorLimit = 0
-    @State private var whiteToEmpty = false
+    @State private var maxSide = 28
+    @State private var colorLimit = 24
+    @State private var whiteToEmpty = true
     @State private var converting = false
     @State private var result: PixelConverter.Result?
     @State private var name = ""

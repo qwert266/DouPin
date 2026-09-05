@@ -7,11 +7,11 @@ enum PixelConverter {
 
     struct Options {
         /// 目标最大边格数（8...104）
-        var maxSide: Int = 52
+        var maxSide: Int = 28
         /// 限色数（<=0 表示全部 295 色）
-        var colorLimit: Int = 0
+        var colorLimit: Int = 24
         /// 白底转空格（logo/线稿友好）
-        var whiteToEmpty: Bool = false
+        var whiteToEmpty: Bool = true
         init() {}
     }
 
@@ -48,6 +48,7 @@ enum PixelConverter {
 
         let buf = data.bindMemory(to: UInt8.self, capacity: gw * gh * 4)
         var cells = [Int](repeating: 0, count: gw * gh)
+        let pal = candidates(for: options.colorLimit)   // 常用色子集，避免生僻色号
         // 上下翻转（CG 原点在左下）
         for y in 0..<gh {
             let srcRow = gh - 1 - y
@@ -56,7 +57,7 @@ enum PixelConverter {
                 let r = buf[off], g = buf[off+1], b = buf[off+2], a = buf[off+3]
                 if a < 128 { continue }   // 透明 → 空格
                 if options.whiteToEmpty && r > 235 && g > 235 && b > 235 { continue }
-                cells[y * gw + x] = nearestColorId(r: r, g: g, b: b, palette: nil)
+                cells[y * gw + x] = nearestColorId(r: r, g: g, b: b, palette: pal)
             }
         }
 
@@ -67,6 +68,18 @@ enum PixelConverter {
     }
 
     // MARK: - 颜色匹配
+
+    /// 依限色目标返回常用色候选子集（nil 表示全 295 色）
+    private static func candidates(for limit: Int) -> [BeadColor]? {
+        let ids: [Int]
+        switch limit {
+        case 48: ids = BeadPalette.essentials48
+        case 24: ids = BeadPalette.essentials24
+        case 16: ids = BeadPalette.essentials16
+        default: ids = limit > 0 ? Array(BeadPalette.byId.keys) : []
+        }
+        return ids.isEmpty ? nil : ids.compactMap { BeadPalette.byId[$0] }
+    }
 
     /// 加权 RGB 距离匹配最近色号（限 palette 子集时传 palette）
     static func nearestColorId(r: UInt8, g: UInt8, b: UInt8, palette: [BeadColor]?) -> Int {
