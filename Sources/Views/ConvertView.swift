@@ -6,9 +6,13 @@ struct ConvertView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
 
+    enum Field { case width, height }
+    @FocusState private var focusedField: Field?
+
     @State private var pickedItem: PhotosPickerItem?
     @State private var image: UIImage?
-    @State private var maxSide = 28
+    @State private var gridWidth = 22
+    @State private var gridHeight = 22
     @State private var colorLimit = 24
     @State private var whiteToEmpty = true
     @State private var converting = false
@@ -34,18 +38,35 @@ struct ConvertView: View {
             if image != nil {
                 Section("转换参数") {
                     VStack(alignment: .leading) {
-                        LabeledContent("尺寸（最大边格数）", value: "\(maxSide) 格")
-                        Slider(value: Binding(
-                            get: { Double(maxSide) },
-                            set: { maxSide = Int($0) }), in: 16...104, step: 4)
+                        HStack {
+                            Text("宽")
+                            TextField("8 - 104", value: $gridWidth, format: .number)
+                                .keyboardType(.numberPad)
+                                .focused($focusedField, equals: .width)
+                                .multilineTextAlignment(.trailing)
+                            Text("格")
+                        }
+                        HStack {
+                            Text("高")
+                            TextField("8 - 104", value: $gridHeight, format: .number)
+                                .keyboardType(.numberPad)
+                                .focused($focusedField, equals: .height)
+                                .multilineTextAlignment(.trailing)
+                            Text("格")
+                        }
+                        Text("图纸像素宽高，范围 8 - 104 格")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
                     }
-                    Picker("颜色数量", selection: $colorLimit) {
-                        Text("全部（295 色）").tag(0)
-                        Text("≤ 64 色").tag(64)
-                        Text("≤ 48 色").tag(48)
-                        Text("≤ 32 色").tag(32)
-                        Text("≤ 24 色").tag(24)
-                        Text("≤ 16 色").tag(16)
+                    Picker("总色数", selection: $colorLimit) {
+                        Text("295 色").tag(0)
+                        Text("291 色").tag(291)
+                        Text("221 色").tag(221)
+                        Text("144 色").tag(144)
+                        Text("96 色").tag(96)
+                        Text("48 色").tag(48)
+                        Text("24 色").tag(24)
+                        Text("16 色").tag(16)
                     }
                     Toggle("白底转空格", isOn: $whiteToEmpty)
                         .help("适合 logo、线稿等白底图")
@@ -84,6 +105,12 @@ struct ConvertView: View {
             }
         }
         .navigationTitle("照片转图纸")
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("完成") { focusedField = nil }
+            }
+        }
         .onChange(of: pickedItem) { _, item in
             guard let item else { return }
             result = nil
@@ -112,7 +139,8 @@ struct ConvertView: View {
         guard let image else { return }
         converting = true
         var opts = PixelConverter.Options()
-        opts.maxSide = maxSide
+        opts.gridWidth = max(8, min(104, gridWidth))
+        opts.gridHeight = max(8, min(104, gridHeight))
         opts.colorLimit = colorLimit
         opts.whiteToEmpty = whiteToEmpty
         let img = image

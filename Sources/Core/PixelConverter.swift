@@ -6,8 +6,12 @@ import UIKit
 enum PixelConverter {
 
     struct Options {
-        /// 目标最大边格数（8...104）
+        /// 目标最大边格数（8...104，未指定精确宽高时的等比兜底）
         var maxSide: Int = 28
+        /// 精确网格宽（>0 时使用，忽略长宽比）
+        var gridWidth: Int = 0
+        /// 精确网格高（>0 时使用，忽略长宽比）
+        var gridHeight: Int = 0
         /// 限色数（<=0 表示全部 295 色）
         var colorLimit: Int = 24
         /// 白底转空格（logo/线稿友好）
@@ -25,11 +29,16 @@ enum PixelConverter {
     static func convert(image: UIImage, options: Options) -> Result {
         guard let cg = image.cgImage else { return Result(width: 0, height: 0, cells: []) }
 
-        // 按长宽比计算网格尺寸
+        // 按精确宽高或长宽比计算网格尺寸
         let srcW = CGFloat(cg.width), srcH = CGFloat(cg.height)
         let side = max(8, min(104, options.maxSide))
+        let gwExact = options.gridWidth > 0
+        let ghExact = options.gridHeight > 0
         var gw: Int, gh: Int
-        if srcW >= srcH {
+        if gwExact && ghExact {
+            gw = max(8, min(104, options.gridWidth))
+            gh = max(8, min(104, options.gridHeight))
+        } else if srcW >= srcH {
             gw = side
             gh = max(8, Int(round(CGFloat(side) * srcH / srcW)))
         } else {
