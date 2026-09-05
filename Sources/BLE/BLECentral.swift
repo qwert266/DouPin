@@ -100,6 +100,9 @@ final class BLECentral: NSObject, ObservableObject {
 
     // MARK: - 连接
 
+    /// 连接超时任务
+    private var connectTimeoutTask: Task<Void, Never>?
+
     func connect(_ board: DiscoveredBoard) {
         guard let p = central.retrievePeripherals(withIdentifiers: [board.id]).first else {
             log("找不到设备 \(board.name)")
@@ -109,9 +112,21 @@ final class BLECentral: NSObject, ObservableObject {
         linkState = .connecting
         central.connect(p, options: nil)
         log("连接中：\(board.name.isEmpty ? board.id.uuidString : board.name)")
+        // 15 秒连不上自动放弃（板子被其他手机占用时会一直挂起）
+        connectTimeoutTask?.cancel()
+        connectTimeoutTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 15_000_000_000)
+            guard !Task.isCancelled, let self else { return }
+            if self.linkState == .connecting {
+                self.linkState = .idle
+                self.log("连接超时。板子可能正被其他手机的 App 占用，请断开后再试")
+                if let p = self.peripheral { self.central.cancelPeripheralConnection(p) }
+            }
+        }
     }
 
     func disconnect() {
+        connectTimeoutTask?.cancel()
         if let p = peripheral { central.cancelPeripheralConnection(p) }
     }
 
@@ -243,15 +258,18 @@ extension BLECentral: CBCentralManagerDelegate, CBPeripheralDelegate {
 
     nonisolated func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         Task { @MainActor in
+            connectTimeoutTask?.cancel()
             self.peripheral = peripheral
             peripheral.delegate = self
             log("已连接 \(peripheral.name ?? peripheral.identifier.uuidString)，发现服务…")
-            peripheral.discoverServices([BLEProtocol.serviceUUID, BLEProtocol.vendorServiceUUID])
+            // 不过滤，发现全部服务（避免服务表与预期不符时静默失败）
+            peripheral.discoverServices(nil)
         }
     }
 
     nonisolated func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         Task { @MainActor in
+            connectTimeoutTask?.cancel()
             linkState = .idle
             log("连接失败：\(error?.localizedDescription ?? "未知错误")")
         }
@@ -259,6 +277,7 @@ extension BLECentral: CBCentralManagerDelegate, CBPeripheralDelegate {
 
     nonisolated func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         Task { @MainActor in
+            connectTimeoutTask?.cancel()
             let wasConnected = self.peripheral?.identifier == peripheral.identifier
             cmdChar = nil; dataChar = nil; notifyChar = nil
             if wasConnected {
@@ -270,10 +289,21 @@ extension BLECentral: CBCentralManagerDelegate, CBPeripheralDelegate {
         }
     }
 
+    /// 待完成特征发现的服务数（用于判断 A951/A952/A953 是否永远凑不齐）
+    private var pendingCharDiscovery = 0
+
     nonisolated func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         Task { @MainActor in
             if let error { log("发现服务失败：\(error.localizedDescription)"); return }
-            for svc in peripheral.services ?? [] {
+            let list = peripheral.services ?? []
+            if list.isEmpty {
+                log("连接成功但服务表为空（板子固件不兼容或已休眠），请断电重启板子后重试")
+                central.cancelPeripheralConnection(peripheral)
+                linkState = .idle
+                return
+            }
+            pendingCharDiscovery = list.count
+            for svc in list {
                 log("服务：\(svc.uuid)")
                 peripheral.discoverCharacteristics(nil, for: svc)
             }
@@ -282,7 +312,12 @@ extension BLECentral: CBCentralManagerDelegate, CBPeripheralDelegate {
 
     nonisolated func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         Task { @MainActor in
-            if let error { log("发现特征失败：\(error.localizedDescription)"); return }
+            if let error {
+                pendingCharDiscovery = max(0, pendingCharDiscovery - 1)
+                log("发现特征失败：\(error.localizedDescription)")
+                checkCharDiscoveryDone()
+                return
+            }
             for c in service.characteristics ?? [] {
                 log("  特征：\(c.uuid)  props=\(c.properties)")
                 if c.uuid == BLEProtocol.cmdUUID { cmdChar = c }
@@ -292,12 +327,24 @@ extension BLECentral: CBCentralManagerDelegate, CBPeripheralDelegate {
                     peripheral.setNotifyValue(true, for: c)
                 }
             }
-            if cmdChar != nil && dataChar != nil && notifyChar != nil {
+            if cmdChar != nil && dataChar != nil && notifyChar != nil && linkState != .connected {
                 linkState = .connected
                 connectedName = peripheral.name ?? peripheral.identifier.uuidString
                 log("拼豆板就绪（A950 特征齐全），最大单包写入 \(maxWriteLength) 字节")
                 drainNotifications()
             }
+            pendingCharDiscovery = max(0, pendingCharDiscovery - 1)
+            checkCharDiscoveryDone()
+        }
+    }
+
+    /// 全部服务特征发现完毕仍不齐 A950 三特征时，给出明确报错
+    private func checkCharDiscoveryDone() {
+        guard pendingCharDiscovery == 0, linkState == .connecting else { return }
+        if cmdChar == nil || dataChar == nil || notifyChar == nil {
+            log("板子不支持 A950 协议（缺少 \(cmdChar == nil ? "A951 " : "")\(dataChar == nil ? "A952 " : "")\(notifyChar == nil ? "A953" : "")特征）。这是非 PIXDOU 固件的板子，当前版本暂不支持")
+            if let p = peripheral { central.cancelPeripheralConnection(p) }
+            linkState = .idle
         }
     }
 
