@@ -112,32 +112,58 @@ final class BLECentral: NSObject, ObservableObject {
 
     /// 连接超时任务
     private var connectTimeoutTask: Task<Void, Never>?
+    /// 发起连接中的外设（超时时用于取消挂起的连接请求）
+    private var connectingPeripheral: CBPeripheral?
+    /// 本轮连接的自动重试次数（超时后只静默重试一次）
+    private var connectRetryCount = 0
 
     func connect(_ board: DiscoveredBoard) {
         guard let p = central.retrievePeripherals(withIdentifiers: [board.id]).first else {
             log("找不到设备 \(board.name)")
             return
         }
+        // 发起连接前先停扫描，避免扫描占着天线影响建链
+        if central.isScanning { central.stopScan() }
         pendingConnectID = board.id
+        connectingPeripheral = p
         linkState = .connecting
         central.connect(p, options: nil)
         log("连接中：\(board.name.isEmpty ? board.id.uuidString : board.name)")
-        // 15 秒连不上自动放弃（板子被其他手机占用时会一直挂起）
+        // 15 秒连不上自动放弃（板子被其他手机/App 占用时会一直挂起）
         connectTimeoutTask?.cancel()
         connectTimeoutTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: 15_000_000_000)
             guard !Task.isCancelled, let self else { return }
-            if self.linkState == .connecting {
+            guard self.linkState == .connecting else { return }
+            // 真正取消挂起的连接请求（否则请求会一直留在系统里）
+            if let p = self.connectingPeripheral { self.central.cancelPeripheralConnection(p) }
+            self.connectingPeripheral = nil
+            guard self.linkState == .connecting else { return }
+            // 静默自动重试一次（iOS 首次建链偶尔会挂起）
+            if self.connectRetryCount < 1, let id = self.pendingConnectID,
+               let again = self.boards.first(where: { $0.id == id }) {
+                self.connectRetryCount += 1
+                self.log("连接超时，自动重试…（若仍失败：请杀掉手机上 PIXDOU 官方 App，或把板子断电重启）")
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                guard !Task.isCancelled, self.linkState != .connected else { return }
+                if let p = self.connectingPeripheral { self.central.cancelPeripheralConnection(p) }
+                self.connect(again)
+            } else {
                 self.linkState = .idle
-                self.log("连接超时。板子可能正被其他手机的 App 占用，请断开后再试")
-                if let p = self.peripheral { self.central.cancelPeripheralConnection(p) }
+                self.connectRetryCount = 0
+                self.log("连接超时。请依次尝试：① 杀掉 iPhone 上 PIXDOU 官方 App（它后台连着板子会导致永远连不上）② 板子断电重启 ③ 回来重新扫描连接")
             }
         }
     }
 
     func disconnect() {
         connectTimeoutTask?.cancel()
+        connectRetryCount = 0
         if let p = peripheral { central.cancelPeripheralConnection(p) }
+        if let p = connectingPeripheral {
+            central.cancelPeripheralConnection(p)
+            connectingPeripheral = nil
+        }
     }
 
     // MARK: - 写入
@@ -272,6 +298,8 @@ extension BLECentral: CBCentralManagerDelegate, CBPeripheralDelegate {
     nonisolated func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         Task { @MainActor in
             connectTimeoutTask?.cancel()
+            connectRetryCount = 0
+            connectingPeripheral = nil
             self.peripheral = peripheral
             peripheral.delegate = self
             log("已连接 \(peripheral.name ?? peripheral.identifier.uuidString)，发现服务…")
@@ -283,6 +311,8 @@ extension BLECentral: CBCentralManagerDelegate, CBPeripheralDelegate {
     nonisolated func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         Task { @MainActor in
             connectTimeoutTask?.cancel()
+            connectRetryCount = 0
+            connectingPeripheral = nil
             linkState = .idle
             log("连接失败：\(error?.localizedDescription ?? "未知错误")")
         }
@@ -291,6 +321,8 @@ extension BLECentral: CBCentralManagerDelegate, CBPeripheralDelegate {
     nonisolated func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         Task { @MainActor in
             connectTimeoutTask?.cancel()
+            connectRetryCount = 0
+            connectingPeripheral = nil
             let wasConnected = self.peripheral?.identifier == peripheral.identifier
             cmdChar = nil; dataChar = nil; notifyChar = nil
             a951 = nil; a952 = nil; a953 = nil
