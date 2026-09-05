@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>archiveVersion</key>
-	<integer>1</integer>
+	<string>1</string>
 	<key>classes</key>
 	<dict/>
 	<key>objectVersion</key>
-	<integer>56</integer>
+	<string>56</string>
 	<key>objects</key>
 	<dict>
 		<key>B00000000000000000000001</key>
@@ -393,7 +393,7 @@
 			<key>developmentRegion</key>
 			<string>en</string>
 			<key>hasScannedForEncodings</key>
-			<false/>
+			<string>0</string>
 			<key>knownRegions</key>
 			<array>
 				<string>en</string>
@@ -417,18 +417,18 @@
 			<key>isa</key>
 			<string>PBXResourcesBuildPhase</string>
 			<key>buildActionMask</key>
-			<integer>2147483647</integer>
+			<string>2147483647</string>
 			<key>files</key>
 			<array/>
 			<key>runOnlyForDeploymentPostprocessing</key>
-			<false/>
+			<string>0</string>
 		</dict>
 		<key>A00000000000000000000006</key>
 		<dict>
 			<key>isa</key>
 			<string>PBXSourcesBuildPhase</string>
 			<key>buildActionMask</key>
-			<integer>2147483647</integer>
+			<string>2147483647</string>
 			<key>files</key>
 			<array>
 				<string>B00000000000000000000001</string>
@@ -450,7 +450,7 @@
 				<string>B00000000000000000000017</string>
 			</array>
 			<key>runOnlyForDeploymentPostprocessing</key>
-			<false/>
+			<string>0</string>
 		</dict>
 		<key>A00000000000000000000002</key>
 		<dict>
@@ -696,7 +696,7 @@
 				<string>A00000000000000000000011</string>
 			</array>
 			<key>defaultConfigurationIsVisible</key>
-			<integer>0</integer>
+			<string>0</string>
 			<key>defaultConfigurationName</key>
 			<string>Release</string>
 		</dict>
@@ -710,7 +710,7 @@
 				<string>A00000000000000000000014</string>
 			</array>
 			<key>defaultConfigurationIsVisible</key>
-			<integer>0</integer>
+			<string>0</string>
 			<key>defaultConfigurationName</key>
 			<string>Release</string>
 		</dict>
