@@ -571,6 +571,7 @@
 				<string>F00000000000000000000008</string>
 				<string>F00000000000000000000009</string>
 				<string>F00000000000000000000010</string>
+				<string>F00000000000000000000018</string>
 			</array>
 			<key>path</key>
 			<string>Core</string>
