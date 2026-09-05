@@ -14,6 +14,8 @@ struct AppRoot: View {
                 TemplateGalleryView()
             }
             .tabItem { Label("模板", systemImage: "gift.fill") }
+            WarehouseView()
+                .tabItem { Label("豆仓", systemImage: "shippingbox.fill") }
             BoardTabView()
                 .tabItem { Label("拼豆板", systemImage: "lightbulb.fill") }
         }

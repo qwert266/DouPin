@@ -7,7 +7,7 @@ struct DouPinApp: App {
 
     init() {
         do {
-            container = try ModelContainer(for: Pattern.self)
+            container = try ModelContainer(for: Pattern.self, BeadStock.self)
         } catch {
             fatalError("无法初始化数据库：\(error)")
         }
