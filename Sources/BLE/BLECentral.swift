@@ -200,6 +200,9 @@ final class BLECentral: NSObject, ObservableObject {
     }
 
     func drainNotifications() { notifyBuffer.removeAll() }
+
+    /// 待完成特征发现的服务数（用于判断 A951/A952/A953 是否永远凑不齐）
+    private var pendingCharDiscovery = 0
 }
 
 // MARK: - CBCentralManagerDelegate / CBPeripheralDelegate
@@ -288,9 +291,6 @@ extension BLECentral: CBCentralManagerDelegate, CBPeripheralDelegate {
             }
         }
     }
-
-    /// 待完成特征发现的服务数（用于判断 A951/A952/A953 是否永远凑不齐）
-    private var pendingCharDiscovery = 0
 
     nonisolated func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         Task { @MainActor in
