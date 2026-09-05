@@ -83,6 +83,7 @@ private struct BoardPanel: View {
         }
         .onAppear {
             displayOn = true
+            if central.linkState == .idle { central.startScan() }
         }
     }
 
@@ -114,6 +115,25 @@ private struct BoardPanel: View {
                     Label("扫描附近设备", systemImage: "dot.radiowaves.left.and.right")
                 }
                 .disabled(central.linkState == .poweredOff)
+
+            case .unauthorized:
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("豆拼的蓝牙权限被拒绝了，扫描无法工作。")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Button {
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            UIApplication.shared.open(url)
+                        }
+                    } label: {
+                        Label("去设置开启蓝牙权限", systemImage: "gearshape")
+                    }
+                }
+
+            case .unsupported:
+                Text("此设备不支持低功耗蓝牙（BLE）")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
 
             case .scanning:
                 HStack {
@@ -148,29 +168,17 @@ private struct BoardPanel: View {
                     } label: {
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
-                                HStack(spacing: 6) {
-                                    Text(b.summary).font(.body.weight(.medium))
-                                    if b.looksLikeBoard {
-                                        Text("疑似拼豆板")
-                                            .font(.caption2)
-                                            .padding(.horizontal, 6).padding(.vertical, 2)
-                                            .background(Color.pink.opacity(0.15))
-                                            .foregroundStyle(.pink)
-                                            .clipShape(Capsule())
-                                    }
-                                }
                                 Text(b.name.isEmpty ? b.id.uuidString : b.name)
+                                    .font(.body.weight(.medium))
+                                    .lineLimit(1)
+                                Text("拼豆板 · \(b.rssi) dBm")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
-                                    .lineLimit(1)
                             }
                             Spacer()
-                            VStack(alignment: .trailing, spacing: 2) {
-                                Text("\(b.rssi) dBm").font(.caption.monospaced())
-                                Image(systemName: "chevron.right")
-                                    .font(.caption2)
-                                    .foregroundStyle(.tertiary)
-                            }
+                            Image(systemName: "chevron.right")
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
                         }
                     }
                     .tint(.primary)
@@ -180,9 +188,9 @@ private struct BoardPanel: View {
             Text(central.linkState == .connected ? "已连接" : "连接拼豆板")
         } footer: {
             if central.linkState != .connected && central.boards.isEmpty && central.linkState == .scanning {
-                Text("正在搜索附近的 BLE 设备，请确保拼豆板已通电。普通设备也会列出，优先选择标有「疑似拼豆板」的。")
+                Text("正在搜索拼豆板…只显示 PIXDOU 开头的设备。请确认：① 拼豆板已通电 ② 没有被其他手机的 App 连着（包括官方 PIXDOU App）")
             } else if central.linkState == .idle {
-                Text("支持 Wofan / PIXDOU 类智能拼豆板（A950 蓝牙服务）。")
+                Text("支持 PIXDOU 类智能拼豆板，只显示 PIXDOU 开头的蓝牙设备。")
             }
         }
     }
@@ -197,6 +205,8 @@ private struct BoardPanel: View {
     private var statusIcon: String {
         switch central.linkState {
         case .poweredOff: return "exclamationmark.triangle"
+        case .unauthorized: return "lock.shield"
+        case .unsupported: return "exclamationmark.triangle"
         case .connected: return "checkmark.circle.fill"
         case .scanning, .connecting: return "dot.radiowaves.left.and.right"
         case .idle: return "lightbulb"
@@ -206,6 +216,8 @@ private struct BoardPanel: View {
     private var statusColor: Color {
         switch central.linkState {
         case .poweredOff: return .red
+        case .unauthorized: return .orange
+        case .unsupported: return .red
         case .connected: return .green
         case .scanning, .connecting: return .blue
         case .idle: return .gray
@@ -215,6 +227,8 @@ private struct BoardPanel: View {
     private var statusText: String {
         switch central.linkState {
         case .poweredOff: return "蓝牙未开启"
+        case .unauthorized: return "蓝牙权限未授权"
+        case .unsupported: return "设备不支持 BLE"
         case .idle: return "未连接"
         case .scanning: return "扫描中…"
         case .connecting: return "连接中…"

@@ -24,7 +24,7 @@ struct DiscoveredBoard: Identifiable, Equatable {
 @MainActor
 final class BLECentral: NSObject, ObservableObject {
     enum LinkState: Equatable {
-        case poweredOff, idle, scanning, connecting, connected
+        case poweredOff, unauthorized, unsupported, idle, scanning, connecting, connected
     }
 
     @Published var linkState: LinkState = .idle
@@ -43,6 +43,10 @@ final class BLECentral: NSObject, ObservableObject {
 
     private var centralReady = false
     private var pendingConnectID: UUID?
+    /// 蓝牙就绪后自动补扫（用户在权限弹窗关闭前点了扫描时用）
+    private var wantsScanWhenReady = false
+    /// 扫描无结果提示任务
+    private var scanHintTask: Task<Void, Never>?
 
     // ---- 通知等待队列（支持超时等待） ----
     private var notifyBuffer: [[UInt8]] = []
@@ -69,15 +73,26 @@ final class BLECentral: NSObject, ObservableObject {
     func startScan() {
         boards.removeAll()
         guard centralReady else {
-            log("蓝牙未就绪（状态 \(central.state.rawValue)），稍后自动重试")
+            wantsScanWhenReady = true
+            log("蓝牙未就绪（状态 \(central.state.rawValue)），就绪后将自动开始扫描")
             return
         }
+        scanHintTask?.cancel()
         central.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: false])
         linkState = .scanning
         log("开始扫描 BLE 设备…")
+        // 15 秒无结果给出排查提示
+        scanHintTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 15_000_000_000)
+            guard !Task.isCancelled, let self else { return }
+            if self.linkState == .scanning && self.boards.isEmpty {
+                self.log("15 秒未发现任何设备。请检查：① 拼豆板已通电 ② 没有被其他手机 App 连着 ③ iPhone 蓝牙已开")
+            }
+        }
     }
 
     func stopScan() {
+        scanHintTask?.cancel()
         central.stopScan()
         if linkState == .scanning { linkState = .idle }
         log("停止扫描")
@@ -178,29 +193,50 @@ extension BLECentral: CBCentralManagerDelegate, CBPeripheralDelegate {
     nonisolated func centralManagerDidUpdateState(_ central: CBCentralManager) {
         Task { @MainActor in
             centralReady = central.state == .poweredOn
-            if central.state == .poweredOff { linkState = .poweredOff }
-            log("蓝牙状态：\(central.state == .poweredOn ? "开启" : "不可用(\(central.state.rawValue))")")
+            switch central.state {
+            case .poweredOn:
+                if linkState == .poweredOff || linkState == .unauthorized || linkState == .unsupported {
+                    linkState = .idle
+                }
+            case .poweredOff: linkState = .poweredOff
+            case .unauthorized: linkState = .unauthorized
+            case .unsupported: linkState = .unsupported
+            default: break
+            }
+            let desc: String
+            switch central.state {
+            case .poweredOn: desc = "开启"
+            case .unauthorized: desc = "未授权（App 蓝牙权限被拒绝，请到 设置→隐私与安全性→蓝牙 里允许「豆拼」）"
+            case .unsupported: desc = "设备不支持 BLE"
+            case .poweredOff: desc = "关闭"
+            case .resetting: desc = "重置中"
+            case .unknown: desc = "未知"
+            @unknown default: desc = "其他"
+            }
+            log("蓝牙状态：\(desc)")
+            if central.state == .poweredOn && wantsScanWhenReady {
+                wantsScanWhenReady = false
+                startScan()
+            }
         }
     }
 
     nonisolated func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral,
                                     advertisementData: [String: Any], rssi RSSI: NSNumber) {
         let name = peripheral.name ?? (advertisementData[CBAdvertisementDataLocalNameKey] as? String ?? "")
-        let services = (advertisementData[CBAdvertisementDataServiceDataKey] != nil ? [] : [])
-            + (advertisementData[CBAdvertisementDataServiceUUIDsKey] as? [CBUUID] ?? [])
+        // 只显示 PIXDOU 开头的拼豆板，其余设备一律屏蔽
+        guard name.lowercased().hasPrefix("pixdou") else { return }
+        let services = advertisementData[CBAdvertisementDataServiceUUIDsKey] as? [CBUUID] ?? []
         let mfr = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data
-        let hasBoardService = services.contains(BLEProtocol.serviceUUID) || services.contains(BLEProtocol.vendorServiceUUID)
-        let jlaisdk = mfr != nil && mfr!.count >= 7 && String(data: mfr!.suffix(7), encoding: .ascii) == "JLAISDK"
-        let lower = name.lowercased()
-        let nameHit = ["pixdou", "iledcolor", "wofan", "led", "pd"].contains { lower.contains($0) }
         let board = DiscoveredBoard(id: peripheral.identifier, name: name, rssi: RSSI.intValue,
                                     services: services, manufacturerData: mfr,
-                                    looksLikeBoard: hasBoardService || jlaisdk || (nameHit && !name.isEmpty))
+                                    looksLikeBoard: true)
         Task { @MainActor in
             if let i = boards.firstIndex(where: { $0.id == board.id }) {
                 boards[i] = board
             } else {
                 boards.append(board)
+                log("发现拼豆板：\(name) \(RSSI.intValue)dBm")
             }
         }
     }
