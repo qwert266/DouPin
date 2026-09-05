@@ -257,6 +257,7 @@ private struct PatternPickerSheet: View {
 // MARK: - 手动入库：选色号 → 填数量
 
 private struct ManualStockInView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var search = ""
     @State private var pickedColor: BeadColor?
 
@@ -274,23 +275,7 @@ private struct ManualStockInView: View {
                 Button {
                     pickedColor = c
                 } label: {
-                    HStack(spacing: 10) {
-                        RoundedRectangle(cornerRadius: 5)
-                            .fill(c.color)
-                            .frame(width: 30, height: 30)
-                            .overlay(RoundedRectangle(cornerRadius: 5).stroke(.gray.opacity(0.3)))
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Mard \(c.mard)").font(.subheadline.weight(.medium))
-                            Text("可可 \(c.coco) · 漫漫 \(c.manman) · 盼盼 \(c.panpan) · 米小窝 \(c.mixiaowo)")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
-                        }
-                        Spacer()
-                        Image(systemName: "plus.circle")
-                            .font(.caption)
-                            .foregroundStyle(.pink)
-                    }
+                    colorRow(c)
                 }
                 .tint(.primary)
             }
@@ -302,12 +287,32 @@ private struct ManualStockInView: View {
             }
         }
     }
+
+    private func colorRow(_ c: BeadColor) -> some View {
+        HStack(spacing: 10) {
+            RoundedRectangle(cornerRadius: 5)
+                .fill(c.color)
+                .frame(width: 30, height: 30)
+                .overlay(RoundedRectangle(cornerRadius: 5).stroke(.gray.opacity(0.3)))
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Mard \(c.mard)").font(.subheadline.weight(.medium))
+                Text("可可 \(c.coco) · 漫漫 \(c.manman) · 盼盼 \(c.panpan) · 米小窝 \(c.mixiaowo)")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+            Spacer()
+            Image(systemName: "plus.circle")
+                .font(.caption)
+                .foregroundStyle(.pink)
+        }
+    }
 }
 
 private struct ManualStockInDetail: View {
     @Environment(\.modelContext) private var context
-    @Environment(\.dismiss) private var dismiss
     let color: BeadColor
+    var onDone: () -> Void
 
     @State private var countText = "100"
     @State private var currentStock = 0
