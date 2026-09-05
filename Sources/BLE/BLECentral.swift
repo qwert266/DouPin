@@ -53,6 +53,8 @@ final class BLECentral: NSObject, ObservableObject {
 
     private var centralReady = false
     private var pendingConnectID: UUID?
+    /// 扫描发现的原始外设对象（LightBlue/官方 App 同款做法：用发现时的对象直连）
+    private var discoveredPeripherals: [UUID: CBPeripheral] = [:]
     /// 蓝牙就绪后自动补扫（用户在权限弹窗关闭前点了扫描时用）
     private var wantsScanWhenReady = false
     /// 扫描无结果提示任务
@@ -118,8 +120,11 @@ final class BLECentral: NSObject, ObservableObject {
     private var connectRetryCount = 0
 
     func connect(_ board: DiscoveredBoard) {
-        guard let p = central.retrievePeripherals(withIdentifiers: [board.id]).first else {
-            log("找不到设备 \(board.name)")
+        // 优先用扫描时发现的原始对象直连；取不到再走系统缓存
+        let p = discoveredPeripherals[board.id]
+            ?? central.retrievePeripherals(withIdentifiers: [board.id]).first
+        guard let p else {
+            log("找不到设备 \(board.name)，请重新扫描后再连接")
             return
         }
         // 发起连接前先停扫描，避免扫描占着天线影响建链
@@ -286,6 +291,7 @@ extension BLECentral: CBCentralManagerDelegate, CBPeripheralDelegate {
                                     services: services, manufacturerData: mfr,
                                     looksLikeBoard: true)
         Task { @MainActor in
+            discoveredPeripherals[peripheral.identifier] = peripheral
             if let i = boards.firstIndex(where: { $0.id == board.id }) {
                 boards[i] = board
             } else {
