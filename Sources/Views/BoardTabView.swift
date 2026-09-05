@@ -255,7 +255,7 @@ private struct BoardPanel: View {
     // MARK: - 发送图纸
 
     private var sendSection: some View {
-        Section("发送图纸") {
+        Section {
             if board.isSending {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("正在发送… \(Int(board.sendProgress * 100))%")
@@ -270,6 +270,8 @@ private struct BoardPanel: View {
                 }
                 .disabled(!didHandshake)
             }
+        } header: {
+            Text("发送图纸")
         } footer: {
             Text("发送完整预览图；已拼的格子会以暗色显示（需要在作品详情里打卡进度）。")
         }

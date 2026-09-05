@@ -56,7 +56,7 @@ final class BLECentral: NSObject, ObservableObject {
     // MARK: - 日志
 
     private func log(_ s: String) {
-        let t = DateFormatter.localizedString(for: Date(), dateStyle: .none, timeStyle: .medium)
+        let t = DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .medium)
         logLines.append("\(t)  \(s)")
         if logLines.count > 500 { logLines.removeFirst(logLines.count - 500) }
         #if DEBUG

@@ -1,3 +1,4 @@
+import CoreBluetooth
 import Foundation
 
 /// 智能拼豆板 BLE 线级协议（A950 服务族，逆向自 PIXDOU/iLEDColor 系列固件）
@@ -35,7 +36,7 @@ enum BLEProtocol {
 
     static func checksum16(_ data: [UInt8]) -> UInt16 {
         var s: UInt16 = 0
-        for b in data { s = UInt16.addReportingOverflow(s, UInt16(b)).partialValue }
+        for b in data { s = s &+ UInt16(b) }
         return s
     }
 

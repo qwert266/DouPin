@@ -12,7 +12,8 @@ enum PatternRenderer {
         fmt.scale = 2
         let r = UIGraphicsImageRenderer(size: CGSize(width: size, height: size), format: fmt)
         return r.image { ctx in
-            UIColor(white: 0.95, alpha: 1).fill(CGRect(x: 0, y: 0, width: size, height: size))
+            UIColor(white: 0.95, alpha: 1).setFill()
+            ctx.fill(CGRect(x: 0, y: 0, width: size, height: size))
             let side = size / CGFloat(max(width, height))
             let ox = (size - side * CGFloat(width)) / 2
             let oy = (size - side * CGFloat(height)) / 2

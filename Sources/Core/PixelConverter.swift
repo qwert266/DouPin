@@ -31,10 +31,10 @@ enum PixelConverter {
         var gw: Int, gh: Int
         if srcW >= srcH {
             gw = side
-            gh = max(8, Int(round(side * srcH / srcW)))
+            gh = max(8, Int(round(CGFloat(side) * srcH / srcW)))
         } else {
             gh = side
-            gw = max(8, Int(round(side * srcW / srcH)))
+            gw = max(8, Int(round(CGFloat(side) * srcW / srcH)))
         }
 
         guard let ctx = CGContext(data: nil, width: gw, height: gh, bitsPerComponent: 8,
