@@ -19,6 +19,8 @@ struct ConvertView: View {
     @State private var result: PixelConverter.Result?
     @State private var name = ""
     @State private var savedID: UUID?
+    @State private var isSendingToBoard = false
+    @State private var boardSendMessage: String?
 
     var body: some View {
         Form {
@@ -92,6 +94,24 @@ struct ConvertView: View {
                         LabeledContent("豆子总数", value: "\(result.cells.filter { $0 > 0 }.count) 颗")
                     }
 
+                    Section("发送到拼豆板") {
+                        Button {
+                            sendToBoard()
+                        } label: {
+                            if isSendingToBoard {
+                                HStack { ProgressView().controlSize(.small); Text("发送中…") }
+                            } else {
+                                Label("发送到拼豆板", systemImage: "paperplane.fill")
+                            }
+                        }
+                        .disabled(isSendingToBoard || !AppState.shared.board.isConnected)
+                        if !AppState.shared.board.isConnected {
+                            Text("未连接拼豆板，请先到「拼豆板」页连接")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+
                     Section("保存") {
                         TextField("图纸名称", text: $name)
                         Button {
@@ -127,6 +147,12 @@ struct ConvertView: View {
         } message: {
             Text("图纸已保存，可在「图纸」标签中查看")
         }
+        .alert("发送到拼豆板", isPresented: Binding(get: { boardSendMessage != nil },
+                                                 set: { if !$0 { boardSendMessage = nil } })) {
+            Button("好", role: .cancel) { boardSendMessage = nil }
+        } message: {
+            Text(boardSendMessage ?? "")
+        }
     }
 
     private var beadCounts: [Int: Int] {
@@ -161,5 +187,27 @@ struct ConvertView: View {
                         cells: result.cells, source: "photo")
         context.insert(p)
         savedID = p.id
+    }
+
+    private func sendToBoard() {
+        guard let result, result.width > 0 else { return }
+        let board = AppState.shared.board
+        guard board.isConnected else {
+            boardSendMessage = "未连接拼豆板，请先到「拼豆板」页连接"
+            return
+        }
+        isSendingToBoard = true
+        Task {
+            defer { isSendingToBoard = false }
+            do {
+                try await board.handshake()
+                let rgb = BoardImageBuilder.fullImage(width: result.width, height: result.height,
+                                                      cells: result.cells, placed: nil)
+                try await board.sendImage(width: result.width, height: result.height, rgb: rgb)
+                boardSendMessage = "图纸已发送到拼豆板"
+            } catch {
+                boardSendMessage = "发送失败：\(error.localizedDescription)"
+            }
+        }
     }
 }
