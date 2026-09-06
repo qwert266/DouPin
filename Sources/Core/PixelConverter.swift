@@ -19,6 +19,17 @@ enum PixelConverter {
         init() {}
     }
 
+    /// 将图片按 EXIF 方向摆正，避免横图/倒图
+    private static func normalizing(image: UIImage) -> UIImage {
+        guard image.imageOrientation != .up else { return image }
+        let fmt = UIGraphicsImageRendererFormat()
+        fmt.scale = 1
+        let size = image.size
+        return UIGraphicsImageRenderer(size: size, format: fmt).image { _ in
+            image.draw(in: CGRect(origin: .zero, size: size))
+        }
+    }
+
     struct Result {
         let width: Int
         let height: Int
@@ -27,7 +38,8 @@ enum PixelConverter {
 
     /// 主流程：图片 → 网格
     static func convert(image: UIImage, options: Options) -> Result {
-        guard let cg = image.cgImage else { return Result(width: 0, height: 0, cells: []) }
+        let source = normalizing(image: image)
+        guard let cg = source.cgImage else { return Result(width: 0, height: 0, cells: []) }
 
         // 按精确宽高或长宽比计算网格尺寸
         let srcW = CGFloat(cg.width), srcH = CGFloat(cg.height)
