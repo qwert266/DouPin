@@ -70,9 +70,9 @@ enum PixelConverter {
         let buf = data.bindMemory(to: UInt8.self, capacity: gw * gh * 4)
         var cells = [Int](repeating: 0, count: gw * gh)
         let pal = candidates(for: options.colorLimit)   // 常用色子集，避免生僻色号
-        // 上下翻转（CG 原点在左下）
+        // CGContextDrawImage 会把图像垂直翻转，buffer 顶行即图片顶部，无需再翻转
         for y in 0..<gh {
-            let srcRow = gh - 1 - y
+            let srcRow = y
             for x in 0..<gw {
                 let off = (srcRow * gw + x) * 4
                 let r = buf[off], g = buf[off+1], b = buf[off+2], a = buf[off+3]
