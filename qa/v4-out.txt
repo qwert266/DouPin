@@ -1,8 +1,0 @@
-﻿pbxproj 鏍￠獙
-  PBXFileReference      = 34
-  PBXBuildFile          = 34
-  SourcesBuildPhase.files = 34
-  纾佺洏 .swift            = 34
-  archiveVersion        = string 鉁?  objectVersion         = string 鉁?
-鉁?鍏ㄩ儴鏍￠獙閫氳繃
-EXIT=0

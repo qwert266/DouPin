@@ -1,6 +1,0 @@
-﻿
-FullName                                              Length
---------                                              ------
-C:\Users\24658\Desktop\DouPin-ipa\DouPin-unsigned.ipa 647556
-
-
