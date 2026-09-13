@@ -160,6 +160,7 @@ struct InventoryView: View {
                 HStack(spacing: 20) {
                     summaryCell("已录入色号", "\(stocks.count)")
                     summaryCell("总豆量", "\(totalQuantity)")
+                    summaryCell("缺色", "\(stocks.filter { $0.isLow }.count)")
                 }
                 .frame(maxWidth: .infinity)
                 .cardRow()
@@ -196,31 +197,35 @@ struct InventoryView: View {
         .buttonStyle(.plain)
     }
 
-    /// 单行库存
+    /// 单行库存（立体小豆 + 数量胶囊，对标 AI豆仓 色号卡观感）
     private func stockRow(_ stock: BeadStock) -> some View {
         let color = BeadPalette.byId[stock.colorId]
         let low = stock.quantity == 0 || stock.isLow
         return HStack(spacing: 12) {
-            RoundedRectangle(cornerRadius: 10)
-                .fill(color?.color ?? Color.gray.opacity(0.3))
-                .frame(width: 36, height: 36)
-                .overlay(RoundedRectangle(cornerRadius: 10).stroke(.gray.opacity(0.3)))
-                .overlay(alignment: .bottom) {
-                    if let c = color {
-                        Text(c.mard)
-                            .font(.system(size: 7, weight: .semibold))
-                            .foregroundStyle(c.brightness > 0.6 ? .black : .white)
-                            .padding(1)
-                    }
+            Group {
+                if let c = color {
+                    BeadDot(color: c, size: 38)
+                } else {
+                    Circle()
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(width: 38, height: 38)
                 }
+            }
+            .shadow(color: .black.opacity(0.10), radius: 2, y: 1.5)
 
             VStack(alignment: .leading, spacing: 3) {
                 Text("Mard \(stock.displayName)")
                     .font(.subheadline.monospaced().weight(.medium))
                 if low {
-                    Text(stock.quantity == 0 ? "缺色（库存为 0）" : "缺色（低于阈值 \(stock.threshold)）")
-                        .font(.caption2)
-                        .foregroundStyle(.red)
+                    HStack(spacing: 4) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 9))
+                        Text(stock.quantity == 0 ? "缺色（库存为 0）" : "低于阈值 \(stock.threshold)")
+                    }
+                    .font(.caption2)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 7).padding(.vertical, 2)
+                    .background(Color(red: 1.00, green: 0.42, blue: 0.34), in: Capsule())
                 } else {
                     Text("充足")
                         .font(.caption2)
@@ -230,9 +235,14 @@ struct InventoryView: View {
             Spacer()
             Text("\(stock.quantity)")
                 .font(.headline.monospacedDigit())
-                .foregroundStyle(low ? .red : .primary)
+                .foregroundStyle(low ? Color(red: 1.00, green: 0.42, blue: 0.34) : .primary)
+                .padding(.horizontal, 10).padding(.vertical, 5)
+                .background(
+                    low ? AnyShapeStyle(Color(red: 1.00, green: 0.42, blue: 0.34).opacity(0.12))
+                        : AnyShapeStyle(Theme.pageFill),
+                    in: Capsule())
         }
-        .opacity(stock.quantity == 0 ? 0.7 : 1)
+        .opacity(stock.quantity == 0 ? 0.75 : 1)
     }
 
     private func summaryCell(_ title: String, _ value: String) -> some View {

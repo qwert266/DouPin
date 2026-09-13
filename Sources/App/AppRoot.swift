@@ -161,7 +161,8 @@ struct HomeView: View {
                     headerHero
                     quickStart
                     if !inProgress.isEmpty { inProgressRow }
-                    statsCard
+                    restockAlertCard
+                    statsLinkCard
                     stockCard
                 }
                 .padding(.horizontal, 16)
@@ -203,6 +204,16 @@ struct HomeView: View {
                     heroCapsule(board.isConnected ? "拼豆板已连接" : "拼豆板未连接",
                                 systemImage: board.isConnected ? "lightbulb.fill" : "lightbulb")
                 }
+                // 一排彩色小豆：品牌俏皮感（对标 PIXDOU 的多巴胺配色）
+                HStack(spacing: 7) {
+                    ForEach(0..<6, id: \.self) { i in
+                        Circle()
+                            .fill(Self.heroBeadColors[i])
+                            .frame(width: 12, height: 12)
+                            .overlay(Circle().stroke(.white.opacity(0.35), lineWidth: 1))
+                            .shadow(color: .black.opacity(0.15), radius: 1.5, y: 1)
+                    }
+                }
             }
             .padding(20)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -241,8 +252,38 @@ struct HomeView: View {
                 .shadow(color: .black.opacity(0.10), radius: 10, y: 4)
             }
             .buttonStyle(.plain)
+
+            NavigationLink { PatternMergeView() } label: {
+                HStack(spacing: 14) {
+                    Image(systemName: "square.on.square.dashed")
+                        .font(.title2)
+                        .foregroundStyle(.white)
+                        .frame(width: 44, height: 44)
+                        .background(.white.opacity(0.22), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("合并图纸").font(.headline).foregroundStyle(.white)
+                        Text("多图拼一张大图（PIXDOU 同款排版）").font(.caption).foregroundStyle(.white.opacity(0.85))
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right").font(.caption.bold()).foregroundStyle(.white.opacity(0.7))
+                }
+                .padding(16)
+                .background(Theme.amber, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                .shadow(color: .black.opacity(0.10), radius: 10, y: 4)
+            }
+            .buttonStyle(.plain)
         }
     }
+
+    /// 英雄区小豆的糖果色（红/橙/黄/绿/蓝/紫）
+    private static let heroBeadColors: [Color] = [
+        Color(red: 1.00, green: 0.42, blue: 0.48),
+        Color(red: 1.00, green: 0.62, blue: 0.20),
+        Color(red: 1.00, green: 0.84, blue: 0.25),
+        Color(red: 0.30, green: 0.80, blue: 0.45),
+        Color(red: 0.25, green: 0.60, blue: 0.98),
+        Color(red: 0.68, green: 0.45, blue: 0.98)
+    ]
 
     private func entryCard<Destination: View>(title: String, subtitle: String,
                                               icon: String, gradient: LinearGradient,
@@ -308,20 +349,81 @@ struct HomeView: View {
         }
     }
 
-    // MARK: 统计 + 库存
+    // MARK: 补豆提醒 + 统计（点击进数据中心）
 
-    private var statsCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            sectionTitle("统计", systemImage: "chart.bar.fill")
-            HStack(spacing: 0) {
-                statBlock("\(patterns.count)", "全部图纸")
-                statDivider
-                statBlock("\(inProgress.count)", "拼制中")
-                statDivider
-                statBlock("\(done.count)", "已完成")
-            }
+    /// 全部图纸聚合需求 vs 库存 → 缺色种数与缺口颗数
+    private var restockSummary: (kinds: Int, beads: Int) {
+        var needMap: [Int: Int] = [:]
+        for p in patterns {
+            for c in p.cells where c > 0 { needMap[c, default: 0] += 1 }
         }
-        .cardStyle()
+        var haveMap: [Int: Int] = [:]
+        for s in stocks where s.colorId > 0 { haveMap[s.colorId, default: 0] += s.quantity }
+        var kinds = 0
+        var beads = 0
+        for (id, need) in needMap {
+            let short = need - (haveMap[id] ?? 0)
+            if short > 0 { kinds += 1; beads += short }
+        }
+        return (kinds, beads)
+    }
+
+    /// 补豆提醒卡：有缺口时才出现，对标 AI豆仓「数据驱动的补货决策」
+    @ViewBuilder
+    private var restockAlertCard: some View {
+        let summary = restockSummary
+        if summary.kinds > 0 {
+            NavigationLink { StatsView() } label: {
+                HStack(spacing: 14) {
+                    Image(systemName: "cart.fill.badge.plus")
+                        .font(.title3)
+                        .foregroundStyle(.white)
+                        .frame(width: 42, height: 42)
+                        .background(.white.opacity(0.22), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("该补豆啦").font(.headline).foregroundStyle(.white)
+                        Text("缺 \(summary.kinds) 种色号 · 共 \(summary.beads) 颗，点看补豆清单")
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.88))
+                            .lineLimit(1)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right").font(.caption.bold()).foregroundStyle(.white.opacity(0.7))
+                }
+                .padding(14)
+                .background(
+                    LinearGradient(colors: [Color(red: 1.00, green: 0.45, blue: 0.30),
+                                            Color(red: 1.00, green: 0.28, blue: 0.42)],
+                                   startPoint: .topLeading, endPoint: .bottomTrailing),
+                    in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                .shadow(color: Color(red: 1.00, green: 0.35, blue: 0.36).opacity(0.30), radius: 10, y: 4)
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    /// 统计卡：整体可点击 → 数据中心（消耗排行 / 补豆清单 / 色系分布）
+    private var statsLinkCard: some View {
+        NavigationLink { StatsView() } label: {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    sectionTitle("统计", systemImage: "chart.bar.fill")
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption.bold())
+                        .foregroundStyle(.tertiary)
+                }
+                HStack(spacing: 0) {
+                    statBlock("\(patterns.count)", "全部图纸")
+                    statDivider
+                    statBlock("\(inProgress.count)", "拼制中")
+                    statDivider
+                    statBlock("\(done.count)", "已完成")
+                }
+            }
+            .cardStyle()
+        }
+        .buttonStyle(.plain)
     }
 
     private var stockCard: some View {

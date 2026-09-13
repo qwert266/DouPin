@@ -78,6 +78,11 @@ struct PatternsTabView: View {
             } label: {
                 Label("从小红书链接导入", systemImage: "link")
             }
+            NavigationLink {
+                PatternMergeView()
+            } label: {
+                Label("合并图纸（多图拼一张）", systemImage: "square.on.square.dashed")
+            }
             Divider()
             Button {
                 segment = .template

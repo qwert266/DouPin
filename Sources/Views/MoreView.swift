@@ -38,6 +38,7 @@ struct MoreView: View {
     var body: some View {
         NavigationStack {
             List {
+                toolSection
                 boardSection
                 guideSection
                 storageSection
@@ -74,6 +75,48 @@ struct MoreView: View {
                         }
                 }
             }
+        }
+    }
+
+    // MARK: - 工具（数据中心 / 合并图纸）
+
+    private var toolSection: some View {
+        Section {
+            NavigationLink {
+                StatsView()
+            } label: {
+                Label {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("数据中心").font(.headline)
+                        Text("消耗排行 · 补豆清单 · 色系分布").font(.caption).foregroundStyle(.secondary)
+                    }
+                } icon: {
+                    Image(systemName: "chart.pie.fill")
+                        .foregroundStyle(.white)
+                        .frame(width: 30, height: 30)
+                        .background(Theme.brand, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                }
+            }
+            .cardRow()
+
+            NavigationLink {
+                PatternMergeView()
+            } label: {
+                Label {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("合并图纸").font(.headline)
+                        Text("多图拼一张大图").font(.caption).foregroundStyle(.secondary)
+                    }
+                } icon: {
+                    Image(systemName: "square.on.square.dashed")
+                        .foregroundStyle(.white)
+                        .frame(width: 30, height: 30)
+                        .background(Theme.amber, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                }
+            }
+            .cardRow()
+        } header: {
+            Text("工具")
         }
     }
 
