@@ -246,7 +246,8 @@ struct FolderDetailView: View {
                     var opts = PixelConverter.Options()
                     opts.maxSide = 29
                     opts.colorLimit = 24
-                    if let res = PixelConverter.convert(image: ui, options: opts) {
+                    let res = PixelConverter.convert(image: ui, options: opts)
+                    if !res.cells.isEmpty {
                         let p = Pattern(name: "\(folder.name) 图纸 \(Date().formatted(.dateTime.month().day()))",
                                         width: res.width, height: res.height,
                                         cells: res.cells, source: "photo")
@@ -556,7 +557,8 @@ struct XiaohongshuImportView: View {
         var opts = PixelConverter.Options()
         opts.maxSide = maxSide
         opts.colorLimit = colorLimit
-        if let res = PixelConverter.convert(image: ui, options: opts) {
+        let res = PixelConverter.convert(image: ui, options: opts)
+        if !res.cells.isEmpty {
             previewImage = PatternRenderer.renderThumb(cells: res.cells, width: res.width,
                                                        height: res.height, size: 320)
         }
@@ -567,7 +569,8 @@ struct XiaohongshuImportView: View {
         var opts = PixelConverter.Options()
         opts.maxSide = maxSide
         opts.colorLimit = colorLimit
-        guard let res = PixelConverter.convert(image: ui, options: opts) else { return }
+        let res = PixelConverter.convert(image: ui, options: opts)
+        guard !res.cells.isEmpty else { return }
         let p = Pattern(name: patternName, width: res.width, height: res.height,
                         cells: res.cells, source: "xhs")
         p.folderId = bindFolderId

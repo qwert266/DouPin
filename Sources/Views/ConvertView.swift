@@ -217,6 +217,7 @@ struct ConvertView: View {
     /// 原图存 `pattern.sourceImageData`，供「原图对比」模式使用（PRD §5.6）。
     private func save(_ result: PixelConverter.Result) {
         guard result.width > 0, result.height > 0 else { return }
+        guard let image else { return }   // 无原图则无法保存
         let p = Pattern(name: name, width: result.width, height: result.height,
                         cells: result.cells, source: "photo")
         // 尺寸分离：仅在启用且板可容纳图纸时写入

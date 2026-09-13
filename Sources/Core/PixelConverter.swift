@@ -27,13 +27,13 @@ enum PixelConverter {
 
         // 按长宽比计算网格尺寸
         let srcW = CGFloat(cg.width), srcH = CGFloat(cg.height)
-        let side = max(8, min(104, options.maxSide))
+        let side = CGFloat(max(8, min(104, options.maxSide)))
         var gw: Int, gh: Int
         if srcW >= srcH {
-            gw = side
+            gw = Int(side)
             gh = max(8, Int(round(side * srcH / srcW)))
         } else {
-            gh = side
+            gh = Int(side)
             gw = max(8, Int(round(side * srcW / srcH)))
         }
 
@@ -43,7 +43,7 @@ enum PixelConverter {
             return Result(width: 0, height: 0, cells: [])
         }
         ctx.interpolationQuality = .medium
-        ctx.draw(cg, in: CGRect(x: 0, y: 0, width: gw, height: gh))
+        ctx.draw(cg, in: CGRect(x: 0, y: 0, width: CGFloat(gw), height: CGFloat(gh)))
         guard let data = ctx.data else { return Result(width: 0, height: 0, cells: []) }
 
         let buf = data.bindMemory(to: UInt8.self, capacity: gw * gh * 4)

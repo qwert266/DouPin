@@ -56,7 +56,7 @@ final class BLECentral: NSObject, ObservableObject {
     private var notifyWaiters: [NotifyWaiter] = []
 
     /// 板卡名称关键字（命中视为疑似拼豆板）；提为静态量，避免每次扫描重复构造数组。
-    private static let boardNameHints = ["pixdou", "iledcolor", "wofan", "led", "pd"]
+    private nonisolated static let boardNameHints = ["pixdou", "iledcolor", "wofan", "led", "pd"]
 
     /// 日志时间戳格式化器（静态复用，避免每次 log 都新建 formatter）。
     private static let timeFormatter: DateFormatter = {

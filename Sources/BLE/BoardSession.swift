@@ -34,7 +34,7 @@ final class BoardSession: ObservableObject {
     func handshake() async throws {
         guard central.linkState == .connected else { throw BoardError.notConnected }
         await central.writeCmd(BLEProtocol.connect())
-        guard let ack = await central.nextNotificationWithTimeout(2.0) else {
+        guard await central.nextNotificationWithTimeout(2.0) != nil else {
             throw BoardError.handshakeFailed("Connect 无应答")
         }
         await central.writeCmd(BLEProtocol.testPass())

@@ -12,7 +12,8 @@ enum PatternRenderer {
         fmt.scale = 2
         let r = UIGraphicsImageRenderer(size: CGSize(width: size, height: size), format: fmt)
         return r.image { ctx in
-            UIColor(white: 0.95, alpha: 1).fill(CGRect(x: 0, y: 0, width: size, height: size))
+            ctx.cgContext.setFillColor(UIColor(white: 0.95, alpha: 1).cgColor)
+            ctx.cgContext.fill(CGRect(x: 0, y: 0, width: size, height: size))
             let side = size / CGFloat(max(width, height))
             let ox = (size - side * CGFloat(width)) / 2
             let oy = (size - side * CGFloat(height)) / 2
@@ -21,8 +22,8 @@ enum PatternRenderer {
                     let v = cells[y * width + x]
                     let c = v > 0 ? BeadPalette.byId[v]?.uiColor ?? .clear : UIColor(white: 1, alpha: 1)
                     c.setFill()
-                    ctx.fill(CGRect(x: ox + CGFloat(x) * side, y: oy + CGFloat(y) * side,
-                                     width: side, height: side))
+                    ctx.cgContext.fill(CGRect(x: ox + CGFloat(x) * side, y: oy + CGFloat(y) * side,
+                                              width: side, height: side))
                 }
             }
         }
