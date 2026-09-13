@@ -24,30 +24,62 @@ struct PatternsTabView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                switch segment {
-                case .all:       AllPatternsSection()
-                case .folder:    FolderListView()
-                case .tag:       TagFilterView()
-                case .template:  TemplateGalleryView()
+            VStack(spacing: 0) {
+                segmentBar
+                Group {
+                    switch segment {
+                    case .all:       AllPatternsSection()
+                    case .folder:    FolderListView()
+                    case .tag:       TagFilterView()
+                    case .template:  TemplateGalleryView()
+                    }
                 }
             }
             .navigationTitle(navigationTitle)
             .toolbar {
                 if segment != .template {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Picker("分段", selection: $segment) {
-                            ForEach(PatternsSegment.allCases) { s in
-                                Text(s.rawValue).tag(s)
-                            }
-                        }
-                        .pickerStyle(.menu)
-                    }
-                }
-                if segment == .all || segment == .folder || segment == .tag {
                     ToolbarItem(placement: .topBarTrailing) { createMenu }
                 }
             }
+        }
+    }
+
+    /// 顶部胶囊分段条（渐变选中态，替代系统菜单样式）
+    private var segmentBar: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(PatternsSegment.allCases) { s in
+                    let active = segment == s
+                    Button {
+                        segment = s
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: segmentIcon(s))
+                                .font(.caption2.bold())
+                            Text(s.rawValue)
+                                .font(.subheadline.weight(active ? .bold : .regular))
+                        }
+                        .padding(.horizontal, 13).padding(.vertical, 8)
+                        .background(active ? AnyShapeStyle(Theme.brand) : AnyShapeStyle(Theme.cardFill), in: Capsule())
+                        .foregroundStyle(active ? .white : Color.primary)
+                        .overlay(Capsule().stroke(Color.secondary.opacity(0.15)))
+                        .shadow(color: active ? Theme.accent.opacity(0.25) : .clear, radius: 6, y: 2)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+        }
+        .background(Theme.pageFill)
+    }
+
+    private func segmentIcon(_ s: PatternsSegment) -> String {
+        switch s {
+        case .all: return "square.grid.3x3.fill"
+        case .folder: return "folder.fill"
+        case .tag: return "tag.fill"
+        case .template: return "gift.fill"
         }
     }
 

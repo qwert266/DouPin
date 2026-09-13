@@ -380,8 +380,7 @@ private struct BoardPanel: View {
 
     private var controlCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Label("灯板控制", systemImage: "slider.horizontal.3")
-                .font(.subheadline.bold())
+            sectionHeader("灯板控制", systemImage: "slider.horizontal.3", gradient: Theme.sky)
 
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
@@ -420,12 +419,24 @@ private struct BoardPanel: View {
         .cardStyle()
     }
 
+    /// 卡片小节标题（渐变图标 chip + 加粗文字）
+    private func sectionHeader(_ text: String, systemImage: String, gradient: LinearGradient) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: systemImage)
+                .font(.caption.bold())
+                .foregroundStyle(.white)
+                .frame(width: 24, height: 24)
+                .background(gradient, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+            Text(text)
+                .font(.subheadline.bold())
+        }
+    }
+
     // MARK: - 发送图纸卡
 
     private var sendCard: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Label("发送图纸", systemImage: "square.and.arrow.up.on.square")
-                .font(.subheadline.bold())
+            sectionHeader("发送图纸", systemImage: "paperplane.fill", gradient: Theme.brand)
 
             if board.isSending {
                 VStack(alignment: .leading, spacing: 8) {
@@ -452,7 +463,7 @@ private struct BoardPanel: View {
                 .disabled(!didHandshake)
                 .opacity(didHandshake ? 1 : 0.45)
 
-                Text("发送完整预览图；已拼的格子会以暗色显示（需要在作品详情里打卡进度）。")
+                Text("发送完整预览图，已拼格子暗显。分色点亮（只亮一种颜色）请到作品详情「板子引导」，或转图后点「保存并开始拼豆」。")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
             }
@@ -504,6 +515,280 @@ private struct BoardPanel: View {
             }
             sendTarget = nil
         }
+    }
+}
+
+// MARK: - 用色明细行（分色引导 / 快速发送共用）
+
+/// 图纸用色行：色号 + 总颗数 + 未拼颗数
+struct BeadUsageRow: Identifiable {
+    let id: Int          // colorId
+    let color: BeadColor
+    let total: Int
+    let remaining: Int
+}
+
+extension Pattern {
+    /// 用色明细（按未拼颗数降序）
+    var usageRows: [BeadUsageRow] {
+        var total: [Int: Int] = [:]
+        var done: [Int: Int] = [:]
+        for (i, c) in cells.enumerated() where c > 0 {
+            total[c, default: 0] += 1
+            if i < placed.count && placed[i] { done[c, default: 0] += 1 }
+        }
+        return total.compactMap { id, n -> BeadUsageRow? in
+            guard let color = BeadPalette.byId[id] else { return nil }
+            return BeadUsageRow(id: id, color: color, total: n, remaining: n - (done[id] ?? 0))
+        }
+        .sorted { $0.remaining > $1.remaining }
+    }
+}
+
+// MARK: - 快速发送图纸（转图完成后 / 作品详情入口；支持完整预览与分色点亮）
+
+/// 自包含的发送面板：预览 + 连接状态 + 模式（完整/分色）+ 发送进度。
+/// 连接复用全局 `BoardSession`（拼豆板 Tab 连接后这里直接可用）。
+struct BoardSendSheet: View {
+    let pattern: Pattern
+    @ObservedObject private var board = AppState.shared.board
+    @ObservedObject private var central = AppState.shared.board.central
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var mode: SendMode = .full
+    @State private var guideColorId: Int?
+    @State private var busy = false
+    @State private var infoMessage: String?
+
+    enum SendMode: String, CaseIterable, Identifiable {
+        case full = "完整预览"
+        case color = "分色点亮"
+        var id: String { rawValue }
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 16) {
+                    previewCard
+                    connectionCard
+                    modeCard
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 4)
+                .padding(.bottom, 24)
+            }
+            .background(Theme.pageFill)
+            .navigationTitle("开始拼豆")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("关闭") { dismiss() }
+                }
+            }
+            .alert("拼豆板", isPresented: Binding(get: { infoMessage != nil },
+                                             set: { if !$0 { infoMessage = nil } })) {
+                Button("好", role: .cancel) { infoMessage = nil }
+            } message: {
+                Text(infoMessage ?? "")
+            }
+            .onAppear {
+                if guideColorId == nil { guideColorId = pattern.usageRows.first?.color.id }
+            }
+        }
+    }
+
+    // MARK: 预览
+
+    private var previewCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text(pattern.name).font(.headline)
+                Spacer()
+                Text("\(pattern.width)×\(pattern.height) · \(pattern.totalBeads) 颗")
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+            GridView(cells: pattern.cells, width: pattern.width, height: pattern.height, showGuides: false)
+                .frame(height: 190)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        }
+        .cardStyle()
+    }
+
+    // MARK: 连接状态
+
+    @ViewBuilder
+    private var connectionCard: some View {
+        if central.linkState == .connected {
+            HStack(spacing: 10) {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(.green)
+                Text("已连接 \(central.connectedName)")
+                    .font(.subheadline)
+                Spacer()
+                Text(didHandshakeReady ? "可发送" : "准备握手…")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .cardStyle(padding: 12)
+        } else {
+            HStack(spacing: 10) {
+                Image(systemName: "lightbulb")
+                    .font(.title3)
+                    .foregroundStyle(.white)
+                    .frame(width: 36, height: 36)
+                    .background(Theme.amber, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("拼豆板未连接").font(.subheadline.weight(.medium))
+                    Text("先到「拼豆板」标签页连接设备，回来这里就能发送")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .cardStyle(padding: 12)
+        }
+    }
+
+    /// 会话是否可用（连接 + 首次发送前自动握手，无需手工状态）
+    private var didHandshakeReady: Bool { central.linkState == .connected }
+
+    // MARK: 模式 + 发送
+
+    private var modeCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Picker("发送模式", selection: $mode) {
+                ForEach(SendMode.allCases) { m in
+                    Text(m.rawValue).tag(m)
+                }
+            }
+            .pickerStyle(.segmented)
+
+            if mode == .color {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("选一种颜色，灯板只亮这种颜色的位置")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(pattern.usageRows) { row in
+                                colorChip(row)
+                            }
+                        }
+                        .padding(.horizontal, 2)
+                        .padding(.vertical, 2)
+                    }
+                }
+            }
+
+            if board.isSending {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("正在发送… \(Int(board.sendProgress * 100))%")
+                        .font(.subheadline)
+                        .monospacedDigit()
+                    ProgressView(value: board.sendProgress)
+                        .tint(Theme.brand)
+                }
+            } else {
+                Button {
+                    sendCurrent()
+                } label: {
+                    Label(mode == .full ? "发送完整图，开始拼豆" : "点亮该色，开始拼豆",
+                          systemImage: "paperplane.fill")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .frame(height: 22)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 13)
+                        .background(canSend ? AnyShapeStyle(Theme.brand) : AnyShapeStyle(Color.secondary.opacity(0.35)),
+                                    in: Capsule())
+                }
+                .buttonStyle(.plain)
+                .shadow(color: canSend ? .black.opacity(0.10) : .clear, radius: 10, y: 4)
+                .disabled(!canSend)
+
+                if mode == .color {
+                    Button {
+                        finishColorAndAdvance()
+                    } label: {
+                        Label("此色拼完 → 下一色", systemImage: "checkmark.circle.badge.arrow.forward")
+                            .font(.subheadline.bold())
+                            .foregroundStyle(Theme.accent)
+                            .frame(height: 18)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(Theme.accent.opacity(0.10), in: Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!canSend)
+                }
+
+                Text(mode == .full
+                     ? "完整预览：已拼的格子以暗色显示。"
+                     : "分色点亮：只亮选中色号；「此色拼完」会自动打卡整色并点亮下一色。")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+        }
+        .cardStyle()
+    }
+
+    private var canSend: Bool {
+        central.linkState == .connected && !busy && (mode == .full || guideColorId != nil)
+    }
+
+    private func colorChip(_ row: BeadUsageRow) -> some View {
+        let active = guideColorId == row.color.id
+        return Button {
+            guideColorId = row.color.id
+        } label: {
+            HStack(spacing: 6) {
+                BeadDot(color: row.color, size: 20)
+                Text(row.color.mard)
+                    .font(.caption.monospaced().weight(.semibold))
+                Text("剩\(row.remaining)")
+                    .font(.caption2.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 10).padding(.vertical, 7)
+            .background(active ? AnyShapeStyle(Theme.brand.opacity(0.14)) : AnyShapeStyle(Theme.cardFill), in: Capsule())
+            .overlay(Capsule().stroke(active ? Theme.accent : Color.secondary.opacity(0.15), lineWidth: active ? 2 : 1))
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: 动作
+
+    private func sendCurrent() {
+        Task {
+            busy = true
+            defer { busy = false }
+            let rgb: [UInt8]
+            switch mode {
+            case .full:
+                rgb = BoardImageBuilder.fullImage(width: pattern.width, height: pattern.height,
+                                                  cells: pattern.cells, placed: pattern.placed)
+            case .color:
+                guard let cid = guideColorId else { return }
+                rgb = BoardImageBuilder.colorGuide(width: pattern.width, height: pattern.height,
+                                                   cells: pattern.cells, colorId: cid, placed: pattern.placed)
+            }
+            do {
+                try await board.sendImage(width: pattern.width, height: pattern.height, rgb: rgb)
+            } catch {
+                infoMessage = "发送失败：\(error.localizedDescription)"
+            }
+        }
+    }
+
+    /// 整色打卡并点亮下一色（未拼颗数最多的优先）
+    private func finishColorAndAdvance() {
+        guard let cid = guideColorId else { return }
+        pattern.placeColor(colorId: cid)
+        if let next = pattern.usageRows.first(where: { $0.remaining > 0 && $0.color.id != cid }) {
+            guideColorId = next.color.id
+        }
+        sendCurrent()
     }
 }
 

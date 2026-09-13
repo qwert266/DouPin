@@ -589,17 +589,29 @@ struct ColorSwatch: View {
 
     var body: some View {
         Button(action: action) {
-            RoundedRectangle(cornerRadius: 6)
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
                 .fill(color.color)
-                .frame(width: 34, height: 34)
+                .frame(height: 42)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 6)
-                        .stroke(selected ? Color.pink : Color.gray.opacity(0.35), lineWidth: selected ? 3 : 1))
+                    // 顶部高光：立体豆质感
+                    Ellipse()
+                        .fill(LinearGradient(colors: [.white.opacity(0.40), .white.opacity(0)],
+                                             startPoint: .top, endPoint: .bottom))
+                        .frame(height: 16)
+                        .padding(.horizontal, 7)
+                        .offset(y: -9)
+                        .allowsHitTesting(false)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .stroke(selected ? Theme.accent : Color.gray.opacity(0.25),
+                                lineWidth: selected ? 3 : 1)
+                )
                 .overlay(alignment: .bottom) {
                     Text(color.mard)
-                        .font(.system(size: 7, weight: .semibold))
+                        .font(.system(size: 8, weight: .bold, design: .monospaced))
                         .foregroundStyle(color.brightness > 0.6 ? .black : .white)
-                        .padding(1)
+                        .padding(.bottom, 2)
                 }
         }
         .buttonStyle(.plain)
@@ -613,63 +625,88 @@ extension BeadColor {
     }
 }
 
-// MARK: - 全部色板（295 色，按字母分组）
+// MARK: - 全色板（295 色，按常规颜色种类筛选 + 色号搜索）
 
 struct FullPaletteSheet: View {
     @Binding var selectedId: Int
     @Environment(\.dismiss) private var dismiss
     @State private var searchText = ""
+    @State private var family: BeadFamily = .all
 
-    var groups: [(letter: String, colors: [BeadColor])] {
-        guard !searchText.isEmpty else { return BeadPalette.groups }
-        let q = searchText.lowercased()
-        return BeadPalette.groups.compactMap { g in
-            let matched = g.colors.filter {
-                $0.mard.lowercased().contains(q) ||
-                $0.coco.lowercased().contains(q) ||
-                $0.manman.lowercased().contains(q) ||
-                $0.panpan.contains(q) ||
-                $0.mixiaowo.contains(q)
-            }
-            return matched.isEmpty ? nil : (g.letter, matched)
-        }
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 5)
+
+    /// 搜索匹配（Mard / 可可 / 漫漫 / 盼盼 / 米小窝）
+    private func matches(_ c: BeadColor) -> Bool {
+        let q = searchText.trimmingCharacters(in: .whitespaces).lowercased()
+        guard !q.isEmpty else { return true }
+        return c.mard.lowercased().contains(q)
+            || c.coco.lowercased().contains(q)
+            || c.manman.lowercased().contains(q)
+            || c.panpan.lowercased().contains(q)
+            || c.mixiaowo.lowercased().contains(q)
     }
 
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 6)
+    /// 当前筛选下的色号列表
+    private var displayColors: [BeadColor] {
+        let base = family == .all ? BeadPalette.all : (BeadPalette.familyBuckets[family] ?? [])
+        return base.filter(matches)
+    }
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 14, pinnedViews: .sectionHeaders) {
-                    ForEach(groups, id: \.letter) { g in
-                        Section {
-                            LazyVGrid(columns: columns, spacing: 8) {
-                                ForEach(g.colors) { c in
-                                    ColorSwatch(color: c, selected: selectedId == c.id) {
-                                        selectedId = c.id
-                                        dismiss()
-                                    }
-                                }
-                            }
-                        } header: {
-                            Text(g.letter)
-                                .font(.headline)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.vertical, 4)
-                                .background(.bar)
+            VStack(spacing: 0) {
+                // 常规颜色种类筛选条
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(BeadFamily.allCases) { f in
+                            familyChip(f)
                         }
                     }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
                 }
-                .padding(.horizontal, 14)
+                Divider().opacity(0.5)
+
+                if displayColors.isEmpty {
+                    ContentUnavailableView.search(text: searchText)
+                } else {
+                    ScrollView {
+                        LazyVGrid(columns: columns, spacing: 8) {
+                            ForEach(displayColors) { c in
+                                ColorSwatch(color: c, selected: selectedId == c.id) {
+                                    selectedId = c.id
+                                    dismiss()
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                    }
+                }
             }
-            .searchable(text: $searchText, prompt: "按色号搜索（Mard/可可/漫漫…）")
-            .navigationTitle("色板 · 295 色")
+            .navigationTitle(family == .all ? "色板 · \(BeadPalette.all.count) 色" : "色板 · \(family.rawValue)")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("完成") { dismiss() }
                 }
             }
+            .searchable(text: $searchText, prompt: "按色号搜索（Mard/可可/漫漫…）")
         }
+    }
+
+    private func familyChip(_ f: BeadFamily) -> some View {
+        let active = family == f
+        return Button {
+            family = f
+        } label: {
+            Text(f.rawValue)
+                .font(.caption.weight(active ? .bold : .regular))
+                .padding(.horizontal, 12).padding(.vertical, 7)
+                .background(active ? AnyShapeStyle(Theme.brand) : AnyShapeStyle(Theme.cardFill), in: Capsule())
+                .foregroundStyle(active ? .white : Color.primary)
+                .overlay(Capsule().stroke(Color.secondary.opacity(0.15)))
+        }
+        .buttonStyle(.plain)
     }
 }

@@ -38,6 +38,10 @@ struct MoreView: View {
     var body: some View {
         NavigationStack {
             List {
+                brandHero
+                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
                 toolSection
                 boardSection
                 guideSection
@@ -76,6 +80,42 @@ struct MoreView: View {
                 }
             }
         }
+    }
+
+    // MARK: - 品牌英雄卡
+
+    private var brandHero: some View {
+        ZStack(alignment: .topTrailing) {
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Theme.brand)
+            BeadDots()
+                .padding(.top, 14).padding(.trailing, 16)
+            HStack(spacing: 14) {
+                ZStack {
+                    Circle()
+                        .fill(.white.opacity(0.22))
+                        .frame(width: 50, height: 50)
+                    Image(systemName: "lightbulb.fill")
+                        .font(.title2)
+                        .foregroundStyle(.white)
+                }
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("豆拼 DouPin")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                    Text("照片变图纸 · 图纸点亮拼豆板")
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.85))
+                    Text("版本 1.1 · 本地优先 · 无账户")
+                        .font(.caption2)
+                        .foregroundStyle(.white.opacity(0.7))
+                }
+                Spacer()
+            }
+            .padding(16)
+        }
+        .frame(height: 92)
+        .shadow(color: Theme.accent.opacity(0.22), radius: 10, y: 4)
     }
 
     // MARK: - 工具（数据中心 / 合并图纸）

@@ -125,6 +125,14 @@ struct InventoryView: View {
 
     private var stockList: some View {
         List {
+            // 渐变英雄统计条
+            Section {
+                inventoryHero
+                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+            }
+
             // 色系筛选
             Section {
                 seriesPicker
@@ -155,18 +163,43 @@ struct InventoryView: View {
                     Text("没有匹配的色号")
                 }
             }
-
-            Section("库存总览") {
-                HStack(spacing: 20) {
-                    summaryCell("已录入色号", "\(stocks.count)")
-                    summaryCell("总豆量", "\(totalQuantity)")
-                    summaryCell("缺色", "\(stocks.filter { $0.isLow }.count)")
-                }
-                .frame(maxWidth: .infinity)
-                .cardRow()
-            }
         }
         .themedListPage()
+    }
+
+    /// 顶部英雄统计：品牌渐变 + 豆点装饰 + 三栏数字
+    private var inventoryHero: some View {
+        ZStack(alignment: .topTrailing) {
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Theme.brand)
+            BeadDots()
+                .padding(.top, 14).padding(.trailing, 16)
+            HStack(spacing: 0) {
+                heroCell("\(stocks.count)", "已录入色号")
+                heroCell("\(totalQuantity)", "总豆量")
+                heroCell("\(lowCount)", lowCount > 0 ? "缺色 ⚠︎" : "缺色")
+            }
+            .padding(.vertical, 16)
+        }
+        .frame(height: 84)
+        .shadow(color: Theme.accent.opacity(0.22), radius: 10, y: 4)
+    }
+
+    /// 低于阈值的色号数
+    private var lowCount: Int { stocks.filter { $0.isLow }.count }
+
+    private func heroCell(_ value: String, _ title: String) -> some View {
+        VStack(spacing: 4) {
+            Text(value)
+                .font(.title3.bold().monospacedDigit())
+                .foregroundStyle(.white)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+            Text(title)
+                .font(.caption2)
+                .foregroundStyle(.white.opacity(0.85))
+        }
+        .frame(maxWidth: .infinity)
     }
 
     /// 色系筛选（分段滚动）
@@ -243,14 +276,6 @@ struct InventoryView: View {
                     in: Capsule())
         }
         .opacity(stock.quantity == 0 ? 0.75 : 1)
-    }
-
-    private func summaryCell(_ title: String, _ value: String) -> some View {
-        VStack(spacing: 3) {
-            Text(value).font(.headline.monospacedDigit())
-            Text(title).font(.caption).foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity)
     }
 
     // MARK: - 空状态

@@ -32,6 +32,8 @@ struct WorkDetailView: View {
     @State private var guideColorId: Int? = nil
     @State private var showGuideColorPicker = false
     @State private var boardBusy = false
+    /// 快速发送面板（完整预览 / 分色点亮）
+    @State private var sendSheetPattern: Pattern?
 
     enum Mode: String, CaseIterable {
         case pattern = "图纸"
@@ -56,9 +58,17 @@ struct WorkDetailView: View {
         }
         .navigationTitle(pattern.name)
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(item: $sendSheetPattern) { p in
+            BoardSendSheet(pattern: p)
+        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
+                    Button {
+                        sendSheetPattern = pattern
+                    } label: {
+                        Label("开始拼豆（发送拼豆板）", systemImage: "lightbulb.max")
+                    }
                     Button {
                         renameText = pattern.name
                         showRename = true
@@ -430,6 +440,55 @@ struct WorkDetailView: View {
                     .disabled(pattern.beadCounts.isEmpty)
                 }
 
+                // 分色引导（全图）：选一种颜色，灯板全图只亮该色的位置（PIXDOU 同款）
+                Section {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(pattern.usageRows) { row in
+                                colorChip(row)
+                            }
+                        }
+                        .padding(.horizontal, 2)
+                        .padding(.vertical, 2)
+                    }
+
+                    HStack(spacing: 10) {
+                        Button {
+                            sendColorGuide()
+                        } label: {
+                            Label("点亮该色", systemImage: "lightbulb.max.fill")
+                                .font(.subheadline.bold())
+                                .foregroundStyle(.white)
+                                .frame(height: 20)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 11)
+                                .background(
+                                    guideColorId == nil ? AnyShapeStyle(Color.secondary.opacity(0.35)) : AnyShapeStyle(Theme.sky),
+                                    in: Capsule())
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(guideColorId == nil || boardBusy)
+
+                        Button {
+                            finishColorAndAdvance()
+                        } label: {
+                            Label("此色拼完 → 下一色", systemImage: "checkmark.circle.badge.arrow.forward")
+                                .font(.subheadline.bold())
+                                .foregroundStyle(Theme.accent)
+                                .frame(height: 20)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 11)
+                                .background(Theme.accent.opacity(0.10), in: Capsule())
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(guideColorId == nil || boardBusy)
+                    }
+                } header: {
+                    Text("分色引导 · 全图点亮")
+                } footer: {
+                    Text("只点亮选中色号在全图中的位置。逐颗拼完可到「进度」打卡；整色拼完点「此色拼完」自动打卡并点亮下一色（未拼颗数多的优先）。")
+                }
+
                 Section {
                     Button {
                         finishRowAndAdvance()
@@ -515,6 +574,50 @@ struct WorkDetailView: View {
                 row: guideRow, colorId: guideColorId, placed: pattern.placed)
             try? await board.sendImage(width: pattern.width, height: pattern.height, rgb: rgb)
         }
+    }
+
+    /// 全图分色引导：灯板只亮选中色号的位置（不分行走）
+    private func sendColorGuide() {
+        guard let cid = guideColorId else { return }
+        Task {
+            boardBusy = true
+            defer { boardBusy = false }
+            let rgb = BoardImageBuilder.colorGuide(
+                width: pattern.width, height: pattern.height, cells: pattern.cells,
+                colorId: cid, placed: pattern.placed)
+            try? await board.sendImage(width: pattern.width, height: pattern.height, rgb: rgb)
+        }
+    }
+
+    /// 分色引导的色号 chip
+    private func colorChip(_ row: BeadUsageRow) -> some View {
+        let active = guideColorId == row.color.id
+        return Button {
+            guideColorId = row.color.id
+        } label: {
+            HStack(spacing: 6) {
+                BeadDot(color: row.color, size: 20)
+                Text(row.color.mard)
+                    .font(.caption.monospaced().weight(.semibold))
+                Text("剩\(row.remaining)")
+                    .font(.caption2.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 10).padding(.vertical, 7)
+            .background(active ? AnyShapeStyle(Theme.brand.opacity(0.14)) : AnyShapeStyle(Theme.cardFill), in: Capsule())
+            .overlay(Capsule().stroke(active ? Theme.accent : Color.secondary.opacity(0.15), lineWidth: active ? 2 : 1))
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// 整色打卡并点亮下一色（未拼颗数最多的优先）
+    private func finishColorAndAdvance() {
+        guard let cid = guideColorId else { return }
+        pattern.placeColor(colorId: cid)
+        if let next = pattern.usageRows.first(where: { $0.remaining > 0 && $0.color.id != cid }) {
+            guideColorId = next.color.id
+        }
+        sendColorGuide()
     }
 
     private func sendFullPreview() async {

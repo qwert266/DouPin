@@ -329,3 +329,75 @@ enum BeadPalette {
     static let essentials24: [Int] = [253, 26, 141, 31, 30, 45, 136, 69, 256, 102, 101, 97, 251, 185, 190, 284, 1, 2, 3, 4, 5, 6, 7, 8]
     static let essentials16: [Int] = [253, 26, 141, 31, 30, 45, 136, 69, 256, 102, 101, 97, 251, 185, 190, 284]
 }
+
+// MARK: - 常规颜色种类（全色板选择器的色系筛选）
+
+/// 常规颜色种类：按人眼直觉分桶，对标 AI豆仓 / PIXDOU 的「按颜色选豆」。
+/// 特殊 = T（透明）/ Y（夜光）/ Z（珠光）系列。
+enum BeadFamily: String, CaseIterable, Identifiable {
+    case all = "全部"
+    case red = "红色"
+    case orange = "橙色"
+    case yellow = "黄色"
+    case green = "绿色"
+    case cyan = "青色"
+    case blue = "蓝色"
+    case purple = "紫色"
+    case pink = "粉色"
+    case brown = "棕色"
+    case mono = "黑白灰"
+    case special = "特殊"
+
+    var id: String { rawValue }
+}
+
+extension BeadColor {
+
+    /// 色系归类：特殊系列按色号前缀判定，其余按 HSV（色相 + 明度）分桶。
+    var family: BeadFamily {
+        let series = mard.prefix(1)
+        if series == "T" || series == "Y" || series == "Z" { return .special }
+
+        let rf = Double(r) / 255, gf = Double(g) / 255, bf = Double(b) / 255
+        let mx = max(rf, gf, bf), mn = min(rf, gf, bf)
+        let v = mx
+        let s = mx == 0 ? 0 : (mx - mn) / mx
+        if s < 0.14 { return .mono }                       // 黑 / 白 / 灰
+
+        let d = mx - mn
+        var hue: Double
+        if mx == rf {
+            hue = 60 * ((gf - bf) / d).truncatingRemainder(dividingBy: 6)
+        } else if mx == gf {
+            hue = 60 * ((bf - rf) / d + 2)
+        } else {
+            hue = 60 * ((rf - gf) / d + 4)
+        }
+        if hue < 0 { hue += 360 }
+
+        // 暗橙黄 → 棕（先于橙/黄判定）
+        if hue >= 10 && hue <= 48 && v < 0.62 { return .brown }
+
+        switch hue {
+        case ..<15: return .red
+        case ..<45: return .orange
+        case ..<70: return .yellow
+        case ..<165: return .green
+        case ..<200: return .cyan
+        case ..<255: return .blue
+        case ..<295: return .purple
+        case ..<345: return .pink
+        default: return .red
+        }
+    }
+}
+
+extension BeadPalette {
+
+    /// 色系分桶缓存（不含 .all；全色板选择器打开时直接取，避免重复算 HSV）
+    static let familyBuckets: [BeadFamily: [BeadColor]] = {
+        var map: [BeadFamily: [BeadColor]] = [:]
+        for c in all { map[c.family, default: []].append(c) }
+        return map
+    }()
+}

@@ -19,6 +19,8 @@ struct ConvertView: View {
     @State private var result: PixelConverter.Result?
     @State private var name = ""
     @State private var savedID: UUID?
+    /// 「保存并开始拼豆」→ 快速发送面板
+    @State private var sendPattern: Pattern?
 
     // MARK: - 尺寸分离（PRD §5.4）：图纸行列数 vs 实际拼板 + 偏移
     /// 是否启用「实际拼板」设置（关闭 = 板尺寸同图纸尺寸）
@@ -70,6 +72,9 @@ struct ConvertView: View {
             Button("好", role: .cancel) { savedID = nil }
         } message: {
             Text("图纸已保存，可在「图纸」标签中查看")
+        }
+        .sheet(item: $sendPattern) { p in
+            BoardSendSheet(pattern: p)
         }
     }
 
@@ -342,19 +347,35 @@ struct ConvertView: View {
                 .font(.subheadline)
                 .padding(12)
                 .background(Theme.pageFill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+
             Button {
-                save(result)
+                saveAndStart(result)
             } label: {
-                Label("保存图纸", systemImage: "square.and.arrow.down.fill")
+                Label("保存并开始拼豆（发送拼豆板）", systemImage: "lightbulb.max.fill")
                     .font(.headline)
                     .foregroundStyle(.white)
                     .frame(height: 22)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 13)
-                    .background(Theme.violet, in: Capsule())
+                    .background(Theme.sky, in: Capsule())
             }
             .buttonStyle(.plain)
             .shadow(color: .black.opacity(0.10), radius: 10, y: 4)
+            .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+            .opacity(name.trimmingCharacters(in: .whitespaces).isEmpty ? 0.45 : 1)
+
+            Button {
+                if let p = save(result) { savedID = p.id }
+            } label: {
+                Label("仅保存图纸", systemImage: "square.and.arrow.down.fill")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(Theme.accent)
+                    .frame(height: 18)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Theme.accent.opacity(0.10), in: Capsule())
+            }
+            .buttonStyle(.plain)
             .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
             .opacity(name.trimmingCharacters(in: .whitespaces).isEmpty ? 0.45 : 1)
         }
@@ -399,9 +420,10 @@ struct ConvertView: View {
     /// 保存图纸：写入 cells + 尺寸分离字段 + **原图**（JPEG 长边 ≤2048、质量 0.8）。
     ///
     /// 原图存 `pattern.sourceImageData`，供「原图对比」模式使用（PRD §5.6）。
-    private func save(_ result: PixelConverter.Result) {
-        guard result.width > 0, result.height > 0 else { return }
-        guard let image else { return }   // 无原图则无法保存
+    @discardableResult
+    private func save(_ result: PixelConverter.Result) -> Pattern? {
+        guard result.width > 0, result.height > 0 else { return nil }
+        guard let image else { return nil }   // 无原图则无法保存
         let p = Pattern(name: name, width: result.width, height: result.height,
                         cells: result.cells, source: "photo")
         // 尺寸分离：仅在启用且板可容纳图纸时写入
@@ -416,7 +438,13 @@ struct ConvertView: View {
         // 从文件夹进入时自动归入（T04）
         p.folderId = bindFolderId
         context.insert(p)
-        savedID = p.id
+        return p
+    }
+
+    /// 保存并直接进入「开始拼豆」发送面板（完整预览 / 分色点亮）
+    private func saveAndStart(_ result: PixelConverter.Result) {
+        guard let p = save(result) else { return }
+        sendPattern = p
     }
 
     /// 把 UIImage 压缩为 JPEG（长边 ≤2048、质量 0.8）。
