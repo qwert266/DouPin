@@ -1,0 +1,1230 @@
+{
+ "files": [
+  "Sources/App/AppRoot.swift",
+  "Sources/App/DouPinApp.swift",
+  "Sources/BLE/BLECentral.swift",
+  "Sources/BLE/BLEProtocol.swift",
+  "Sources/BLE/BoardSession.swift",
+  "Sources/Core/Models+Extensions.swift",
+  "Sources/Core/Models+Inventory.swift",
+  "Sources/Core/Models.swift",
+  "Sources/Core/Palette.swift",
+  "Sources/Core/PatternRenderer.swift",
+  "Sources/Core/PixelConverter.swift",
+  "Sources/Core/Templates.swift",
+  "Sources/Services/BoardSplitter.swift",
+  "Sources/Services/ColorMerge.swift",
+  "Sources/Services/PatternFactory.swift",
+  "Sources/Services/PDFExporter.swift",
+  "Sources/Services/StockEstimator.swift",
+  "Sources/Services/StockTextParser.swift",
+  "Sources/Services/XiaohongshuExtractor.swift",
+  "Sources/Views/BoardTabView.swift",
+  "Sources/Views/ConvertView.swift",
+  "Sources/Views/EditorKit.swift",
+  "Sources/Views/EditorView.swift",
+  "Sources/Views/FolderViews.swift",
+  "Sources/Views/InventoryView.swift",
+  "Sources/Views/MoreView.swift",
+  "Sources/Views/PatternListView.swift",
+  "Sources/Views/PatternsTabView.swift",
+  "Sources/Views/SplitBoardView.swift",
+  "Sources/Views/StockEstimateView.swift",
+  "Sources/Views/StockImportView.swift",
+  "Sources/Views/TemplateGalleryView.swift",
+  "Sources/Views/WorkDetailView.swift",
+  "Sources/Views/ZoomableGrid.swift"
+ ],
+ "fillStroke": [
+  {
+   "file": "Sources/App/AppRoot.swift",
+   "line": 121,
+   "recv": "6)",
+   "call": "stroke",
+   "text": ".overlay(RoundedRectangle(cornerRadius: 6).stroke(.gray.opacity(0.3)))"
+  },
+  {
+   "file": "Sources/Core/PatternRenderer.swift",
+   "line": 16,
+   "recv": "ctx.cgContext",
+   "call": "fill",
+   "text": "ctx.cgContext.fill(CGRect(x: 0, y: 0, width: size, height: size))"
+  },
+  {
+   "file": "Sources/Core/PatternRenderer.swift",
+   "line": 25,
+   "recv": "ctx.cgContext",
+   "call": "fill",
+   "text": "ctx.cgContext.fill(CGRect(x: ox + CGFloat(x) * side, y: oy + CGFloat(y) * side,"
+  },
+  {
+   "file": "Sources/Core/PatternRenderer.swift",
+   "line": 62,
+   "recv": "cg",
+   "call": "fill",
+   "text": "cg.fill(CGRect(x: 0, y: 0, width: canvasW, height: canvasH))"
+  },
+  {
+   "file": "Sources/Core/PatternRenderer.swift",
+   "line": 88,
+   "recv": "cg",
+   "call": "fill",
+   "text": "cg.fill(CGRect(x: grid.minX + CGFloat(gx) * cell, y: grid.minY + CGFloat(gy) * cell,"
+  },
+  {
+   "file": "Sources/Core/PatternRenderer.swift",
+   "line": 160,
+   "recv": "cg",
+   "call": "fill",
+   "text": "cg.fill(rect)"
+  },
+  {
+   "file": "Sources/Services/PDFExporter.swift",
+   "line": 116,
+   "recv": "cg",
+   "call": "fill",
+   "text": "cg.fill(bounds)"
+  },
+  {
+   "file": "Sources/Services/PDFExporter.swift",
+   "line": 250,
+   "recv": "cg",
+   "call": "fill",
+   "text": "cg.fill(CGRect(x: originX + CGFloat(c) * cell,"
+  },
+  {
+   "file": "Sources/Services/PDFExporter.swift",
+   "line": 325,
+   "recv": "cg",
+   "call": "fill",
+   "text": "cg.fill(CGRect(x: x, y: y, width: 12, height: 12))"
+  },
+  {
+   "file": "Sources/Services/PDFExporter.swift",
+   "line": 328,
+   "recv": "cg",
+   "call": "stroke",
+   "text": "cg.stroke(CGRect(x: x, y: y, width: 12, height: 12))"
+  },
+  {
+   "file": "Sources/Views/EditorKit.swift",
+   "line": 23,
+   "recv": "ctx",
+   "call": "fill",
+   "text": "ctx.fill(Path(rect), with: .color(color))"
+  },
+  {
+   "file": "Sources/Views/EditorKit.swift",
+   "line": 39,
+   "recv": "ctx",
+   "call": "stroke",
+   "text": "ctx.stroke(grid, with: .color(.gray.opacity(0.45)), lineWidth: 1)"
+  },
+  {
+   "file": "Sources/Views/EditorView.swift",
+   "line": 224,
+   "recv": "6)",
+   "call": "stroke",
+   "text": ".overlay(RoundedRectangle(cornerRadius: 6).stroke(.gray.opacity(0.4)))"
+  },
+  {
+   "file": "Sources/Views/EditorView.swift",
+   "line": 233,
+   "recv": "3)",
+   "call": "fill",
+   "text": "RoundedRectangle(cornerRadius: 3).fill(c.color).frame(width: 14, height: 14)"
+  },
+  {
+   "file": "Sources/Views/EditorView.swift",
+   "line": 446,
+   "recv": "4)",
+   "call": "fill",
+   "text": "RoundedRectangle(cornerRadius: 4).fill(item.from.color)"
+  },
+  {
+   "file": "Sources/Views/EditorView.swift",
+   "line": 448,
+   "recv": "4)",
+   "call": "stroke",
+   "text": ".overlay(RoundedRectangle(cornerRadius: 4).stroke(.gray.opacity(0.3)))"
+  },
+  {
+   "file": "Sources/Views/EditorView.swift",
+   "line": 456,
+   "recv": "4)",
+   "call": "fill",
+   "text": "RoundedRectangle(cornerRadius: 4).fill(item.to.color)"
+  },
+  {
+   "file": "Sources/Views/EditorView.swift",
+   "line": 458,
+   "recv": "4)",
+   "call": "stroke",
+   "text": ".overlay(RoundedRectangle(cornerRadius: 4).stroke(.gray.opacity(0.3)))"
+  },
+  {
+   "file": "Sources/Views/EditorView.swift",
+   "line": 517,
+   "recv": "4)",
+   "call": "fill",
+   "text": "RoundedRectangle(cornerRadius: 4).fill(item.color.color)"
+  },
+  {
+   "file": "Sources/Views/EditorView.swift",
+   "line": 519,
+   "recv": "4)",
+   "call": "stroke",
+   "text": ".overlay(RoundedRectangle(cornerRadius: 4).stroke(.gray.opacity(0.3)))"
+  },
+  {
+   "file": "Sources/Views/EditorView.swift",
+   "line": 538,
+   "recv": "4)",
+   "call": "fill",
+   "text": "RoundedRectangle(cornerRadius: 4).fill(c.color)"
+  },
+  {
+   "file": "Sources/Views/EditorView.swift",
+   "line": 540,
+   "recv": "4)",
+   "call": "stroke",
+   "text": ".overlay(RoundedRectangle(cornerRadius: 4).stroke(.gray.opacity(0.3)))"
+  },
+  {
+   "file": "Sources/Views/InventoryView.swift",
+   "line": 201,
+   "recv": "6)",
+   "call": "stroke",
+   "text": ".overlay(RoundedRectangle(cornerRadius: 6).stroke(.gray.opacity(0.3)))"
+  },
+  {
+   "file": "Sources/Views/InventoryView.swift",
+   "line": 326,
+   "recv": "6)",
+   "call": "stroke",
+   "text": ".overlay(RoundedRectangle(cornerRadius: 6).stroke(.gray.opacity(0.3)))"
+  },
+  {
+   "file": "Sources/Views/InventoryView.swift",
+   "line": 417,
+   "recv": "6)",
+   "call": "stroke",
+   "text": ".overlay(RoundedRectangle(cornerRadius: 6).stroke(.gray.opacity(0.3)))"
+  },
+  {
+   "file": "Sources/Views/SplitBoardView.swift",
+   "line": 179,
+   "recv": "ctx",
+   "call": "fill",
+   "text": "ctx.fill(Path(bg), with: .color(Color(white: 0.9)))"
+  },
+  {
+   "file": "Sources/Views/SplitBoardView.swift",
+   "line": 188,
+   "recv": "ctx",
+   "call": "fill",
+   "text": "ctx.fill(Path(rect), with: .color(Color(hue: hue, saturation: 0.25, brightness: 0.95)))"
+  },
+  {
+   "file": "Sources/Views/SplitBoardView.swift",
+   "line": 189,
+   "recv": "ctx",
+   "call": "stroke",
+   "text": "ctx.stroke(Path(rect), with: .color(.pink), lineWidth: 1.2)"
+  },
+  {
+   "file": "Sources/Views/SplitBoardView.swift",
+   "line": 280,
+   "recv": "4)",
+   "call": "stroke",
+   "text": ".overlay(RoundedRectangle(cornerRadius: 4).stroke(.gray.opacity(0.3)))"
+  },
+  {
+   "file": "Sources/Views/StockEstimateView.swift",
+   "line": 106,
+   "recv": "5)",
+   "call": "stroke",
+   "text": ".overlay(RoundedRectangle(cornerRadius: 5).stroke(.gray.opacity(0.3)))"
+  },
+  {
+   "file": "Sources/Views/StockEstimateView.swift",
+   "line": 145,
+   "recv": "5)",
+   "call": "stroke",
+   "text": ".overlay(RoundedRectangle(cornerRadius: 5).stroke(.gray.opacity(0.3)))"
+  },
+  {
+   "file": "Sources/Views/StockImportView.swift",
+   "line": 127,
+   "recv": "4)",
+   "call": "stroke",
+   "text": ".overlay(RoundedRectangle(cornerRadius: 4).stroke(.gray.opacity(0.3)))"
+  },
+  {
+   "file": "Sources/Views/TemplateGalleryView.swift",
+   "line": 124,
+   "recv": "4)",
+   "call": "stroke",
+   "text": ".overlay(RoundedRectangle(cornerRadius: 4).stroke(.gray.opacity(0.3)))"
+  },
+  {
+   "file": "Sources/Views/WorkDetailView.swift",
+   "line": 316,
+   "recv": "5)",
+   "call": "stroke",
+   "text": ".overlay(RoundedRectangle(cornerRadius: 5).stroke(.gray.opacity(0.3)))"
+  },
+  {
+   "file": "Sources/Views/WorkDetailView.swift",
+   "line": 387,
+   "recv": "4)",
+   "call": "fill",
+   "text": "RoundedRectangle(cornerRadius: 4).fill(c.color)"
+  },
+  {
+   "file": "Sources/Views/WorkDetailView.swift",
+   "line": 596,
+   "recv": "ctx",
+   "call": "fill",
+   "text": "ctx.fill(Path(rect), with: .color(color))"
+  },
+  {
+   "file": "Sources/Views/WorkDetailView.swift",
+   "line": 612,
+   "recv": "ctx",
+   "call": "stroke",
+   "text": "ctx.stroke(grid, with: .color(.gray.opacity(0.45)), lineWidth: 1)"
+  },
+  {
+   "file": "Sources/Views/ZoomableGrid.swift",
+   "line": 172,
+   "recv": "ctx",
+   "call": "fill",
+   "text": "ctx.fill(Path(rect), with: .color(color))"
+  },
+  {
+   "file": "Sources/Views/ZoomableGrid.swift",
+   "line": 188,
+   "recv": "ctx",
+   "call": "stroke",
+   "text": "ctx.stroke(grid, with: .color(.gray.opacity(0.5)), lineWidth: 1)"
+  }
+ ],
+ "ctxMembers": [
+  {
+   "file": "Sources/Core/PatternRenderer.swift",
+   "line": 15,
+   "member": "cgContext",
+   "text": "ctx.cgContext.setFillColor(UIColor(white: 0.95, alpha: 1).cgColor)"
+  },
+  {
+   "file": "Sources/Core/PatternRenderer.swift",
+   "line": 16,
+   "member": "cgContext",
+   "text": "ctx.cgContext.fill(CGRect(x: 0, y: 0, width: size, height: size))"
+  },
+  {
+   "file": "Sources/Core/PatternRenderer.swift",
+   "line": 25,
+   "member": "cgContext",
+   "text": "ctx.cgContext.fill(CGRect(x: ox + CGFloat(x) * side, y: oy + CGFloat(y) * side,"
+  },
+  {
+   "file": "Sources/Core/PatternRenderer.swift",
+   "line": 60,
+   "member": "cgContext",
+   "text": "let cg = ctx.cgContext"
+  },
+  {
+   "file": "Sources/Core/PixelConverter.swift",
+   "line": 45,
+   "member": "interpolationQuality",
+   "text": "ctx.interpolationQuality = .medium"
+  },
+  {
+   "file": "Sources/Core/PixelConverter.swift",
+   "line": 46,
+   "member": "draw",
+   "text": "ctx.draw(cg, in: CGRect(x: 0, y: 0, width: CGFloat(gw), height: CGFloat(gh)))"
+  },
+  {
+   "file": "Sources/Core/PixelConverter.swift",
+   "line": 47,
+   "member": "data",
+   "text": "guard let data = ctx.data else { return Result(width: 0, height: 0, cells: []) }"
+  },
+  {
+   "file": "Sources/Services/PDFExporter.swift",
+   "line": 111,
+   "member": "beginPage",
+   "text": "ctx.beginPage()"
+  },
+  {
+   "file": "Sources/Services/PDFExporter.swift",
+   "line": 112,
+   "member": "cgContext",
+   "text": "let cg = ctx.cgContext"
+  },
+  {
+   "file": "Sources/Views/EditorKit.swift",
+   "line": 23,
+   "member": "fill",
+   "text": "ctx.fill(Path(rect), with: .color(color))"
+  },
+  {
+   "file": "Sources/Views/EditorKit.swift",
+   "line": 39,
+   "member": "stroke",
+   "text": "ctx.stroke(grid, with: .color(.gray.opacity(0.45)), lineWidth: 1)"
+  },
+  {
+   "file": "Sources/Views/SplitBoardView.swift",
+   "line": 179,
+   "member": "fill",
+   "text": "ctx.fill(Path(bg), with: .color(Color(white: 0.9)))"
+  },
+  {
+   "file": "Sources/Views/SplitBoardView.swift",
+   "line": 188,
+   "member": "fill",
+   "text": "ctx.fill(Path(rect), with: .color(Color(hue: hue, saturation: 0.25, brightness: 0.95)))"
+  },
+  {
+   "file": "Sources/Views/SplitBoardView.swift",
+   "line": 189,
+   "member": "stroke",
+   "text": "ctx.stroke(Path(rect), with: .color(.pink), lineWidth: 1.2)"
+  },
+  {
+   "file": "Sources/Views/SplitBoardView.swift",
+   "line": 195,
+   "member": "draw",
+   "text": "ctx.draw(label, at: CGPoint(x: rect.minX + rect.width / 2, y: rect.minY + 10))"
+  },
+  {
+   "file": "Sources/Views/WorkDetailView.swift",
+   "line": 596,
+   "member": "fill",
+   "text": "ctx.fill(Path(rect), with: .color(color))"
+  },
+  {
+   "file": "Sources/Views/WorkDetailView.swift",
+   "line": 612,
+   "member": "stroke",
+   "text": "ctx.stroke(grid, with: .color(.gray.opacity(0.45)), lineWidth: 1)"
+  },
+  {
+   "file": "Sources/Views/ZoomableGrid.swift",
+   "line": 172,
+   "member": "fill",
+   "text": "ctx.fill(Path(rect), with: .color(color))"
+  },
+  {
+   "file": "Sources/Views/ZoomableGrid.swift",
+   "line": 188,
+   "member": "stroke",
+   "text": "ctx.stroke(grid, with: .color(.gray.opacity(0.5)), lineWidth: 1)"
+  }
+ ],
+ "overflow": [
+  {
+   "file": "Sources/BLE/BLEProtocol.swift",
+   "line": 39,
+   "name": "addingReportingOverflow",
+   "text": "// u16 累加和（溢出回绕）。用 addingReportingOverflow 的 partialValue 取回绕后的值，"
+  },
+  {
+   "file": "Sources/BLE/BLEProtocol.swift",
+   "line": 40,
+   "name": "addReportingOverflow",
+   "text": "// 等价于参考实现的 &+= 语义。（注意：该 API 为现在分词形式，非 addReportingOverflow）"
+  },
+  {
+   "file": "Sources/BLE/BLEProtocol.swift",
+   "line": 41,
+   "name": "addingReportingOverflow",
+   "text": "for b in data { s = s.addingReportingOverflow(UInt16(b)).partialValue }"
+  }
+ ],
+ "optionalBind": [
+  {
+   "file": "Sources/BLE/BLECentral.swift",
+   "line": 107,
+   "kw": "guard",
+   "expr": "central.retrievePeripherals(withIdentifiers: [board.id]).first else",
+   "text": "guard let p = central.retrievePeripherals(withIdentifiers: [board.id]).first else {"
+  },
+  {
+   "file": "Sources/BLE/BLECentral.swift",
+   "line": 118,
+   "kw": "if",
+   "expr": "peripheral",
+   "text": "if let p = peripheral { central.cancelPeripheralConnection(p) }"
+  },
+  {
+   "file": "Sources/BLE/BLECentral.swift",
+   "line": 125,
+   "kw": "guard",
+   "expr": "peripheral",
+   "text": "guard let p = peripheral, let c = cmdChar else { return }"
+  },
+  {
+   "file": "Sources/BLE/BLECentral.swift",
+   "line": 133,
+   "kw": "guard",
+   "expr": "peripheral",
+   "text": "guard let p = peripheral, let c = dataChar else { return }"
+  },
+  {
+   "file": "Sources/BLE/BLECentral.swift",
+   "line": 141,
+   "kw": "guard",
+   "expr": "peripheral",
+   "text": "guard let p = peripheral, let c = char else { return }"
+  },
+  {
+   "file": "Sources/BLE/BLECentral.swift",
+   "line": 171,
+   "kw": "if",
+   "expr": "self.notifyWaiters.firstIndex(where:",
+   "text": "if let i = self.notifyWaiters.firstIndex(where: { $0.id == id }) {"
+  },
+  {
+   "file": "Sources/BLE/BLECentral.swift",
+   "line": 226,
+   "kw": "if",
+   "expr": "boards.firstIndex(where:",
+   "text": "if let i = boards.firstIndex(where: { $0.id == board.id }) {"
+  },
+  {
+   "file": "Sources/BLE/BLECentral.swift",
+   "line": 295,
+   "kw": "guard",
+   "expr": "characteristic.value",
+   "text": "guard let data = characteristic.value, !data.isEmpty else { return }"
+  },
+  {
+   "file": "Sources/BLE/BLECentral.swift",
+   "line": 298,
+   "kw": "if",
+   "expr": "BLEProtocol.Notification.parse(bytes)",
+   "text": "if let n = BLEProtocol.Notification.parse(bytes) {"
+  },
+  {
+   "file": "Sources/BLE/BoardSession.swift",
+   "line": 41,
+   "kw": "guard",
+   "expr": "await central.nextNotificationWithTimeout(2.0) else",
+   "text": "guard let passAck = await central.nextNotificationWithTimeout(2.0) else {"
+  },
+  {
+   "file": "Sources/BLE/BoardSession.swift",
+   "line": 129,
+   "kw": "guard",
+   "expr": "validColor(cells[idx]) else",
+   "text": "guard let c = validColor(cells[idx]) else { return (0, 0, 0) }"
+  },
+  {
+   "file": "Sources/BLE/BoardSession.swift",
+   "line": 138,
+   "kw": "guard",
+   "expr": "validColor(cells[idx])",
+   "text": "guard let c = validColor(cells[idx]), c.id == colorId else { return (0, 0, 0) }"
+  },
+  {
+   "file": "Sources/BLE/BoardSession.swift",
+   "line": 162,
+   "kw": "guard",
+   "expr": "validColor(cells[idx])",
+   "text": "guard let c = validColor(cells[idx]), matchColor else { return (0, 0, 0) }"
+  },
+  {
+   "file": "Sources/Core/Models+Extensions.swift",
+   "line": 173,
+   "kw": "guard",
+   "expr": "tags.firstIndex(of: tag) else",
+   "text": "guard let idx = tags.firstIndex(of: tag) else { return }"
+  },
+  {
+   "file": "Sources/Core/PixelConverter.swift",
+   "line": 26,
+   "kw": "guard",
+   "expr": "image.cgImage else",
+   "text": "guard let cg = image.cgImage else { return Result(width: 0, height: 0, cells: []) }"
+  },
+  {
+   "file": "Sources/Core/PixelConverter.swift",
+   "line": 40,
+   "kw": "guard",
+   "expr": "CGContext(data: nil",
+   "text": "guard let ctx = CGContext(data: nil, width: gw, height: gh, bitsPerComponent: 8,"
+  },
+  {
+   "file": "Sources/Core/PixelConverter.swift",
+   "line": 47,
+   "kw": "guard",
+   "expr": "ctx.data else",
+   "text": "guard let data = ctx.data else { return Result(width: 0, height: 0, cells: []) }"
+  },
+  {
+   "file": "Sources/Core/PixelConverter.swift",
+   "line": 120,
+   "kw": "guard",
+   "expr": "active.min(by:",
+   "text": "guard let rare = active.min(by: { $0.value < $1.value }),"
+  },
+  {
+   "file": "Sources/Core/PixelConverter.swift",
+   "line": 127,
+   "kw": "guard",
+   "expr": "BeadPalette.byId[id] else",
+   "text": "guard let c = BeadPalette.byId[id] else { continue }"
+  },
+  {
+   "file": "Sources/Core/PixelConverter.swift",
+   "line": 134,
+   "kw": "if",
+   "expr": "nearestId",
+   "text": "if let n = nearestId {"
+  },
+  {
+   "file": "Sources/Services/ColorMerge.swift",
+   "line": 104,
+   "kw": "guard",
+   "expr": "color(fromId)",
+   "text": "guard let fromColor = color(fromId), let toColor = color(toId) else { continue }"
+  },
+  {
+   "file": "Sources/Services/PDFExporter.swift",
+   "line": 177,
+   "kw": "guard",
+   "expr": "exportPattern(cells: cells",
+   "text": "guard let data = exportPattern(cells: cells, width: width, height: height, options: options) else {"
+  },
+  {
+   "file": "Sources/Services/StockEstimator.swift",
+   "line": 81,
+   "kw": "guard",
+   "expr": "index[item.color.id] else",
+   "text": "guard let stock = index[item.color.id] else { continue }"
+  },
+  {
+   "file": "Sources/Services/StockTextParser.swift",
+   "line": 94,
+   "kw": "if",
+   "expr": "parseLine(trimmed)",
+   "text": "if let item = parseLine(trimmed) {"
+  },
+  {
+   "file": "Sources/Services/StockTextParser.swift",
+   "line": 125,
+   "kw": "guard",
+   "expr": "colorId(forMard: mard) else",
+   "text": "guard let cid = colorId(forMard: mard) else { return nil }"
+  },
+  {
+   "file": "Sources/Services/StockTextParser.swift",
+   "line": 126,
+   "kw": "guard",
+   "expr": "Int(qtyText) else",
+   "text": "guard let qty = Int(qtyText) else { return nil }"
+  },
+  {
+   "file": "Sources/Services/XiaohongshuExtractor.swift",
+   "line": 123,
+   "kw": "guard",
+   "expr": "firstLink(in: input) else",
+   "text": "guard let rawLink = firstLink(in: input) else {"
+  },
+  {
+   "file": "Sources/Services/XiaohongshuExtractor.swift",
+   "line": 127,
+   "kw": "guard",
+   "expr": "normalizeToHTTPS(rawLink) else",
+   "text": "guard let startURL = normalizeToHTTPS(rawLink) else {"
+  },
+  {
+   "file": "Sources/Services/XiaohongshuExtractor.swift",
+   "line": 163,
+   "kw": "guard",
+   "expr": "response as? HTTPURLResponse",
+   "text": "guard let http = response as? HTTPURLResponse,"
+  },
+  {
+   "file": "Sources/Services/XiaohongshuExtractor.swift",
+   "line": 182,
+   "kw": "guard",
+   "expr": "regex.firstMatch(in: text",
+   "text": "guard let match = regex.firstMatch(in: text, options: [], range: range),"
+  },
+  {
+   "file": "Sources/Services/XiaohongshuExtractor.swift",
+   "line": 226,
+   "kw": "guard",
+   "expr": "response as? HTTPURLResponse",
+   "text": "guard let http = response as? HTTPURLResponse,"
+  },
+  {
+   "file": "Sources/Services/XiaohongshuExtractor.swift",
+   "line": 269,
+   "kw": "guard",
+   "expr": "resolveURL(unescaped",
+   "text": "guard let url = resolveURL(unescaped, baseURL: baseURL) else { continue }"
+  },
+  {
+   "file": "Sources/Services/XiaohongshuExtractor.swift",
+   "line": 283,
+   "kw": "guard",
+   "expr": "titleRegex else",
+   "text": "guard let regex = titleRegex else { return nil }"
+  },
+  {
+   "file": "Sources/Services/XiaohongshuExtractor.swift",
+   "line": 286,
+   "kw": "guard",
+   "expr": "regex.firstMatch(in: html",
+   "text": "guard let match = regex.firstMatch(in: html, options: [], range: range),"
+  },
+  {
+   "file": "Sources/Services/XiaohongshuExtractor.swift",
+   "line": 331,
+   "kw": "if",
+   "expr": "URL(string: s)",
+   "text": "if let url = URL(string: s), url.scheme != nil {"
+  },
+  {
+   "file": "Sources/Services/XiaohongshuExtractor.swift",
+   "line": 332,
+   "kw": "guard",
+   "expr": "url.scheme?.lowercased()",
+   "text": "guard let scheme = url.scheme?.lowercased(), scheme == \"http\" || scheme == \"https\" else { return nil }"
+  },
+  {
+   "file": "Sources/Views/ConvertView.swift",
+   "line": 101,
+   "kw": "if",
+   "expr": "try? await item.loadTransferable(type: Data.self)",
+   "text": "if let data = try? await item.loadTransferable(type: Data.self),"
+  },
+  {
+   "file": "Sources/Views/EditorKit.swift",
+   "line": 100,
+   "kw": "guard",
+   "expr": "undoStack.popLast() else",
+   "text": "guard let last = undoStack.popLast() else { return }"
+  },
+  {
+   "file": "Sources/Views/EditorView.swift",
+   "line": 146,
+   "kw": "guard",
+   "expr": "pattern",
+   "text": "guard let pattern = pattern, !trimmed.isEmpty else { return }"
+  },
+  {
+   "file": "Sources/Views/EditorView.swift",
+   "line": 220,
+   "kw": "if",
+   "expr": "BeadPalette.byId[model.selectedColorId]",
+   "text": "if let c = BeadPalette.byId[model.selectedColorId] {"
+  },
+  {
+   "file": "Sources/Views/EditorView.swift",
+   "line": 227,
+   "kw": "if",
+   "expr": "model.highlightColorId",
+   "text": "if let hi = model.highlightColorId, let c = BeadPalette.byId[hi] {"
+  },
+  {
+   "file": "Sources/Views/EditorView.swift",
+   "line": 260,
+   "kw": "if",
+   "expr": "BeadPalette.byId[id]",
+   "text": "if let c = BeadPalette.byId[id] {"
+  },
+  {
+   "file": "Sources/Views/EditorView.swift",
+   "line": 367,
+   "kw": "guard",
+   "expr": "cellIndex(at: g.location",
+   "text": "guard let i = cellIndex(at: g.location, in: size) else { return }"
+  },
+  {
+   "file": "Sources/Views/EditorView.swift",
+   "line": 537,
+   "kw": "if",
+   "expr": "BeadPalette.byId[toId]",
+   "text": "if let c = BeadPalette.byId[toId] {"
+  },
+  {
+   "file": "Sources/Views/FolderViews.swift",
+   "line": 61,
+   "kw": "if",
+   "expr": "deleteTarget",
+   "text": "if let f = deleteTarget { deleteFolder(f) }"
+  },
+  {
+   "file": "Sources/Views/FolderViews.swift",
+   "line": 243,
+   "kw": "if",
+   "expr": "try? await item.loadTransferable(type: Data.self)",
+   "text": "if let data = try? await item.loadTransferable(type: Data.self),"
+  },
+  {
+   "file": "Sources/Views/FolderViews.swift",
+   "line": 314,
+   "kw": "if",
+   "expr": "selectedTag",
+   "text": "if let tag = selectedTag {"
+  },
+  {
+   "file": "Sources/Views/FolderViews.swift",
+   "line": 424,
+   "kw": "if",
+   "expr": "result.error",
+   "text": "if let err = result.error {"
+  },
+  {
+   "file": "Sources/Views/FolderViews.swift",
+   "line": 554,
+   "kw": "if",
+   "expr": "downloadedData",
+   "text": "else if let data = downloadedData { ui = UIImage(data: data) }"
+  },
+  {
+   "file": "Sources/Views/FolderViews.swift",
+   "line": 568,
+   "kw": "guard",
+   "expr": "downloadedData",
+   "text": "guard let data = downloadedData, let ui = UIImage(data: data) else { return }"
+  },
+  {
+   "file": "Sources/Views/InventoryView.swift",
+   "line": 43,
+   "kw": "guard",
+   "expr": "BeadPalette.byId[s.colorId] else",
+   "text": "guard let c = BeadPalette.byId[s.colorId] else { return nil }"
+  },
+  {
+   "file": "Sources/Views/InventoryView.swift",
+   "line": 102,
+   "kw": "if",
+   "expr": "pendingDelete",
+   "text": "if let s = pendingDelete { delete(s) }"
+  },
+  {
+   "file": "Sources/Views/InventoryView.swift",
+   "line": 203,
+   "kw": "if",
+   "expr": "color",
+   "text": "if let c = color {"
+  },
+  {
+   "file": "Sources/Views/InventoryView.swift",
+   "line": 343,
+   "kw": "if",
+   "expr": "selectedColor",
+   "text": "if let c = selectedColor, let existing = existingStock(c.id) {"
+  },
+  {
+   "file": "Sources/Views/InventoryView.swift",
+   "line": 383,
+   "kw": "if",
+   "expr": "existingStock(selectedId)",
+   "text": "if let existing = existingStock(selectedId) {"
+  },
+  {
+   "file": "Sources/Views/StockImportView.swift",
+   "line": 59,
+   "kw": "if",
+   "expr": "UIPasteboard.general.string",
+   "text": "if let clip = UIPasteboard.general.string { text = clip }"
+  },
+  {
+   "file": "Sources/Views/StockImportView.swift",
+   "line": 69,
+   "kw": "if",
+   "expr": "resultSummary",
+   "text": "if let summary = resultSummary {"
+  },
+  {
+   "file": "Sources/Views/StockImportView.swift",
+   "line": 193,
+   "kw": "if",
+   "expr": "index[item.colorId]",
+   "text": "if let stock = index[item.colorId] {"
+  },
+  {
+   "file": "Sources/Views/WorkDetailView.swift",
+   "line": 227,
+   "kw": "if",
+   "expr": "pattern.resultPhoto",
+   "text": "if let photo = pattern.resultPhoto, let ui = UIImage(data: photo) {"
+  },
+  {
+   "file": "Sources/Views/WorkDetailView.swift",
+   "line": 385,
+   "kw": "if",
+   "expr": "guideColorId",
+   "text": "if let cid = guideColorId, let c = BeadPalette.byId[cid] {"
+  },
+  {
+   "file": "Sources/Views/WorkDetailView.swift",
+   "line": 540,
+   "kw": "if",
+   "expr": "PDFExporter.exportToTempFile(cells: pattern.cells",
+   "text": "if let url = PDFExporter.exportToTempFile(cells: pattern.cells,"
+  },
+  {
+   "file": "Sources/Views/WorkDetailView.swift",
+   "line": 553,
+   "kw": "guard",
+   "expr": "resultItem else",
+   "text": "guard let item = resultItem else { return }"
+  },
+  {
+   "file": "Sources/Views/WorkDetailView.swift",
+   "line": 555,
+   "kw": "if",
+   "expr": "try? await item.loadTransferable(type: Data.self)",
+   "text": "if let data = try? await item.loadTransferable(type: Data.self),"
+  },
+  {
+   "file": "Sources/Views/ZoomableGrid.swift",
+   "line": 166,
+   "kw": "if",
+   "expr": "highlightColorId",
+   "text": "if let hi = highlightColorId, v != hi {"
+  },
+  {
+   "file": "Sources/Views/ZoomableGrid.swift",
+   "line": 251,
+   "kw": "if",
+   "expr": "sourceImageData",
+   "text": "if let data = sourceImageData, let ui = UIImage(data: data) {"
+  },
+  {
+   "file": "Sources/Views/ZoomableGrid.swift",
+   "line": 286,
+   "kw": "if",
+   "expr": "sourceImageData",
+   "text": "if let data = sourceImageData, let ui = UIImage(data: data) {"
+  }
+ ],
+ "imports": [
+  {
+   "file": "Sources/App/AppRoot.swift",
+   "line": 1,
+   "module": "SwiftData"
+  },
+  {
+   "file": "Sources/App/AppRoot.swift",
+   "line": 2,
+   "module": "SwiftUI"
+  },
+  {
+   "file": "Sources/App/DouPinApp.swift",
+   "line": 1,
+   "module": "SwiftData"
+  },
+  {
+   "file": "Sources/App/DouPinApp.swift",
+   "line": 2,
+   "module": "SwiftUI"
+  },
+  {
+   "file": "Sources/BLE/BLECentral.swift",
+   "line": 1,
+   "module": "CoreBluetooth"
+  },
+  {
+   "file": "Sources/BLE/BLECentral.swift",
+   "line": 2,
+   "module": "Foundation"
+  },
+  {
+   "file": "Sources/BLE/BLEProtocol.swift",
+   "line": 1,
+   "module": "CoreBluetooth"
+  },
+  {
+   "file": "Sources/BLE/BLEProtocol.swift",
+   "line": 2,
+   "module": "Foundation"
+  },
+  {
+   "file": "Sources/BLE/BoardSession.swift",
+   "line": 1,
+   "module": "Foundation"
+  },
+  {
+   "file": "Sources/Core/Models+Extensions.swift",
+   "line": 1,
+   "module": "Foundation"
+  },
+  {
+   "file": "Sources/Core/Models+Inventory.swift",
+   "line": 1,
+   "module": "Foundation"
+  },
+  {
+   "file": "Sources/Core/Models+Inventory.swift",
+   "line": 2,
+   "module": "SwiftData"
+  },
+  {
+   "file": "Sources/Core/Models.swift",
+   "line": 1,
+   "module": "Foundation"
+  },
+  {
+   "file": "Sources/Core/Models.swift",
+   "line": 2,
+   "module": "SwiftData"
+  },
+  {
+   "file": "Sources/Core/Models.swift",
+   "line": 3,
+   "module": "SwiftUI"
+  },
+  {
+   "file": "Sources/Core/Palette.swift",
+   "line": 1,
+   "module": "SwiftUI"
+  },
+  {
+   "file": "Sources/Core/PatternRenderer.swift",
+   "line": 1,
+   "module": "Foundation"
+  },
+  {
+   "file": "Sources/Core/PatternRenderer.swift",
+   "line": 2,
+   "module": "SwiftUI"
+  },
+  {
+   "file": "Sources/Core/PatternRenderer.swift",
+   "line": 3,
+   "module": "UIKit"
+  },
+  {
+   "file": "Sources/Core/PixelConverter.swift",
+   "line": 1,
+   "module": "CoreGraphics"
+  },
+  {
+   "file": "Sources/Core/PixelConverter.swift",
+   "line": 2,
+   "module": "Foundation"
+  },
+  {
+   "file": "Sources/Core/PixelConverter.swift",
+   "line": 3,
+   "module": "UIKit"
+  },
+  {
+   "file": "Sources/Core/Templates.swift",
+   "line": 1,
+   "module": "Foundation"
+  },
+  {
+   "file": "Sources/Services/BoardSplitter.swift",
+   "line": 1,
+   "module": "Foundation"
+  },
+  {
+   "file": "Sources/Services/ColorMerge.swift",
+   "line": 1,
+   "module": "Foundation"
+  },
+  {
+   "file": "Sources/Services/PatternFactory.swift",
+   "line": 1,
+   "module": "Foundation"
+  },
+  {
+   "file": "Sources/Services/PatternFactory.swift",
+   "line": 2,
+   "module": "SwiftData"
+  },
+  {
+   "file": "Sources/Services/PDFExporter.swift",
+   "line": 1,
+   "module": "Foundation"
+  },
+  {
+   "file": "Sources/Services/PDFExporter.swift",
+   "line": 2,
+   "module": "UIKit"
+  },
+  {
+   "file": "Sources/Services/StockEstimator.swift",
+   "line": 1,
+   "module": "Foundation"
+  },
+  {
+   "file": "Sources/Services/StockTextParser.swift",
+   "line": 1,
+   "module": "Foundation"
+  },
+  {
+   "file": "Sources/Services/XiaohongshuExtractor.swift",
+   "line": 1,
+   "module": "Foundation"
+  },
+  {
+   "file": "Sources/Views/BoardTabView.swift",
+   "line": 1,
+   "module": "SwiftData"
+  },
+  {
+   "file": "Sources/Views/BoardTabView.swift",
+   "line": 2,
+   "module": "SwiftUI"
+  },
+  {
+   "file": "Sources/Views/ConvertView.swift",
+   "line": 1,
+   "module": "PhotosUI"
+  },
+  {
+   "file": "Sources/Views/ConvertView.swift",
+   "line": 2,
+   "module": "SwiftData"
+  },
+  {
+   "file": "Sources/Views/ConvertView.swift",
+   "line": 3,
+   "module": "SwiftUI"
+  },
+  {
+   "file": "Sources/Views/EditorKit.swift",
+   "line": 1,
+   "module": "SwiftUI"
+  },
+  {
+   "file": "Sources/Views/EditorView.swift",
+   "line": 1,
+   "module": "SwiftData"
+  },
+  {
+   "file": "Sources/Views/EditorView.swift",
+   "line": 2,
+   "module": "SwiftUI"
+  },
+  {
+   "file": "Sources/Views/FolderViews.swift",
+   "line": 1,
+   "module": "PhotosUI"
+  },
+  {
+   "file": "Sources/Views/FolderViews.swift",
+   "line": 2,
+   "module": "SwiftData"
+  },
+  {
+   "file": "Sources/Views/FolderViews.swift",
+   "line": 3,
+   "module": "SwiftUI"
+  },
+  {
+   "file": "Sources/Views/InventoryView.swift",
+   "line": 1,
+   "module": "SwiftData"
+  },
+  {
+   "file": "Sources/Views/InventoryView.swift",
+   "line": 2,
+   "module": "SwiftUI"
+  },
+  {
+   "file": "Sources/Views/MoreView.swift",
+   "line": 1,
+   "module": "SwiftData"
+  },
+  {
+   "file": "Sources/Views/MoreView.swift",
+   "line": 2,
+   "module": "SwiftUI"
+  },
+  {
+   "file": "Sources/Views/PatternListView.swift",
+   "line": 1,
+   "module": "SwiftData"
+  },
+  {
+   "file": "Sources/Views/PatternListView.swift",
+   "line": 2,
+   "module": "SwiftUI"
+  },
+  {
+   "file": "Sources/Views/PatternsTabView.swift",
+   "line": 1,
+   "module": "SwiftData"
+  },
+  {
+   "file": "Sources/Views/PatternsTabView.swift",
+   "line": 2,
+   "module": "SwiftUI"
+  },
+  {
+   "file": "Sources/Views/SplitBoardView.swift",
+   "line": 1,
+   "module": "SwiftData"
+  },
+  {
+   "file": "Sources/Views/SplitBoardView.swift",
+   "line": 2,
+   "module": "SwiftUI"
+  },
+  {
+   "file": "Sources/Views/StockEstimateView.swift",
+   "line": 1,
+   "module": "SwiftData"
+  },
+  {
+   "file": "Sources/Views/StockEstimateView.swift",
+   "line": 2,
+   "module": "SwiftUI"
+  },
+  {
+   "file": "Sources/Views/StockImportView.swift",
+   "line": 1,
+   "module": "SwiftData"
+  },
+  {
+   "file": "Sources/Views/StockImportView.swift",
+   "line": 2,
+   "module": "SwiftUI"
+  },
+  {
+   "file": "Sources/Views/TemplateGalleryView.swift",
+   "line": 1,
+   "module": "SwiftData"
+  },
+  {
+   "file": "Sources/Views/TemplateGalleryView.swift",
+   "line": 2,
+   "module": "SwiftUI"
+  },
+  {
+   "file": "Sources/Views/WorkDetailView.swift",
+   "line": 1,
+   "module": "PhotosUI"
+  },
+  {
+   "file": "Sources/Views/WorkDetailView.swift",
+   "line": 2,
+   "module": "SwiftData"
+  },
+  {
+   "file": "Sources/Views/WorkDetailView.swift",
+   "line": 3,
+   "module": "SwiftUI"
+  },
+  {
+   "file": "Sources/Views/ZoomableGrid.swift",
+   "line": 1,
+   "module": "SwiftUI"
+  }
+ ]
+}

@@ -34,10 +34,12 @@ enum BLEProtocol {
 
     // MARK: - 校验和
 
+    /// u16 累加和（溢出回绕）
+    ///
+    /// 用 `addingReportingOverflow(_:)` 的 `partialValue` 取回绕后的值，等价于参考实现的 `&+=` 语义。
+    /// 注意 Swift 中该 API 为**现在分词**形式（adding…），不存在 `addReportingOverflow`。
     static func checksum16(_ data: [UInt8]) -> UInt16 {
         var s: UInt16 = 0
-        // u16 累加和（溢出回绕）。用 addingReportingOverflow 的 partialValue 取回绕后的值，
-        // 等价于参考实现的 &+= 语义。（注意：该 API 为现在分词形式，非 addReportingOverflow）
         for b in data { s = s.addingReportingOverflow(UInt16(b)).partialValue }
         return s
     }
