@@ -131,7 +131,10 @@ private struct BoardPanel: View {
             case .connecting:
                 HStack {
                     ProgressView()
-                    Text("正在连接 \(central.connectedName)…")
+                    // P0-D：必须用 pendingConnectName 而非 connectedName。
+                    // `connectedName` 只在真正连上后才赋值，连接期间它仍是空串，
+                    // 旧写法会渲染成「正在连接 …」，用户看不出到底在连哪台。
+                    Text("正在连接 \(central.pendingConnectName)…")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -141,6 +144,50 @@ private struct BoardPanel: View {
                     central.disconnect()
                 } label: {
                     Label("断开连接", systemImage: "minus.circle")
+                }
+            }
+
+            // 调试退路开关：默认只显示 PIXDOU 类拼豆板；一旦用户的板子因固件改名/不带名字
+            // 被过滤误杀，这里是他唯一的自救入口。必须走 setShowAllDevices(_:)：
+            // 该方法在切换时会清空列表并重扫，否则用户切了开关却看不到任何变化，会以为开关坏了。
+            if central.linkState == .scanning || central.linkState == .idle {
+                Toggle(isOn: Binding(
+                    get: { central.showAllDevices },
+                    set: { central.setShowAllDevices($0) })) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("显示全部蓝牙设备")
+                        Text("调试用。找不到你的板子时可打开，查看是否被名称过滤挡掉了。")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+
+            // 列表为空时绝不能是一片空白 —— 必须告诉用户「扫到了多少台、都被过滤了」，
+            // 否则无从判断是板子没通电、还是被过滤误杀、还是 App 坏了。
+            if central.boards.isEmpty && central.linkState == .scanning && !central.showAllDevices {
+                // 去重后再展示与计数：附近常有多台同名设备（如多个「LED-01」），
+                // 直接拿数组 count 会虚高，且列表里出现重复名字会让用户以为 App 有 bug。
+                // 用 seen 集合保序去重（纯 Swift，不引 Foundation 桥接）。
+                var seen = Set<String>()
+                let filtered = central.filteredOutSummary.filter { seen.insert($0).inserted }
+                if !filtered.isEmpty {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Label("已过滤 \(filtered.count) 台无关设备", systemImage: "line.3.horizontal.decrease.circle")
+                            .font(.subheadline.weight(.medium))
+                        Text(filtered.prefix(6).joined(separator: "、"))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(3)
+                        if filtered.count > 6 {
+                            Text("…等共 \(filtered.count) 台")
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
+                        }
+                        Text("如果其中有你的拼豆板，请打开上面的「显示全部蓝牙设备」开关。")
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                    }
                 }
             }
 
@@ -183,9 +230,13 @@ private struct BoardPanel: View {
             Text(central.linkState == .connected ? "已连接" : "连接拼豆板")
         } footer: {
             if central.linkState != .connected && central.boards.isEmpty && central.linkState == .scanning {
-                Text("正在搜索附近的 BLE 设备，请确保拼豆板已通电。普通设备也会列出，优先选择标有「疑似拼豆板」的。")
+                if central.showAllDevices {
+                    Text("正在搜索附近的全部 BLE 设备（过滤已关闭）。请确保拼豆板已通电，优先选择标有「疑似拼豆板」的。")
+                } else {
+                    Text("正在搜索拼豆板，请确保已通电。为屏蔽无关设备，当前仅显示名称以 PIXDOU / iLEDColor / Wofan 开头、或广播 A950/AE00 服务的设备。")
+                }
             } else if central.linkState == .idle {
-                Text("支持 Wofan / PIXDOU 类智能拼豆板（A950 蓝牙服务）。")
+                Text("仅显示 PIXDOU / iLEDColor / Wofan 前缀或带 A950/AE00 蓝牙服务的智能拼豆板。板子没出现时可打开上方开关查看全部设备。")
             }
         }
     }
