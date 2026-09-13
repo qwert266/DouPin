@@ -8,6 +8,7 @@ struct BoardTabView: View {
         NavigationStack {
             BoardPanel()
                 .navigationTitle("拼豆板")
+                .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
@@ -26,16 +27,21 @@ private struct BoardPanel: View {
     @State private var brightnessTask: Task<Void, Never>?
 
     var body: some View {
-        Form {
-            connectionSection
-
-            if central.linkState == .connected {
-                controlSection
-                sendSection
+        ScrollView {
+            VStack(spacing: 16) {
+                connectionHero
+                if deviceCardVisible { deviceListCard }
+                if central.linkState == .connected {
+                    controlCard
+                    sendCard
+                }
+                debugCard
             }
-
-            debugSection
+            .padding(.horizontal, 16)
+            .padding(.top, 4)
+            .padding(.bottom, 24)
         }
+        .background(Theme.pageFill)
         .onChange(of: central.linkState) { _, state in
             if state == .connected {
                 didHandshake = false
@@ -89,81 +95,129 @@ private struct BoardPanel: View {
         }
     }
 
-    // MARK: - 连接区
+    // MARK: - 连接英雄卡
 
-    private var connectionSection: some View {
-        Section {
-            HStack(spacing: 12) {
+    private var connectionHero: some View {
+        VStack(spacing: 16) {
+            // 状态大圆灯
+            ZStack {
+                Circle()
+                    .fill(statusColor.opacity(0.14))
+                    .frame(width: 84, height: 84)
+                Circle()
+                    .fill(
+                        LinearGradient(colors: [statusColor.opacity(0.85), statusColor],
+                                       startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
+                    .frame(width: 62, height: 62)
                 Image(systemName: statusIcon)
-                    .font(.title2)
-                    .foregroundStyle(statusColor)
-                    .frame(width: 36)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(statusText).font(.headline)
-                    if central.linkState == .connected {
-                        Text(didHandshake ? "已握手，可发图与控制" : "已连接，正在握手…")
-                            .font(.caption)
-                            .foregroundStyle(didHandshake ? .green : .secondary)
-                    }
+                    .font(.system(size: 26, weight: .semibold))
+                    .foregroundStyle(.white)
+            }
+            VStack(spacing: 4) {
+                Text(statusText).font(.title3.bold())
+                if central.linkState == .connected {
+                    Text(didHandshake ? "已握手，可发图与控制" : "已连接，正在握手…")
+                        .font(.caption)
+                        .foregroundStyle(didHandshake ? .green : .secondary)
+                } else if central.linkState == .connecting {
+                    // P0-D：必须用 pendingConnectName 而非 connectedName。
+                    // `connectedName` 只在真正连上后才赋值，连接期间它仍是空串，
+                    // 旧写法会渲染成「正在连接 …」，用户看不出到底在连哪台。
+                    Text("正在连接 \(central.pendingConnectName)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else if central.linkState == .idle {
+                    Text("给拼豆板通电，点下方按钮开始连接")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
-                Spacer()
             }
 
+            // 主操作按钮
             switch central.linkState {
             case .idle, .poweredOff:
-                Button {
+                primaryButton(title: "扫描附近设备", icon: "dot.radiowaves.left.and.right",
+                              gradient: central.linkState == .poweredOff ? nil : Theme.sky)
+                {
                     central.startScan()
-                } label: {
-                    Label("扫描附近设备", systemImage: "dot.radiowaves.left.and.right")
                 }
                 .disabled(central.linkState == .poweredOff)
 
             case .scanning:
-                HStack {
+                HStack(spacing: 12) {
+                    ProgressView()
+                        .tint(.white)
+                    Text("正在搜索…")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                    Spacer()
                     Button {
                         central.stopScan()
                     } label: {
-                        Label("停止扫描", systemImage: "stop.circle")
+                        Text("停止")
+                            .font(.subheadline.bold())
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 14).padding(.vertical, 8)
+                            .background(.white.opacity(0.22), in: Capsule())
                     }
-                    ProgressView()
                 }
+                .padding(.leading, 18).padding(.trailing, 10)
+                .frame(height: 50)
+                .frame(maxWidth: .infinity)
+                .background(Theme.sky, in: Capsule())
+                .shadow(color: .black.opacity(0.10), radius: 10, y: 4)
 
             case .connecting:
-                HStack {
+                HStack(spacing: 12) {
                     ProgressView()
-                    // P0-D：必须用 pendingConnectName 而非 connectedName。
-                    // `connectedName` 只在真正连上后才赋值，连接期间它仍是空串，
-                    // 旧写法会渲染成「正在连接 …」，用户看不出到底在连哪台。
-                    Text("正在连接 \(central.pendingConnectName)…")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .tint(.white)
+                    Text("连接中…")
+                        .font(.headline)
+                        .foregroundStyle(.white)
                 }
+                .frame(height: 50)
+                .frame(maxWidth: .infinity)
+                .background(Theme.sky.opacity(0.75), in: Capsule())
 
             case .connected:
-                Button(role: .destructive) {
+                Button {
                     central.disconnect()
                 } label: {
-                    Label("断开连接", systemImage: "minus.circle")
+                    Label("断开连接", systemImage: "minus.circle.fill")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .frame(height: 22)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 13)
+                        .background(Color.red.opacity(0.85), in: Capsule())
                 }
+                .buttonStyle(.plain)
             }
+        }
+        .cardStyle(padding: 20)
+    }
 
-            // 调试退路开关：默认只显示 PIXDOU 类拼豆板；一旦用户的板子因固件改名/不带名字
-            // 被过滤误杀，这里是他唯一的自救入口。必须走 setShowAllDevices(_:)：
-            // 该方法在切换时会清空列表并重扫，否则用户切了开关却看不到任何变化，会以为开关坏了。
-            if central.linkState == .scanning || central.linkState == .idle {
-                Toggle(isOn: Binding(
-                    get: { central.showAllDevices },
-                    set: { central.setShowAllDevices($0) })) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("显示全部蓝牙设备")
-                        Text("调试用。找不到你的板子时可打开，查看是否被名称过滤挡掉了。")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
+    /// 全宽渐变主按钮
+    private func primaryButton(title: String, icon: String, gradient: LinearGradient?, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(title, systemImage: icon)
+                .font(.headline)
+                .foregroundStyle(.white)
+                .frame(height: 22)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 13)
+                .background(gradient.map { AnyShapeStyle($0) } ?? AnyShapeStyle(Color.secondary.opacity(0.4)), in: Capsule())
+        }
+        .buttonStyle(.plain)
+        .shadow(color: gradient != nil ? .black.opacity(0.10) : .clear, radius: 10, y: 4)
+    }
 
-            // 列表为空时绝不能是一片空白 —— 必须告诉用户「扫到了多少台、都被过滤了」，
+    // MARK: - 设备列表卡（含过滤提示 / 调试退路开关）
+
+    private var deviceListCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            // 扫描中空列表提示：绝不能一片空白 —— 必须告诉用户「扫到了多少台、都被过滤了」，
             // 否则无从判断是板子没通电、还是被过滤误杀、还是 App 坏了。
             if central.boards.isEmpty && central.linkState == .scanning && !central.showAllDevices {
                 // 去重后再展示与计数：附近常有多台同名设备（如多个「LED-01」），
@@ -184,29 +238,46 @@ private struct BoardPanel: View {
                                 .font(.caption2)
                                 .foregroundStyle(.tertiary)
                         }
-                        Text("如果其中有你的拼豆板，请打开上面的「显示全部蓝牙设备」开关。")
+                        Text("如果其中有你的拼豆板，请打开下面的「显示全部蓝牙设备」开关。")
                             .font(.caption)
                             .foregroundStyle(.orange)
                     }
+                } else {
+                    HStack(spacing: 10) {
+                        ProgressView()
+                        Text("正在搜索拼豆板，请确保已通电…")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 4)
                 }
             }
 
+            // 扫描结果设备行
             if !central.boards.isEmpty && central.linkState != .connected {
                 ForEach(sortedBoards) { b in
                     Button {
                         central.connect(b)
                     } label: {
-                        HStack {
+                        HStack(spacing: 12) {
+                            Image(systemName: "lightbulb.max.fill")
+                                .font(.title3)
+                                .foregroundStyle(b.looksLikeBoard
+                                                 ? AnyShapeStyle(Theme.brand)
+                                                 : AnyShapeStyle(Color.secondary))
+                                .frame(width: 40, height: 40)
+                                .background((b.looksLikeBoard ? Color.pink : Color.secondary).opacity(0.12),
+                                            in: RoundedRectangle(cornerRadius: 11, style: .continuous))
                             VStack(alignment: .leading, spacing: 2) {
                                 HStack(spacing: 6) {
-                                    Text(b.summary).font(.body.weight(.medium))
+                                    Text(b.summary).font(.body.weight(.medium)).foregroundStyle(.primary)
                                     if b.looksLikeBoard {
                                         Text("疑似拼豆板")
-                                            .font(.caption2)
-                                            .padding(.horizontal, 6).padding(.vertical, 2)
-                                            .background(Color.pink.opacity(0.15))
-                                            .foregroundStyle(.pink)
-                                            .clipShape(Capsule())
+                                            .font(.caption2.bold())
+                                            .padding(.horizontal, 7).padding(.vertical, 2)
+                                            .background(Theme.brand, in: Capsule())
+                                            .foregroundStyle(.white)
                                     }
                                 }
                                 Text(b.name.isEmpty ? b.id.uuidString : b.name)
@@ -216,29 +287,58 @@ private struct BoardPanel: View {
                             }
                             Spacer()
                             VStack(alignment: .trailing, spacing: 2) {
-                                Text("\(b.rssi) dBm").font(.caption.monospaced())
+                                Text("\(b.rssi) dBm")
+                                    .font(.caption2.monospaced())
+                                    .foregroundStyle(.secondary)
                                 Image(systemName: "chevron.right")
-                                    .font(.caption2)
+                                    .font(.caption2.bold())
                                     .foregroundStyle(.tertiary)
                             }
                         }
+                        .padding(10)
+                        .background(Theme.pageFill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                     }
-                    .tint(.primary)
+                    .buttonStyle(.plain)
                 }
             }
-        } header: {
-            Text(central.linkState == .connected ? "已连接" : "连接拼豆板")
-        } footer: {
-            if central.linkState != .connected && central.boards.isEmpty && central.linkState == .scanning {
-                if central.showAllDevices {
-                    Text("正在搜索附近的全部 BLE 设备（过滤已关闭）。请确保拼豆板已通电，优先选择标有「疑似拼豆板」的。")
-                } else {
-                    Text("正在搜索拼豆板，请确保已通电。为屏蔽无关设备，当前仅显示名称以 PIXDOU / iLEDColor / Wofan 开头、或广播 A950/AE00 服务的设备。")
+
+            // 调试退路开关：默认只显示 PIXDOU 类拼豆板；一旦用户的板子因固件改名/不带名字
+            // 被过滤误杀，这里是他唯一的自救入口。必须走 setShowAllDevices(_:)：
+            // 该方法在切换时会清空列表并重扫，否则用户切了开关却看不到任何变化，会以为开关坏了。
+            if central.linkState == .scanning || central.linkState == .idle {
+                Toggle(isOn: Binding(
+                    get: { central.showAllDevices },
+                    set: { central.setShowAllDevices($0) })) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("显示全部蓝牙设备").font(.subheadline)
+                        Text("调试用。找不到你的板子时可打开，查看是否被名称过滤挡掉了。")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
                 }
-            } else if central.linkState == .idle {
-                Text("仅显示 PIXDOU / iLEDColor / Wofan 前缀或带 A950/AE00 蓝牙服务的智能拼豆板。板子没出现时可打开上方开关查看全部设备。")
+            }
+
+            // 页脚说明
+            if central.linkState != .connected {
+                Text(footerHint)
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
             }
         }
+        .cardStyle()
+    }
+
+    private var deviceCardVisible: Bool {
+        central.linkState == .scanning || central.linkState == .idle
+    }
+
+    private var footerHint: String {
+        if central.linkState == .scanning {
+            return central.showAllDevices
+                ? "正在搜索附近的全部 BLE 设备（过滤已关闭）。请确保拼豆板已通电，优先选择标有「疑似拼豆板」的。"
+                : "为屏蔽无关设备，当前仅显示名称以 PIXDOU / iLEDColor / Wofan 开头、或广播 A950/AE00 服务的设备。"
+        }
+        return "仅显示 PIXDOU / iLEDColor / Wofan 前缀或带 A950/AE00 蓝牙服务的智能拼豆板。板子没出现时可打开上方开关查看全部设备。"
     }
 
     private var sortedBoards: [DiscoveredBoard] {
@@ -250,7 +350,7 @@ private struct BoardPanel: View {
 
     private var statusIcon: String {
         switch central.linkState {
-        case .poweredOff: return "exclamationmark.triangle"
+        case .poweredOff: return "exclamationmark.triangle.fill"
         case .connected: return "checkmark.circle.fill"
         case .scanning, .connecting: return "dot.radiowaves.left.and.right"
         case .idle: return "lightbulb"
@@ -261,7 +361,7 @@ private struct BoardPanel: View {
         switch central.linkState {
         case .poweredOff: return .red
         case .connected: return .green
-        case .scanning, .connecting: return .blue
+        case .scanning, .connecting: return Color(red: 0.20, green: 0.56, blue: 1.00)
         case .idle: return .gray
         }
     }
@@ -276,17 +376,27 @@ private struct BoardPanel: View {
         }
     }
 
-    // MARK: - 灯板控制
+    // MARK: - 灯板控制卡
 
-    private var controlSection: some View {
-        Section("灯板控制") {
-            VStack(alignment: .leading, spacing: 6) {
-                LabeledContent("亮度", value: "\(brightness)%")
+    private var controlCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Label("灯板控制", systemImage: "slider.horizontal.3")
+                .font(.subheadline.bold())
+
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("亮度").font(.subheadline)
+                    Spacer()
+                    Text("\(brightness)%")
+                        .font(.subheadline.bold().monospacedDigit())
+                        .foregroundStyle(Color(red: 0.96, green: 0.28, blue: 0.50))
+                }
                 Slider(value: Binding(
                     get: { Double(brightness) },
                     set: { newValue in
                         brightness = Int(newValue)
                     }), in: 10...100, step: 5)
+                    .tint(Color(red: 0.96, green: 0.28, blue: 0.50))
                     .onChange(of: brightness) { _, pct in
                         brightnessTask?.cancel()
                         brightnessTask = Task {
@@ -304,48 +414,81 @@ private struct BoardPanel: View {
                     displayOn = on
                     Task { await board.setDisplay(on) }
                 }))
+                .font(.subheadline)
                 .disabled(central.linkState != .connected)
         }
+        .cardStyle()
     }
 
-    // MARK: - 发送图纸
+    // MARK: - 发送图纸卡
 
-    private var sendSection: some View {
-        Section {
+    private var sendCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Label("发送图纸", systemImage: "square.and.arrow.up.on.square")
+                .font(.subheadline.bold())
+
             if board.isSending {
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 8) {
                     Text("正在发送… \(Int(board.sendProgress * 100))%")
                         .font(.subheadline)
+                        .monospacedDigit()
                     ProgressView(value: board.sendProgress)
+                        .tint(Theme.brand)
                 }
             } else {
                 Button {
                     showPatternPicker = true
                 } label: {
-                    Label("发送图纸到拼豆板", systemImage: "square.and.arrow.up.on.square")
+                    Label("发送图纸到拼豆板", systemImage: "paperplane.fill")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .frame(height: 22)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 13)
+                        .background(Theme.brand, in: Capsule())
                 }
+                .buttonStyle(.plain)
+                .shadow(color: .black.opacity(0.10), radius: 10, y: 4)
                 .disabled(!didHandshake)
+                .opacity(didHandshake ? 1 : 0.45)
+
+                Text("发送完整预览图；已拼的格子会以暗色显示（需要在作品详情里打卡进度）。")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
             }
-        } header: {
-            Text("发送图纸")
-        } footer: {
-            Text("发送完整预览图；已拼的格子会以暗色显示（需要在作品详情里打卡进度）。")
         }
+        .cardStyle()
     }
 
-    // MARK: - 调试
+    // MARK: - 调试卡
 
-    private var debugSection: some View {
-        Section("调试") {
+    private var debugCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
             NavigationLink {
                 BoardLogView()
             } label: {
-                Label("蓝牙日志控制台", systemImage: "terminal")
+                HStack(spacing: 12) {
+                    Image(systemName: "terminal")
+                        .font(.subheadline)
+                        .foregroundStyle(.white)
+                        .frame(width: 32, height: 32)
+                        .background(Color.gray.opacity(0.55), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("蓝牙控制台").font(.subheadline.weight(.medium)).foregroundStyle(.primary)
+                        Text(central.logLines.last.map { String($0.suffix(48)) } ?? "暂无日志")
+                            .font(.caption2.monospaced())
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption2.bold())
+                        .foregroundStyle(.tertiary)
+                }
             }
-            LabeledContent("最近日志", value: central.logLines.last?.suffix(60) ?? "暂无")
-                .font(.caption.monospaced())
-                .lineLimit(1)
+            .buttonStyle(.plain)
         }
+        .cardStyle(padding: 12)
     }
 
     private func send(pattern: Pattern) {
