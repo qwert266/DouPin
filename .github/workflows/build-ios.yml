@@ -1,0 +1,38 @@
+name: iOS Build
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show project info
+        run: xcodebuild -project DouPin.xcodeproj -list
+
+      - name: Build unsigned IPA
+        run: |
+          set -euxo pipefail
+          xcodebuild -project DouPin.xcodeproj \
+            -scheme DouPin \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/DouPin.xcarchive \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            clean archive
+
+          mkdir -p build/Payload
+          cp -R "build/DouPin.xcarchive/Products/Applications/DouPin.app" build/Payload/
+          cd build
+          zip -qry DouPin-unsigned.ipa Payload
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DouPin-unsigned-ipa
+          path: build/DouPin-unsigned.ipa
+          if-no-files-found: error

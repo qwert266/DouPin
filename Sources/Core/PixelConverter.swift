@@ -1,0 +1,143 @@
+import CoreGraphics
+import Foundation
+import UIKit
+
+/// 照片 → 拼豆色号网格
+enum PixelConverter {
+
+    struct Options {
+        /// 目标最大边格数（8...104）
+        var maxSide: Int = 28
+        /// 限色数（<=0 表示全部 295 色）
+        var colorLimit: Int = 24
+        /// 白底转空格（logo/线稿友好）
+        var whiteToEmpty: Bool = true
+        init() {}
+    }
+
+    struct Result {
+        let width: Int
+        let height: Int
+        let cells: [Int]
+    }
+
+    /// 主流程：图片 → 网格
+    static func convert(image: UIImage, options: Options) -> Result {
+        guard let cg = image.cgImage else { return Result(width: 0, height: 0, cells: []) }
+
+        // 按长宽比计算网格尺寸
+        let srcW = CGFloat(cg.width), srcH = CGFloat(cg.height)
+        let side = max(8, min(104, options.maxSide))
+        var gw: Int, gh: Int
+        if srcW >= srcH {
+            gw = side
+            gh = max(8, Int(round(side * srcH / srcW)))
+        } else {
+            gh = side
+            gw = max(8, Int(round(side * srcW / srcH)))
+        }
+
+        guard let ctx = CGContext(data: nil, width: gw, height: gh, bitsPerComponent: 8,
+                                  bytesPerRow: gw * 4, space: CGColorSpaceCreateDeviceRGB(),
+                                  bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
+            return Result(width: 0, height: 0, cells: [])
+        }
+        ctx.interpolationQuality = .medium
+        ctx.draw(cg, in: CGRect(x: 0, y: 0, width: gw, height: gh))
+        guard let data = ctx.data else { return Result(width: 0, height: 0, cells: []) }
+
+        let buf = data.bindMemory(to: UInt8.self, capacity: gw * gh * 4)
+        var cells = [Int](repeating: 0, count: gw * gh)
+        // P1-1 修正：候选集只在「精选子集」档（48/24/16）时收窄，避免生僻色；
+        // 32/64/0 走全色板匹配，再由下方 limitColors 收敛到目标色数。
+        // 这样 colorLimit=32 时不再"直通全 295 色"，语义与"≤32 色"一致。
+        let pal = candidates(for: options.colorLimit)
+        // 上下翻转（CG 原点在左下）
+        for y in 0..<gh {
+            let srcRow = gh - 1 - y
+            for x in 0..<gw {
+                let off = (srcRow * gw + x) * 4
+                let r = buf[off], g = buf[off+1], b = buf[off+2], a = buf[off+3]
+                if a < 128 { continue }   // 透明 → 空格
+                if options.whiteToEmpty && r > 235 && g > 235 && b > 235 { continue }
+                cells[y * gw + x] = nearestColorId(r: r, g: g, b: b, palette: pal)
+            }
+        }
+
+        // P1-1 修正：只要 colorLimit > 0 就一定收敛到 ≤ limit 色，杜绝 32/64 限色失效。
+        if options.colorLimit > 0 {
+            cells = limitColors(cells, limit: options.colorLimit)
+        }
+        return Result(width: gw, height: gh, cells: cells)
+    }
+
+    // MARK: - 颜色匹配
+
+    /// 依限色目标返回常用色候选子集（nil 表示全 295 色）。
+    ///
+    /// 设计意图（P1-1 修正）：
+    /// - `48 / 24 / 16`：返回**精选常用色子集**，先一步收窄到易买、常见的色号，避免匹配到生僻色；
+    /// - `32 / 64 / 0`：返回 `nil`（全色板），**不在此处收窄**——因为精选子集本身不足 32/64 色，
+    ///   收窄反而会丢色。改为在 `convert` 里用 `limitColors` 把用量最少的色并入最近色，
+    ///   精确收敛到 `≤ limit` 色，语义与"≤32 色 / ≤64 色"一致。
+    private static func candidates(for limit: Int) -> [BeadColor]? {
+        let ids: [Int]
+        switch limit {
+        case 48: ids = BeadPalette.essentials48
+        case 24: ids = BeadPalette.essentials24
+        case 16: ids = BeadPalette.essentials16
+        default: ids = []   // 32 / 64 / 0 → 全色板
+        }
+        return ids.isEmpty ? nil : ids.compactMap { BeadPalette.byId[$0] }
+    }
+
+    /// 加权 RGB 距离匹配最近色号（限 palette 子集时传 palette）
+    static func nearestColorId(r: UInt8, g: UInt8, b: UInt8, palette: [BeadColor]?) -> Int {
+        let candidates = palette ?? BeadPalette.all
+        var bestId = candidates[0].id
+        var bestDist = Double.greatestFiniteMagnitude
+        let dr0 = Double(r), dg0 = Double(g), db0 = Double(b)
+        for c in candidates {
+            let dr = Double(c.r) - dr0, dg = Double(c.g) - dg0, db = Double(c.b) - db0
+            let dist = 0.299*dr*dr + 0.587*dg*dg + 0.114*db*db
+            if dist < bestDist { bestDist = dist; bestId = c.id }
+        }
+        return bestId
+    }
+
+    // MARK: - 限色
+
+    /// 把用量最少的颜色并入最接近的常用色，直到颜色数 <= limit
+    static func limitColors(_ cells: [Int], limit: Int) -> [Int] {
+        var counts: [Int: Int] = [:]
+        for c in cells where c > 0 { counts[c, default: 0] += 1 }
+        guard counts.count > limit else { return cells }
+
+        var mapping: [Int: Int] = [:]   // 稀有色 → 目标色
+        var active = counts             // 仍然存活的色
+
+        while active.count > limit {
+            guard let rare = active.min(by: { $0.value < $1.value }),
+                  let rareColor = BeadPalette.byId[rare.key] else { break }
+            active.removeValue(forKey: rare.key)
+
+            var nearestId: Int? = nil
+            var nearestDist = Double.greatestFiniteMagnitude
+            for (id, _) in active {
+                guard let c = BeadPalette.byId[id] else { continue }
+                let dr = Double(c.r) - Double(rareColor.r)
+                let dg = Double(c.g) - Double(rareColor.g)
+                let db = Double(c.b) - Double(rareColor.b)
+                let dist = 0.299*dr*dr + 0.587*dg*dg + 0.114*db*db
+                if dist < nearestDist { nearestDist = dist; nearestId = id }
+            }
+            if let n = nearestId {
+                mapping[rare.key] = n
+                active[n, default: 0] += rare.value
+            } else {
+                mapping[rare.key] = 0
+            }
+        }
+        return cells.map { mapping[$0] ?? $0 }
+    }
+}

@@ -1,0 +1,118 @@
+classDiagram
+    class Pattern {
+        +UUID id
+        +String name
+        +Int width
+        +Int height
+        +[Int] cells
+        +[Bool] placed
+        +String source
+        +Data? sourceImageData
+        +UUID? folderId
+        +[String] tags
+        +Int boardWidth
+        +Int boardHeight
+        +Int boardOffsetX
+        +Int boardOffsetY
+        +Int sortOrder
+        +UUID? parentPatternId
+        +String? tileIndex
+        +beadCounts() [(BeadColor,Int)]
+        +totalBeads() Int
+        +isGridConsistent() Bool
+        +isRowPlaced(row) Bool
+        +placeRow(row) Void
+        +placeColor(colorId) Void
+        +touch() Void
+        +effectiveBoardWidth() Int
+        +isTile() Bool
+    }
+    class PatternFolder {
+        +UUID id
+        +String name
+        +Int sortOrder
+        +Date createdAt
+    }
+    class BeadStock {
+        +UUID id
+        +Int colorId
+        +Int quantity
+        +Int threshold
+        +Date updatedAt
+    }
+    class BeadColor {
+        +Int id
+        +String mard
+        +UInt8 r
+        +UInt8 g
+        +UInt8 b
+        +color() Color
+    }
+    class StockEstimate {
+        +[Row] rows
+        +Int totalNeed
+        +Int totalHave
+        +[Row] shortRows
+        +String shortText
+    }
+    class BoardSplitter {
+        +split(cells,width,height,boardW,boardH,overlap) [TileSpec]
+    }
+    class TileSpec {
+        +Int row
+        +Int col
+        +String tileIndex
+        +Int x0
+        +Int y0
+        +Int tileW
+        +Int tileH
+        +[Int] cells
+        +edgeHints() (String?,String?)
+    }
+    class StockEstimator {
+        +estimate(cells,stock) StockEstimate
+    }
+    class StockTextParser {
+        +parse(text) ParseResult
+    }
+    class ColorMerge {
+        +distance(a,b) Double
+        +mergeMapping(cells,threshold) [Int:Int]
+        +limitColors(cells,limit) [Int]
+    }
+    class PDFExporter {
+        +makePDF(cells,width,height,options) Data
+    }
+    class XiaohongshuExtractor {
+        +extractImageURLs(fromText) [URL]
+        +fetchHTML(url) String?
+    }
+    class PatternFactory {
+        +makePattern(...) Pattern
+        +makeTile(from,spec,parentId) Pattern
+    }
+    class BoardSession {
+        +handshake() Void
+        +sendImage(width,height,rgb) Void
+        +setBrightness(level) Void
+        +setDisplay(on) Void
+    }
+    class BLECentral {
+        +nextNotificationWithTimeout(t) [UInt8]?
+        +writeCmd(bytes) Void
+        +writeData(bytes) Void
+    }
+
+    Pattern "1" --> "0..1" PatternFolder : folderId
+    Pattern "1" --> "0..*" Pattern : parentPatternId(拆板子图)
+    BeadStock "1" --> "1" BeadColor : colorId
+    StockEstimator ..> StockEstimate : 产出
+    StockEstimator ..> Pattern : 读 cells
+    StockEstimator ..> BeadStock : 读库存
+    BoardSplitter ..> TileSpec : 产出
+    BoardSplitter ..> Pattern : 读 cells
+    PatternFactory ..> Pattern : 创建
+    ColorMerge ..> BeadColor : 距离计算
+    PDFExporter ..> Pattern : 读 cells
+    XiaohongshuExtractor ..> PatternFactory : 图片→图纸
+    BoardSession o-- BLECentral : 持有

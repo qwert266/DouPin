@@ -1,0 +1,47 @@
+sequenceDiagram
+    autonumber
+    actor U as 用户
+    participant V as View(库存/图纸)
+    participant S as Service
+    participant CTX as ModelContext
+    participant DB as SwiftData
+
+    Note over U,DB: ① 库存批量导入
+    U->>V: 粘贴 "A1 500\nA2,300\n坏行"
+    V->>S: StockTextParser.parse(text)
+    S-->>V: [{colorId,need,line}] + [失败行号]
+    V->>U: 冲突色号弹窗(累加/覆盖/跳过); 失败行高亮
+    U->>V: 选"累加"
+    V->>CTX: upsert BeadStock(quantity += need)
+    CTX->>DB: save()
+    V-->>U: 完成提示(成功 N 条/失败 M 行)
+
+    Note over U,DB: ② 消耗预估
+    U->>V: 进入 图纸详情→消耗预估
+    V->>S: StockEstimator.estimate(cells, stock)
+    S-->>V: StockEstimate(rows, shortRows, shortText)
+    V-->>U: 三列表格(需/有/差) + 缺色清单 + 复制按钮
+
+    Note over U,DB: ③ 拆板并保存子图
+    U->>V: 拆板设置(29×29, overlap=0)
+    V->>S: BoardSplitter.split(...)
+    S-->>V: [TileSpec(含 tileIndex/edgeHints)]
+    V-->>U: 多块预览 + 拼板布局图 + 接缝提示
+    U->>V: 全部保存为图纸
+    loop 每个 TileSpec
+        V->>S: PatternFactory.makeTile(cells,spec,parentId)
+        S-->>V: Pattern(source="split")
+        V->>CTX: insert(pattern)
+    end
+    CTX->>DB: save()
+
+    Note over U,DB: ④ 灯板行引导（含 BLE 超时修复）
+    U->>V: 点"点亮当前行"
+    V->>S: BoardImageBuilder.rowGuideWithNeighbors(...)
+    S-->>V: rgb[UInt8]
+    V->>BoardSession: sendImage(w,h,rgb)
+    BoardSession->>BLECentral: writeCmd(startStream)
+    BLECentral->>BLECentral: nextNotificationWithTimeout(1.0)  // 超时自清理waiter
+    BoardSession->>BLECentral: writeData(continueChunk × N)
+    BoardSession->>BLECentral: writeData(endStream)
+    BLECentral-->>V: 进度回调 sendProgress

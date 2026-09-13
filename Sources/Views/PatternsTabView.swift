@@ -1,0 +1,183 @@
+import SwiftData
+import SwiftUI
+
+// MARK: - 图纸 Tab 容器（PRD §4.1：全部 / 文件夹 / 标签 / 模板）
+
+/// 图纸 Tab 容器：顶部分段控件切换「全部 / 文件夹 / 标签 / 模板」。
+///
+/// 结构说明（避免 NavigationStack 嵌套冲突）：
+/// - **外层仅一个 `NavigationStack`**；各分段只提供内容 View，不各自再套 `NavigationStack`。
+/// - 「全部」段复用 `PatternListView` 的列表逻辑（此处内联为 `AllPatternsSection`，保持单一导航栈）；
+/// - 「文件夹」段用 `FolderListView`；「标签」段用 `TagFilterView`；「模板」段嵌入 `TemplateGalleryView`。
+struct PatternsTabView: View {
+    @Environment(\.modelContext) private var context
+
+    @State private var segment: PatternsSegment = .all
+
+    enum PatternsSegment: String, CaseIterable, Identifiable {
+        case all = "全部"
+        case folder = "文件夹"
+        case tag = "标签"
+        case template = "模板"
+        var id: String { rawValue }
+    }
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                switch segment {
+                case .all:       AllPatternsSection()
+                case .folder:    FolderListView()
+                case .tag:       TagFilterView()
+                case .template:  TemplateGalleryView()
+                }
+            }
+            .navigationTitle(navigationTitle)
+            .toolbar {
+                if segment != .template {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Picker("分段", selection: $segment) {
+                            ForEach(PatternsSegment.allCases) { s in
+                                Text(s.rawValue).tag(s)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                    }
+                }
+                if segment == .all || segment == .folder || segment == .tag {
+                    ToolbarItem(placement: .topBarTrailing) { createMenu }
+                }
+            }
+        }
+    }
+
+    private var navigationTitle: String {
+        switch segment {
+        case .all: return "我的图纸"
+        case .folder: return "文件夹"
+        case .tag: return "标签"
+        case .template: return "模板库"
+        }
+    }
+
+    /// 新建菜单（含「从小红书链接导入」）
+    private var createMenu: some View {
+        Menu {
+            NavigationLink {
+                ConvertView()
+            } label: {
+                Label("照片转图纸", systemImage: "photo.on.rectangle.angled")
+            }
+            NavigationLink {
+                EditorView(pattern: nil, initialSize: 29)
+            } label: {
+                Label("新建手绘", systemImage: "square.and.pencil")
+            }
+            NavigationLink {
+                XiaohongshuImportView()
+            } label: {
+                Label("从小红书链接导入", systemImage: "link")
+            }
+            Divider()
+            Button {
+                segment = .template
+            } label: {
+                Label("从模板开始", systemImage: "gift")
+            }
+        } label: {
+            Image(systemName: "plus")
+        }
+    }
+}
+
+// MARK: - 「全部」分段内容（复用原 PatternListView 逻辑，但不自带 NavigationStack）
+
+/// 「全部」图纸列表：状态筛选 + 搜索 + 列表 + 删除。
+///
+/// 说明：原 `PatternListView` 自带 `NavigationStack`；为避免与 `PatternsTabView` 外层导航栈嵌套，
+/// 此处内联相同逻辑（仅内容视图）。`PatternListView` 仍保留（供他处复用），不再由本 Tab 直接使用。
+struct AllPatternsSection: View {
+    @Environment(\.modelContext) private var context
+    @Query(sort: \Pattern.updatedAt, order: .reverse) private var patterns: [Pattern]
+
+    @State private var filter: PatternFilter = .all
+    @State private var searchText = ""
+
+    private var filtered: [Pattern] {
+        patterns.filter { p in
+            let okStatus: Bool
+            switch filter {
+            case .all: okStatus = true
+            case .pending: okStatus = p.status == .pending
+            case .inProgress: okStatus = p.status == .inProgress
+            case .done: okStatus = p.status == .done
+            }
+            let okText = searchText.isEmpty || p.name.localizedCaseInsensitiveContains(searchText)
+            return okStatus && okText
+        }
+    }
+
+    var body: some View {
+        Group {
+            if patterns.isEmpty {
+                emptyState
+            } else {
+                listContent
+            }
+        }
+    }
+
+    private var listContent: some View {
+        List {
+            Section {
+                Picker("筛选", selection: $filter) {
+                    ForEach(PatternFilter.allCases) { f in
+                        Text(f.rawValue).tag(f)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .listRowBackground(Color.clear)
+            }
+
+            if filtered.isEmpty {
+                Section {
+                    Text("没有符合筛选的图纸")
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
+            } else {
+                Section {
+                    ForEach(filtered) { p in
+                        NavigationLink {
+                            WorkDetailView(pattern: p)
+                        } label: {
+                            PatternRow(pattern: p)
+                        }
+                    }
+                    .onDelete(perform: delete)
+                }
+            }
+        }
+        .searchable(text: $searchText, prompt: "搜索图纸名称")
+    }
+
+    private var emptyState: some View {
+        ContentUnavailableView {
+            Label("还没有图纸", systemImage: "square.grid.3x3")
+        } description: {
+            Text("用照片转换、手绘或模板创建第一张图纸")
+        } actions: {
+            NavigationLink {
+                ConvertView()
+            } label: {
+                Label("照片转图纸", systemImage: "photo.on.rectangle.angled")
+            }
+            .buttonStyle(.borderedProminent)
+        }
+    }
+
+    private func delete(at offsets: IndexSet) {
+        let list = filtered
+        for i in offsets where i >= 0 && i < list.count { context.delete(list[i]) }
+    }
+}
