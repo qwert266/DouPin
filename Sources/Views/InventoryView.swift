@@ -189,7 +189,7 @@ struct InventoryView: View {
             Text(title)
                 .font(.caption.weight(active ? .semibold : .regular))
                 .padding(.horizontal, 12).padding(.vertical, 6)
-                .background(active ? Theme.brand : Theme.cardFill, in: Capsule())
+                .background(active ? AnyShapeStyle(Theme.brand) : AnyShapeStyle(Theme.cardFill), in: Capsule())
                 .foregroundStyle(active ? .white : Color.primary)
                 .overlay(Capsule().stroke(Color.secondary.opacity(0.15)))
         }

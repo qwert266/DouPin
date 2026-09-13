@@ -365,7 +365,9 @@ struct TagCloud: View {
                         Text("\(item.count)").font(.caption2).foregroundStyle(.secondary)
                     }
                     .padding(.horizontal, 10).padding(.vertical, 6)
-                    .background(selected == item.tag ? Theme.brand : Theme.cardFill, in: Capsule())
+                    .background(selected == item.tag
+                                ? AnyShapeStyle(Theme.brand)
+                                : AnyShapeStyle(Theme.cardFill), in: Capsule())
                     .foregroundStyle(selected == item.tag ? .white : Color.primary)
                     .overlay(Capsule().stroke(Color.secondary.opacity(0.15)))
                 }

@@ -37,7 +37,7 @@ enum Theme {
         startPoint: .topLeading, endPoint: .bottomTrailing)
 
     /// 品牌点缀色（进度条/高亮文字/选中态）
-    static let accent = Theme.accent
+    static let accent = Color(red: 0.96, green: 0.28, blue: 0.50)
 
     /// 卡片底色（深浅色自适应）
     static let cardFill = Color(uiColor: .secondarySystemGroupedBackground)
