@@ -36,6 +36,9 @@ enum Theme {
                  Color(red: 0.45, green: 0.40, blue: 0.98)],
         startPoint: .topLeading, endPoint: .bottomTrailing)
 
+    /// 品牌点缀色（进度条/高亮文字/选中态）
+    static let accent = Theme.accent
+
     /// 卡片底色（深浅色自适应）
     static let cardFill = Color(uiColor: .secondarySystemGroupedBackground)
 
@@ -80,6 +83,25 @@ extension View {
             .shadow(color: .black.opacity(0.07), radius: 10, y: 4)
     }
 
+    /// List 页面底色：隐藏系统分组背景，露出页面底色（配合 cardRow 形成卡片流）
+    func themedListPage() -> some View {
+        self
+            .scrollContentBackground(.hidden)
+            .background(Theme.pageFill)
+    }
+
+    /// List 单行卡片化：白圆角卡 + 无分隔线（保留滑动手势/搜索/系统控件）
+    func cardRow() -> some View {
+        self
+            .listRowInsets(EdgeInsets(top: 10, leading: 14, bottom: 10, trailing: 14))
+            .listRowBackground(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Theme.cardFill)
+                    .padding(.vertical, 5)
+            )
+            .listRowSeparator(.hidden)
+    }
+
     /// 白字胶囊（放在渐变上）
     func heroCapsule(_ text: String, systemImage: String) -> some View {
         HStack(spacing: 6) {
@@ -113,7 +135,7 @@ struct AppRoot: View {
             MoreView()
                 .tabItem { Label("我的", systemImage: "person.crop.circle.fill") }
         }
-        .tint(Color(red: 0.96, green: 0.28, blue: 0.50))
+        .tint(Theme.accent)
     }
 }
 
@@ -267,7 +289,7 @@ struct HomeView: View {
                                     .foregroundStyle(.primary)
                                     .lineLimit(1)
                                 ProgressView(value: p.progressPercent)
-                                    .tint(Color(red: 0.96, green: 0.28, blue: 0.50))
+                                    .tint(Theme.accent)
                                 Text("\(Int(p.progressPercent * 100))% · \(p.width)×\(p.height)")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
@@ -374,7 +396,7 @@ struct PatternRow: View {
                         .clipShape(Capsule())
                     if pattern.status == .inProgress {
                         Text("\(Int(pattern.progressPercent * 100))%")
-                            .foregroundStyle(Color(red: 0.96, green: 0.28, blue: 0.50))
+                            .foregroundStyle(Theme.accent)
                             .bold()
                     }
                 }

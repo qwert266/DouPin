@@ -92,12 +92,13 @@ struct FolderListView: View {
                         }
                         .tint(.blue)
                     }
+                    .cardRow()
                 }
             } footer: {
                 Text("长按拖动排序为 P2（暂未实现，见 TODO）。")
             }
         }
-        .listStyle(.insetGrouped)
+        .themedListPage()
     }
 
     private var emptyState: some View {
@@ -208,13 +209,14 @@ struct FolderDetailView: View {
                             } label: {
                                 PatternRow(pattern: p)
                             }
+                            .cardRow()
                         }
                         .onDelete(perform: remove)
                     } footer: {
                         Text("共 \(items.count) 张图纸")
                     }
                 }
-                .listStyle(.insetGrouped)
+                .themedListPage()
             }
         }
         .navigationTitle(folder.name)
@@ -309,6 +311,7 @@ struct TagFilterView: View {
                     Section("全部标签") {
                         TagCloud(tags: allTags, selected: $selectedTag)
                             .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
+                            .cardRow()
                     }
 
                     if let tag = selectedTag {
@@ -316,6 +319,7 @@ struct TagFilterView: View {
                             if filtered.isEmpty {
                                 Text("没有含「\(tag)」的图纸")
                                     .foregroundStyle(.secondary)
+                                    .cardRow()
                             } else {
                                 ForEach(filtered) { p in
                                     NavigationLink {
@@ -323,6 +327,7 @@ struct TagFilterView: View {
                                     } label: {
                                         PatternRow(pattern: p)
                                     }
+                                    .cardRow()
                                 }
                             }
                         } header: {
@@ -335,7 +340,7 @@ struct TagFilterView: View {
                         }
                     }
                 }
-                .listStyle(.insetGrouped)
+                .themedListPage()
             }
         }
     }
@@ -360,9 +365,9 @@ struct TagCloud: View {
                         Text("\(item.count)").font(.caption2).foregroundStyle(.secondary)
                     }
                     .padding(.horizontal, 10).padding(.vertical, 6)
-                    .background(selected == item.tag ? Color.pink.opacity(0.2) : Color(white: 0.95),
-                                in: Capsule())
-                    .foregroundStyle(selected == item.tag ? Color.pink : Color.primary)
+                    .background(selected == item.tag ? Theme.brand : Theme.cardFill, in: Capsule())
+                    .foregroundStyle(selected == item.tag ? .white : Color.primary)
+                    .overlay(Capsule().stroke(Color.secondary.opacity(0.15)))
                 }
                 .buttonStyle(.plain)
             }

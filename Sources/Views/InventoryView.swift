@@ -148,6 +148,7 @@ struct InventoryView: View {
                             }
                             .tint(.blue)
                         }
+                        .cardRow()
                 }
             } footer: {
                 if filteredStocks.isEmpty {
@@ -161,8 +162,10 @@ struct InventoryView: View {
                     summaryCell("总豆量", "\(totalQuantity)")
                 }
                 .frame(maxWidth: .infinity)
+                .cardRow()
             }
         }
+        .themedListPage()
     }
 
     /// 色系筛选（分段滚动）
@@ -177,6 +180,8 @@ struct InventoryView: View {
             .padding(.vertical, 2)
         }
         .listRowInsets(EdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 12))
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
     }
 
     private func chip(title: String, active: Bool, action: @escaping () -> Void) -> some View {
@@ -184,8 +189,9 @@ struct InventoryView: View {
             Text(title)
                 .font(.caption.weight(active ? .semibold : .regular))
                 .padding(.horizontal, 12).padding(.vertical, 6)
-                .background(active ? Color.pink.opacity(0.18) : Color(white: 0.94), in: Capsule())
-                .foregroundStyle(active ? Color.pink : Color.primary)
+                .background(active ? Theme.brand : Theme.cardFill, in: Capsule())
+                .foregroundStyle(active ? .white : Color.primary)
+                .overlay(Capsule().stroke(Color.secondary.opacity(0.15)))
         }
         .buttonStyle(.plain)
     }
@@ -195,10 +201,10 @@ struct InventoryView: View {
         let color = BeadPalette.byId[stock.colorId]
         let low = stock.quantity == 0 || stock.isLow
         return HStack(spacing: 12) {
-            RoundedRectangle(cornerRadius: 6)
+            RoundedRectangle(cornerRadius: 10)
                 .fill(color?.color ?? Color.gray.opacity(0.3))
                 .frame(width: 36, height: 36)
-                .overlay(RoundedRectangle(cornerRadius: 6).stroke(.gray.opacity(0.3)))
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(.gray.opacity(0.3)))
                 .overlay(alignment: .bottom) {
                     if let c = color {
                         Text(c.mard)

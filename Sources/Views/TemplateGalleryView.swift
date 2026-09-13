@@ -53,7 +53,7 @@ struct TemplateGalleryView: View {
                     } header: {
                         HStack(spacing: 8) {
                             Image(systemName: Self.setIcon(for: cat))
-                                .foregroundStyle(.pink)
+                                .foregroundStyle(Theme.accent)
                             Text(cat).font(.title3.bold())
                             Text("\(templates.filter { $0.category == cat }.count) 个")
                                 .font(.caption)

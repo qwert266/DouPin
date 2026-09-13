@@ -144,6 +144,7 @@ struct AllPatternsSection: View {
                     Text("没有符合筛选的图纸")
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .center)
+                        .cardRow()
                 }
             } else {
                 Section {
@@ -153,11 +154,13 @@ struct AllPatternsSection: View {
                         } label: {
                             PatternRow(pattern: p)
                         }
+                        .cardRow()
                     }
                     .onDelete(perform: delete)
                 }
             }
         }
+        .themedListPage()
         .searchable(text: $searchText, prompt: "搜索图纸名称")
     }
 

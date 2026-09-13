@@ -389,14 +389,14 @@ private struct BoardPanel: View {
                     Spacer()
                     Text("\(brightness)%")
                         .font(.subheadline.bold().monospacedDigit())
-                        .foregroundStyle(Color(red: 0.96, green: 0.28, blue: 0.50))
+                        .foregroundStyle(Theme.accent)
                 }
                 Slider(value: Binding(
                     get: { Double(brightness) },
                     set: { newValue in
                         brightness = Int(newValue)
                     }), in: 10...100, step: 5)
-                    .tint(Color(red: 0.96, green: 0.28, blue: 0.50))
+                    .tint(Theme.accent)
                     .onChange(of: brightness) { _, pct in
                         brightnessTask?.cancel()
                         brightnessTask = Task {

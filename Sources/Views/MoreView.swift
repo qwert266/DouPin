@@ -43,6 +43,7 @@ struct MoreView: View {
                 storageSection
                 aboutSection
             }
+            .themedListPage()
             .navigationTitle("我的")
             .confirmationDialog("清除全部原图？",
                                 isPresented: $showClearImagesConfirm,
@@ -85,8 +86,10 @@ struct MoreView: View {
                     Text("\(side) × \(side) 格").tag(side)
                 }
             }
+            .cardRow()
             LabeledContent("当前默认尺寸", value: "\(defaultBoardSide) × \(defaultBoardSide) 格")
                 .font(.subheadline)
+                .cardRow()
         } header: {
             Text("默认板尺寸")
         } footer: {
@@ -99,6 +102,7 @@ struct MoreView: View {
     private var guideSection: some View {
         Section {
             Toggle("引导时微亮相邻行", isOn: $guideUseNeighborRows)
+                .cardRow()
             VStack(alignment: .leading, spacing: 6) {
                 LabeledContent("默认亮度", value: "\(guideDefaultBrightness)%")
                 Slider(value: Binding(
@@ -107,6 +111,7 @@ struct MoreView: View {
                     in: 10...100, step: 5)
                 .disabled(!guideUseNeighborRows)
             }
+            .cardRow()
         } header: {
             Text("引导偏好")
         } footer: {
@@ -119,6 +124,7 @@ struct MoreView: View {
     private var storageSection: some View {
         Section {
             LabeledContent("原图缓存占用", value: imageCacheText)
+                .cardRow()
 
             Button(role: .destructive) {
                 showClearImagesConfirm = true
@@ -126,12 +132,14 @@ struct MoreView: View {
                 Label("清除全部原图", systemImage: "photo.badge.exclamationmark")
             }
             .disabled(imageCacheBytes == 0)
+            .cardRow()
 
             Button(role: .destructive) {
                 showClearTempConfirm = true
             } label: {
                 Label("清理临时导出文件", systemImage: "trash")
             }
+            .cardRow()
         } header: {
             Text("存储清理")
         } footer: {
@@ -192,16 +200,20 @@ struct MoreView: View {
             } label: {
                 Label("应用名", systemImage: "app.badge")
             }
+            .cardRow()
             LabeledContent("版本", value: "1.0")
+                .cardRow()
             Text("本地优先 · 无账户 · 数据只存在你的设备上")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
+                .cardRow()
 
             NavigationLink {
                 BoardLogView()
             } label: {
                 Label("蓝牙日志控制台", systemImage: "terminal")
             }
+            .cardRow()
         } header: {
             Text("关于")
         }
