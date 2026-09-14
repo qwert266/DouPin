@@ -792,6 +792,265 @@ struct BoardSendSheet: View {
     }
 }
 
+// MARK: - 连接面板（任意页面可用的「一键连接」Sheet）
+
+/// 自包含连接面板：扫描 / 停止 / 设备列表 / 连接 / 断开 + 连上后的亮度与点亮控制。
+///
+/// 与「拼豆板」Tab 共用同一个 `BoardSession`（`AppState.shared.board`），
+/// 因此在图纸详情右上角一键连上后，全 App 的连接状态与灯板控制都同步。
+struct BoardConnectSheet: View {
+    @ObservedObject private var board = AppState.shared.board
+    @ObservedObject private var central = AppState.shared.board.central
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var didHandshake = false
+    @State private var brightness = 80
+    @State private var displayOn = true
+    @State private var infoMessage: String?
+    @State private var brightnessTask: Task<Void, Never>?
+
+    private var sortedBoards: [DiscoveredBoard] {
+        central.boards.sorted { a, b in
+            if a.looksLikeBoard != b.looksLikeBoard { return a.looksLikeBoard }
+            return a.rssi > b.rssi
+        }
+    }
+
+    var body: some View {
+        NavigationStack {
+            List {
+                statusSection
+                if central.linkState != .connected { deviceSection }
+                if central.linkState == .connected { controlSection }
+            }
+            .themedListPage()
+            .navigationTitle("连接拼豆板")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("完成") { dismiss() }
+                }
+            }
+            .onChange(of: central.linkState) { _, state in
+                guard state == .connected else {
+                    didHandshake = false
+                    return
+                }
+                Task {
+                    didHandshake = false
+                    do {
+                        try await board.handshake()
+                        didHandshake = true
+                        await board.syncDisplayState(on: displayOn, brightnessPercent: brightness)
+                    } catch {
+                        infoMessage = error.localizedDescription
+                    }
+                }
+            }
+            .onAppear {
+                if central.linkState == .connected { didHandshake = true }
+            }
+            .alert("拼豆板", isPresented: Binding(get: { infoMessage != nil },
+                                             set: { if !$0 { infoMessage = nil } })) {
+                Button("好", role: .cancel) { infoMessage = nil }
+            } message: {
+                Text(infoMessage ?? "")
+            }
+        }
+    }
+
+    // MARK: 状态 + 主操作
+
+    private var statusSection: some View {
+        Section {
+            HStack(spacing: 12) {
+                Circle()
+                    .fill(statusColor)
+                    .frame(width: 12, height: 12)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(statusText).font(.subheadline.weight(.medium))
+                    Text(statusHint).font(.caption2).foregroundStyle(.secondary)
+                }
+                Spacer()
+            }
+
+            switch central.linkState {
+            case .idle, .poweredOff:
+                Button {
+                    central.startScan()
+                } label: {
+                    Label("扫描附近设备", systemImage: "dot.radiowaves.left.and.right")
+                }
+                .disabled(central.linkState == .poweredOff)
+            case .scanning:
+                HStack {
+                    ProgressView()
+                    Text("正在搜索…").font(.subheadline)
+                    Spacer()
+                    Button("停止") { central.stopScan() }
+                        .font(.caption)
+                }
+            case .connecting:
+                HStack {
+                    ProgressView()
+                    Text("连接中 \(central.pendingConnectName)…").font(.subheadline)
+                }
+            case .connected:
+                Button(role: .destructive) {
+                    central.disconnect()
+                } label: {
+                    Label("断开连接", systemImage: "minus.circle.fill")
+                }
+            }
+        } header: {
+            Text("状态")
+        }
+    }
+
+    private var statusColor: Color {
+        switch central.linkState {
+        case .poweredOff: return .red
+        case .connected: return .green
+        case .scanning, .connecting: return Color(red: 0.20, green: 0.56, blue: 1.00)
+        case .idle: return .gray
+        }
+    }
+
+    private var statusText: String {
+        switch central.linkState {
+        case .poweredOff: return "蓝牙未开启"
+        case .idle: return "未连接"
+        case .scanning: return "扫描中…"
+        case .connecting: return "连接中…"
+        case .connected: return central.connectedName
+        }
+    }
+
+    private var statusHint: String {
+        switch central.linkState {
+        case .connected:
+            return didHandshake ? "已握手，可以发图和点亮引导" : "已连接，正在握手…"
+        case .scanning:
+            return "请确保拼豆板已通电"
+        case .idle:
+            return "点下方按钮搜索附近的拼豆板"
+        case .connecting:
+            return "首次连接需要几秒"
+        case .poweredOff:
+            return "请在系统设置中打开蓝牙"
+        }
+    }
+
+    // MARK: 设备列表
+
+    private var deviceSection: some View {
+        Section {
+            if sortedBoards.isEmpty {
+                if central.linkState == .scanning {
+                    HStack(spacing: 10) {
+                        ProgressView()
+                        Text("正在搜索拼豆板…").font(.subheadline).foregroundStyle(.secondary)
+                    }
+                } else {
+                    Text("还没有扫描结果")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            } else {
+                ForEach(sortedBoards) { b in
+                    Button {
+                        central.connect(b)
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "lightbulb.max.fill")
+                                .foregroundStyle(b.looksLikeBoard ? AnyShapeStyle(Theme.brand)
+                                                                  : AnyShapeStyle(Color.secondary))
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack(spacing: 6) {
+                                    Text(b.summary).font(.subheadline.weight(.medium))
+                                        .foregroundStyle(.primary)
+                                    if b.looksLikeBoard {
+                                        Text("疑似拼豆板")
+                                            .font(.caption2.bold())
+                                            .padding(.horizontal, 6).padding(.vertical, 2)
+                                            .background(Theme.brand, in: Capsule())
+                                            .foregroundStyle(.white)
+                                    }
+                                }
+                                Text(b.name.isEmpty ? b.id.uuidString : b.name)
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                            }
+                            Spacer()
+                            Text("\(b.rssi) dBm")
+                                .font(.caption2.monospaced())
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            Toggle(isOn: Binding(
+                get: { central.showAllDevices },
+                set: { central.setShowAllDevices($0) })) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("显示全部蓝牙设备").font(.subheadline)
+                    Text("找不到板子时打开，查看是否被名称过滤挡掉")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .disabled(central.linkState == .connecting || central.linkState == .connected)
+        } header: {
+            Text("附近设备")
+        } footer: {
+            Text("默认只显示 PIXDOU / iLEDColor / Wofan 前缀或带 A950 服务的设备。")
+        }
+    }
+
+    // MARK: 连上后的快捷控制
+
+    private var controlSection: some View {
+        Section {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("亮度").font(.subheadline)
+                    Spacer()
+                    Text("\(brightness)%")
+                        .font(.subheadline.bold().monospacedDigit())
+                        .foregroundStyle(Theme.accent)
+                }
+                Slider(value: Binding(get: { Double(brightness) },
+                                      set: { brightness = Int($0) }),
+                       in: 10...100, step: 5)
+                    .tint(Theme.accent)
+                    .onChange(of: brightness) { _, pct in
+                        brightnessTask?.cancel()
+                        brightnessTask = Task {
+                            try? await Task.sleep(nanoseconds: 250_000_000)
+                            guard !Task.isCancelled else { return }
+                            await board.setBrightness(level: board.level(forBrightnessPercent: pct))
+                        }
+                    }
+            }
+
+            Toggle("点亮灯板", isOn: Binding(
+                get: { displayOn },
+                set: { on in
+                    displayOn = on
+                    Task { await board.setDisplay(on) }
+                }))
+                .font(.subheadline)
+        } header: {
+            Text("快捷控制")
+        } footer: {
+            Text("连上后可直接回到图纸页点「开始拼豆」发送完整图或分色点亮。")
+        }
+    }
+}
+
 // MARK: - BLE 日志控制台 + 手动指令
 
 struct BoardLogView: View {

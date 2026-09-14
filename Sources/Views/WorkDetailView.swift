@@ -35,6 +35,16 @@ struct WorkDetailView: View {
     /// 快速发送面板（完整预览 / 分色点亮）
     @State private var sendSheetPattern: Pattern?
 
+    // 拼豆模式（图纸 Tab 的网格显示选项）
+    /// 格内显示 Mard 色号（放大后可见）
+    @State private var showLabels = true
+    /// 白色模式：全部有色格去色显示，只看形状
+    @State private var whiteMode = false
+    /// 显示高亮色号（其余弱化）
+    @State private var highlightColorId: Int? = nil
+    /// 连接面板（右上角胶囊）
+    @State private var showConnectSheet = false
+
     enum Mode: String, CaseIterable {
         case pattern = "图纸"
         case progress = "进度"
@@ -61,7 +71,28 @@ struct WorkDetailView: View {
         .sheet(item: $sendSheetPattern) { p in
             BoardSendSheet(pattern: p)
         }
+        .sheet(isPresented: $showConnectSheet) {
+            BoardConnectSheet()
+        }
         .toolbar {
+            // 右上角一键连接（对标 PIXDOU：图纸页直接连板子，不用来回切 Tab）
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showConnectSheet = true
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: board.isConnected ? "checkmark.circle.fill" : "link")
+                            .font(.caption2.bold())
+                        Text(board.isConnected ? "已连接" : "连接")
+                            .font(.caption2.bold())
+                    }
+                    .padding(.horizontal, 9).padding(.vertical, 5)
+                    .background(board.isConnected
+                                ? AnyShapeStyle(Color.green.opacity(0.16))
+                                : AnyShapeStyle(Theme.sky), in: Capsule())
+                    .foregroundStyle(board.isConnected ? Color.green : Color.white)
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button {
@@ -192,6 +223,9 @@ struct WorkDetailView: View {
             Section {
                 ProgressGridView(cells: pattern.cells, width: pattern.width, height: pattern.height,
                                   placed: pattern.placed,
+                                  showLabels: showLabels,
+                                  whiteMode: whiteMode,
+                                  highlightColorId: highlightColorId,
                                   onTap: markMode ? { i in toggleCell(i) } : nil)
                     .frame(maxHeight: 380)
                     .listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
@@ -205,6 +239,71 @@ struct WorkDetailView: View {
                                 .padding(14)
                         }
                     }
+
+                // 显示控制：高亮模式 / 色号 / 全显（对标 PIXDOU 拼豆模式）
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 8) {
+                        Text("高亮模式")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Picker("高亮模式", selection: $whiteMode) {
+                            Text("原色").tag(false)
+                            Text("白色").tag(true)
+                        }
+                        .pickerStyle(.segmented)
+                        .frame(maxWidth: 170)
+                        Spacer()
+                    }
+                    HStack(spacing: 8) {
+                        chipButton("色号", icon: "textformat.abc", active: showLabels) {
+                            showLabels.toggle()
+                        }
+                        chipButton("全显", icon: "arrow.up.left.and.arrow.down.right", active: false) {
+                            highlightColorId = nil
+                            whiteMode = false
+                        }
+                        if let hi = highlightColorId, let c = BeadPalette.byId[hi] {
+                            HStack(spacing: 5) {
+                                BeadDot(color: c, size: 16)
+                                Text("仅 \(c.mard)")
+                                    .font(.caption.bold())
+                                Button {
+                                    highlightColorId = nil
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill").font(.caption)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                            .padding(.horizontal, 9).padding(.vertical, 6)
+                            .background(Theme.accent.opacity(0.12), in: Capsule())
+                            .foregroundStyle(Theme.accent)
+                        }
+                        Spacer()
+                    }
+                }
+                .listRowInsets(EdgeInsets(top: 4, leading: 14, bottom: 10, trailing: 14))
+            } header: {
+                Text("图纸 · 拼豆模式")
+            } footer: {
+                Text("放大网格后格内会显示 Mard 色号；「白色」模式去掉颜色只看形状，适合确认轮廓。")
+            }
+
+            // 色号统计条：点色块高亮该色（对标 PIXDOU「色号统计 / 点击下方色块高亮显示」）
+            Section {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(pattern.beadCounts, id: \.color.id) { item in
+                            colorStatChip(item.color, count: item.count)
+                        }
+                    }
+                    .padding(.horizontal, 2)
+                    .padding(.vertical, 4)
+                }
+                .listRowInsets(EdgeInsets(top: 4, leading: 14, bottom: 4, trailing: 14))
+            } header: {
+                Text("色号统计（共 \(pattern.beadCounts.count) 种颜色）")
+            } footer: {
+                Text("点击下方色块高亮显示；再点一次或点「全显」恢复。")
             }
 
             Section {
@@ -535,6 +634,52 @@ struct WorkDetailView: View {
         .frame(maxWidth: .infinity)
     }
 
+    /// 小胶囊开关（色号 / 全显）
+    private func chipButton(_ title: String, icon: String, active: Bool,
+                            action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 4) {
+                Image(systemName: icon).font(.caption2.bold())
+                Text(title).font(.caption.weight(active ? .bold : .regular))
+            }
+            .padding(.horizontal, 11).padding(.vertical, 7)
+            .background(active ? AnyShapeStyle(Theme.brand) : AnyShapeStyle(Theme.cardFill), in: Capsule())
+            .foregroundStyle(active ? .white : Color.primary)
+            .overlay(Capsule().stroke(active ? Color.clear : Color.secondary.opacity(0.15)))
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// 色号统计块：色块 + 色号 + 数量；点按高亮该色
+    private func colorStatChip(_ color: BeadColor, count: Int) -> some View {
+        let active = highlightColorId == color.id
+        return Button {
+            highlightColorId = active ? nil : color.id
+        } label: {
+            VStack(spacing: 4) {
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(color.color)
+                    .frame(width: 46, height: 34)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .stroke(active ? Theme.accent : Color.gray.opacity(0.25),
+                                    lineWidth: active ? 3 : 1)
+                    )
+                Text(color.mard)
+                    .font(.caption2.monospaced().weight(.semibold))
+                    .foregroundStyle(active ? Theme.accent : Color.primary)
+                Text("\(count)")
+                    .font(.caption2.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+            .frame(width: 56)
+            .padding(.vertical, 6)
+            .background(active ? AnyShapeStyle(Theme.accent.opacity(0.10)) : AnyShapeStyle(Color.clear),
+                        in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
+
     private func placedCount(colorId: Int) -> Int {
         guard pattern.placed.count == pattern.cells.count else { return 0 }
         var n = 0
@@ -669,13 +814,21 @@ struct WorkDetailView: View {
     }
 }
 
-// MARK: - 进度感知网格（已拼格子暗显）
+// MARK: - 进度感知网格（已拼格子暗显 + 格内色号 + 原色/白色/高亮）
 
+/// 图纸网格（对标 PIXDOU「拼豆模式」）：
+/// - 已拼格子暗显；
+/// - `showLabels`：格子足够大时在格内绘制 Mard 色号（放大后可见，无需来回对图例）；
+/// - `whiteMode`：所有有色格统一白色（去掉颜色只看形状结构），空格保持浅灰；
+/// - `highlightColorId`：只强调该色号，其余弱化（配合底部色号统计条点选）。
 struct ProgressGridView: View {
     let cells: [Int]
     let width: Int
     let height: Int
     var placed: [Bool]? = nil
+    var showLabels: Bool = false
+    var whiteMode: Bool = false
+    var highlightColorId: Int? = nil
     var onTap: ((Int) -> Void)? = nil
 
     var body: some View {
@@ -691,12 +844,42 @@ struct ProgressGridView: View {
                         let v = cells[i]
                         var color: Color = v > 0 ? (BeadPalette.byId[v]?.color ?? .clear)
                                                   : Color(white: 0.97)
+                        if v > 0 && (whiteMode || (highlightColorId != nil && v != highlightColorId)) {
+                            // 白色模式 / 非高亮色号：去色显示（保留微弱色相以区分相邻格）
+                            color = whiteMode ? Color.white : color.opacity(0.18)
+                        }
                         if v > 0, let placed, i < placed.count, placed[i] {
                             color = color.opacity(0.30)
                         }
                         let rect = CGRect(x: ox + CGFloat(x) * side, y: oy + CGFloat(y) * side,
                                           width: side + 0.5, height: side + 0.5)
                         ctx.fill(Path(rect), with: .color(color))
+
+                        // 空格在白色模式下需描边，否则与白格无法区分
+                        if whiteMode && v == 0 {
+                            ctx.stroke(Path(rect.insetBy(dx: 0.25, dy: 0.25)),
+                                       with: .color(.gray.opacity(0.18)), lineWidth: 0.5)
+                        }
+                    }
+                }
+
+                // 格内色号（格子 ≥ 20pt 才画，避免糊成一片）
+                if showLabels && side >= 20 {
+                    let font = Font.system(size: min(side * 0.30, 11), weight: .semibold, design: .monospaced)
+                    for y in 0..<height {
+                        for x in 0..<width {
+                            let i = y * width + x
+                            let v = cells[i]
+                            guard v > 0, let c = BeadPalette.byId[v] else { continue }
+                            let iDim = highlightColorId == nil || v == highlightColorId
+                            let text = Text(c.mard)
+                                .font(font)
+                                .foregroundStyle(c.brightness > 0.62 ? Color.black.opacity(iDim ? 0.75 : 0.25)
+                                                                     : Color.white.opacity(iDim ? 0.92 : 0.35))
+                            ctx.draw(text, at: CGPoint(x: ox + (CGFloat(x) + 0.5) * side,
+                                                       y: oy + (CGFloat(y) + 0.5) * side),
+                                     anchor: .center)
+                        }
                     }
                 }
 
