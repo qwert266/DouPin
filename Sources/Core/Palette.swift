@@ -330,10 +330,94 @@ enum BeadPalette {
     static let essentials16: [Int] = [253, 26, 141, 31, 30, 45, 136, 69, 256, 102, 101, 97, 251, 185, 190, 284]
 }
 
-// MARK: - 常规颜色种类（全色板选择器的色系筛选）
+// MARK: - 色板档位（对标实体色卡容量版本）
+
+/// 色板档位：实体拼豆色卡的常见容量版本（72 / 144 / 221 / 264 / 291 / 295）。
+///
+/// 实现口径：**按 Mard 色号顺序（colorId 升序）取前 N 色**，与出厂按色号装箱的
+/// 套装色卡一致；若实物色卡与档位不符，改用 `.stockOnly`（只用库存中数量 > 0 的色号），
+/// 这是最贴合"我手上有哪些颜色"的口径。
+enum PaletteTier: Int, CaseIterable, Identifiable {
+    case full = 295
+    case t291 = 291
+    case t264 = 264
+    case t221 = 221
+    case t144 = 144
+    case t72 = 72
+    /// 仅使用库存中数量 > 0 的色号（-1 作哨兵值，避免与容量冲突）
+    case stockOnly = -1
+
+    var id: Int { rawValue }
+
+    var title: String {
+        switch self {
+        case .full: return "295 色（全色板）"
+        case .stockOnly: return "仅我的库存色"
+        default: return "\(rawValue) 色"
+        }
+    }
+
+    var shortTitle: String {
+        switch self {
+        case .full: return "295 色"
+        case .stockOnly: return "仅库存"
+        default: return "\(rawValue) 色"
+        }
+    }
+
+    /// 档位允许的色号（stockOnly 返回 nil，表示需运行时按库存决定）
+    var colorIds: [Int]? {
+        guard self != .stockOnly else { return nil }
+        let all = BeadPalette.all.map(\.id).sorted()
+        if rawValue >= all.count { return all }
+        return Array(all.prefix(rawValue))
+    }
+}
+
+// MARK: - 拼豆板规格（对标 PIXDOU PD 系列灯板）
+
+/// 智能拼豆板规格：52 钉 / 78 钉 / 104 钉方形灯板（另有 25 钉小板）。
+///
+/// 钉数 = 边长格数：52×52 ≈ 14cm、78×78 ≈ 21cm、104×104 ≈ 28cm。
+enum BoardPreset: String, CaseIterable, Identifiable {
+    case pd25 = "PD25"
+    case pd52 = "PD52"
+    case pd78 = "PD78"
+    case pd104 = "PD104"
+    case custom = "CUSTOM"
+
+    var id: String { rawValue }
+
+    /// 边长格数（custom 返回 nil，用自定义值）
+    var side: Int? {
+        switch self {
+        case .pd25: return 25
+        case .pd52: return 52
+        case .pd78: return 78
+        case .pd104: return 104
+        case .custom: return nil
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .custom: return "自定义"
+        default: return rawValue
+        }
+    }
+
+    /// 「PD52 · 52×52 格 · 约 14cm」
+    var detail: String {
+        guard let s = side else { return "手动设置边长" }
+        let cm = Int((Double(s) * 0.27).rounded())
+        return "\(s)×\(s) 格 · 约 \(cm)cm"
+    }
+}
 
 /// 常规颜色种类：按人眼直觉分桶，对标 AI豆仓 / PIXDOU 的「按颜色选豆」。
 /// 特殊 = T（透明）/ Y（夜光）/ Z（珠光）系列。
+// MARK: - 常规颜色种类（全色板选择器的色系筛选）
+
 enum BeadFamily: String, CaseIterable, Identifiable {
     case all = "全部"
     case red = "红色"

@@ -114,10 +114,49 @@ extension View {
     }
 }
 
-// MARK: - App 根视图（5 Tab）
+// MARK: - 触觉反馈（受「设置 → 触觉反馈」开关控制）
+
+enum Haptics {
+    static var enabled: Bool {
+        UserDefaults.standard.object(forKey: "hapticsEnabled") as? Bool ?? true
+    }
+
+    static func tap(_ style: UIImpactFeedbackGenerator.FeedbackStyle = .light) {
+        guard enabled else { return }
+        UIImpactFeedbackGenerator(style: style).impactOccurred()
+    }
+
+    static func success() {
+        guard enabled else { return }
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+    }
+}
+
+// MARK: - App 根视图（4 Tab）
 
 struct AppRoot: View {
     @EnvironmentObject var app: AppState
+
+    /// 主题（设置页可调；system = 跟随系统）
+    @AppStorage("appTheme") private var appTheme = "system"
+    /// 界面语言（设置页可调）
+    @AppStorage("appLanguage") private var appLanguage = AppLanguage.system.rawValue
+
+    private var preferredScheme: ColorScheme? {
+        switch appTheme {
+        case "light": return .light
+        case "dark": return .dark
+        default: return nil
+        }
+    }
+
+    private var interfaceLocale: Locale {
+        switch appLanguage {
+        case "en": return Locale(identifier: "en")
+        case "zh-Hans": return Locale(identifier: "zh-Hans")
+        default: return Locale.current
+        }
+    }
 
     var body: some View {
         // 4 Tab：首页 / 图纸 / 库存 / 我的
@@ -125,15 +164,17 @@ struct AppRoot: View {
         // 发图与分色引导 → 作品详情；灯板日志 → 「我的 → 蓝牙日志控制台」。
         TabView {
             HomeView()
-                .tabItem { Label("首页", systemImage: "house.fill") }
+                .tabItem { Label(L10n.t("首页", "Home"), systemImage: "house.fill") }
             PatternsTabView()
-                .tabItem { Label("图纸", systemImage: "square.grid.3x3.fill") }
+                .tabItem { Label(L10n.t("图纸", "Patterns"), systemImage: "square.grid.3x3.fill") }
             InventoryView()
-                .tabItem { Label("库存", systemImage: "square.stack.3d.up.fill") }
+                .tabItem { Label(L10n.t("库存", "Stock"), systemImage: "square.stack.3d.up.fill") }
             MoreView()
-                .tabItem { Label("我的", systemImage: "person.crop.circle.fill") }
+                .tabItem { Label(L10n.t("我的", "Me"), systemImage: "person.crop.circle.fill") }
         }
         .tint(Theme.accent)
+        .preferredColorScheme(preferredScheme)
+        .environment(\.locale, interfaceLocale)
     }
 }
 

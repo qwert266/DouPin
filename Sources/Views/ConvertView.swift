@@ -35,6 +35,9 @@ struct ConvertView: View {
 
     /// 默认板尺寸（全局设置）
     @AppStorage("defaultBoardSide") private var defaultBoardSide = 29
+    /// 色板档位（设置页可调）：决定转图只用哪些色号
+    @AppStorage("paletteTier") private var paletteTier = PaletteTier.full.rawValue
+    @Query private var stocks: [BeadStock]
 
     var body: some View {
         ScrollView {
@@ -410,6 +413,7 @@ struct ConvertView: View {
         var opts = PixelConverter.Options()
         opts.maxSide = maxSide
         opts.colorLimit = colorLimit
+        opts.allowedColorIds = PaletteAccess.allowedIds(tierRaw: paletteTier, stocks: stocks)
         opts.whiteToEmpty = whiteToEmpty
         opts.autoLevels = autoLevels
         // MainActor 同步执行（见方法注释）

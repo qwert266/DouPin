@@ -25,6 +25,9 @@ enum PixelConverter {
         var whiteToEmpty: Bool = true
         /// 自动亮度归一化（默认开；用户手动调过亮度时可在调用侧关掉）
         var autoLevels: Bool = true
+        /// 允许使用的色号（nil = 全色板）。来自「设置 → 色板档位」
+        /// （如 221 色套装、或「仅我的库存色」），确保转出来的色号都买得到。
+        var allowedColorIds: [Int]? = nil
         init() {}
     }
 
@@ -88,7 +91,7 @@ enum PixelConverter {
         let range = max(1.0, hi - lo)
 
         // ---- 候选色集 + 色板 Lab 缓存 ----
-        let pal = candidates(for: options.colorLimit)
+        let pal = candidates(for: options.colorLimit, allowed: options.allowedColorIds)
         let palLab: [(id: Int, l: Double, a: Double, b2: Double)] =
             (pal ?? BeadPalette.all).map { c in
                 let l = lab(r: Double(c.r), g: Double(c.g), b: Double(c.b))
@@ -215,7 +218,11 @@ enum PixelConverter {
     /// 设计意图（P1-1 修正）：
     /// - `48 / 24 / 16`：返回**精选常用色子集**，先一步收窄到易买、常见的色号，避免匹配到生僻色；
     /// - `32 / 64 / 0`：返回 `nil`（全色板），不在此处收窄——由 `limitColors` 精确收敛。
-    private static func candidates(for limit: Int) -> [BeadColor]? {
+    ///
+    /// - Parameter allowed: 「设置 → 色板档位」允许的色号（nil = 不限制）。
+    ///   与常用色子集取交集；若交集为空（档位里没有常用色，理论不会发生），
+    ///   直接退化为 allowed 本身，保证至少能选色。
+    private static func candidates(for limit: Int, allowed: [Int]?) -> [BeadColor]? {
         let ids: [Int]
         switch limit {
         case 48: ids = BeadPalette.essentials48
@@ -223,7 +230,19 @@ enum PixelConverter {
         case 16: ids = BeadPalette.essentials16
         default: ids = []   // 32 / 64 / 0 → 全色板
         }
-        return ids.isEmpty ? nil : ids.compactMap { BeadPalette.byId[$0] }
+
+        var palette: [BeadColor]? = ids.isEmpty ? nil : ids.compactMap { BeadPalette.byId[$0] }
+
+        if let allowed, !allowed.isEmpty {
+            let allowSet = Set(allowed)
+            if let existing = palette {
+                let filtered = existing.filter { allowSet.contains($0.id) }
+                palette = filtered.isEmpty ? allowed.compactMap { BeadPalette.byId[$0] } : filtered
+            } else {
+                palette = allowed.compactMap { BeadPalette.byId[$0] }
+            }
+        }
+        return palette
     }
 
     // MARK: - 色彩空间工具

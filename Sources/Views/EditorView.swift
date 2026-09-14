@@ -633,8 +633,18 @@ extension BeadColor {
 struct FullPaletteSheet: View {
     @Binding var selectedId: Int
     @Environment(\.dismiss) private var dismiss
+    @Query private var stocks: [BeadStock]
+    @AppStorage("paletteTier") private var paletteTier = PaletteTier.full.rawValue
     @State private var searchText = ""
     @State private var family: BeadFamily = .all
+
+    /// 「设置 → 色板档位」允许的色号（nil = 全色板）
+    private var allowedIds: [Int]? {
+        PaletteAccess.allowedIds(tierRaw: paletteTier, stocks: stocks)
+    }
+
+    /// 当前档位是否收窄了可选范围
+    private var tierLimited: Bool { allowedIds != nil }
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 5)
 
@@ -651,7 +661,11 @@ struct FullPaletteSheet: View {
 
     /// 当前筛选下的色号列表
     private var displayColors: [BeadColor] {
-        let base = family == .all ? BeadPalette.all : (BeadPalette.familyBuckets[family] ?? [])
+        var base = family == .all ? BeadPalette.all : (BeadPalette.familyBuckets[family] ?? [])
+        if let allowedIds {
+            let set = Set(allowedIds)
+            base = base.filter { set.contains($0.id) }
+        }
         return base.filter(matches)
     }
 
@@ -669,6 +683,18 @@ struct FullPaletteSheet: View {
                     .padding(.vertical, 10)
                 }
                 Divider().opacity(0.5)
+
+                if tierLimited {
+                    HStack(spacing: 6) {
+                        Image(systemName: "line.3.horizontal.decrease.circle.fill")
+                        Text("当前档位：\(PaletteTier(rawValue: paletteTier)?.shortTitle ?? "")（可在「设置 → 颜色」调整）")
+                        Spacer()
+                    }
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 14)
+                    .padding(.top, 6)
+                }
 
                 if displayColors.isEmpty {
                     ContentUnavailableView.search(text: searchText)

@@ -276,6 +276,13 @@
 			<key>fileRef</key>
 			<string>F00000000000000000000038</string>
 		</dict>
+		<key>B00000000000000000000039</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+			<key>fileRef</key>
+			<string>F00000000000000000000039</string>
+		</dict>
 		<key>F00000000000000000000001</key>
 		<dict>
 			<key>isa</key>
@@ -694,6 +701,17 @@
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
+		<key>F00000000000000000000039</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>SettingsView.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
 		<key>A00000000000000000000004</key>
 		<dict>
 			<key>isa</key>
@@ -848,6 +866,7 @@
 				<string>B00000000000000000000035</string>
 				<string>B00000000000000000000036</string>
 				<string>B00000000000000000000037</string>
+				<string>B00000000000000000000039</string>
 			</array>
 			<key>runOnlyForDeploymentPostprocessing</key>
 			<false/>
@@ -967,6 +986,7 @@
 				<string>F00000000000000000000035</string>
 				<string>F00000000000000000000036</string>
 				<string>F00000000000000000000037</string>
+				<string>F00000000000000000000039</string>
 			</array>
 			<key>path</key>
 			<string>Views</string>

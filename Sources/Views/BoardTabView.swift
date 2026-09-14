@@ -263,6 +263,7 @@ struct BoardSendSheet: View {
             }
             do {
                 try await board.sendImage(width: pattern.width, height: pattern.height, rgb: rgb)
+                Haptics.success()
             } catch {
                 infoMessage = "发送失败：\(error.localizedDescription)"
             }
@@ -560,6 +561,8 @@ struct BoardConnectSheet: View {
 struct BoardConnectCapsule: View {
     @ObservedObject private var board = AppState.shared.board
     @ObservedObject private var central = AppState.shared.board.central
+    /// 「设置 → 自动连接拼豆板」；关闭后点击胶囊直接进入手动选择面板
+    @AppStorage("autoConnectBLE") private var autoConnectBLE = true
     @State private var showSheet = false
 
     private var label: String {
@@ -574,8 +577,10 @@ struct BoardConnectCapsule: View {
                 showSheet = true
             } else if central.autoConnecting {
                 central.cancelAutoConnect()
-            } else {
+            } else if autoConnectBLE {
                 central.autoConnect()
+            } else {
+                showSheet = true   // 关闭自动连接 → 手动选择面板
             }
         } label: {
             HStack(spacing: 4) {

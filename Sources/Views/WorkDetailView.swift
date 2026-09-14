@@ -672,6 +672,7 @@ struct WorkDetailView: View {
         guard i >= 0, i < pattern.cells.count, pattern.cells[i] > 0 else { return }
         pattern.placed[i].toggle()
         pattern.touch()
+        Haptics.tap()
     }
 
     private func toggleRow(_ row: Int) {
