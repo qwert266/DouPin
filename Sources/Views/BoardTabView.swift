@@ -142,10 +142,10 @@ private struct BoardPanel: View {
             // 主操作按钮
             switch central.linkState {
             case .idle, .poweredOff:
-                primaryButton(title: "扫描附近设备", icon: "dot.radiowaves.left.and.right",
+                primaryButton(title: "自动连接拼豆板", icon: "bolt.horizontal.circle.fill",
                               gradient: central.linkState == .poweredOff ? nil : Theme.sky)
                 {
-                    central.startScan()
+                    central.autoConnect()
                 }
                 .disabled(central.linkState == .poweredOff)
 
@@ -153,11 +153,12 @@ private struct BoardPanel: View {
                 HStack(spacing: 12) {
                     ProgressView()
                         .tint(.white)
-                    Text("正在搜索…")
+                    Text(central.autoConnecting ? "正在自动搜索 PIXDOU…" : "正在搜索…")
                         .font(.headline)
                         .foregroundStyle(.white)
                     Spacer()
                     Button {
+                        central.cancelAutoConnect()
                         central.stopScan()
                     } label: {
                         Text("停止")
@@ -880,20 +881,24 @@ struct BoardConnectSheet: View {
             }
 
             switch central.linkState {
-            case .idle, .poweredOff:
+            case .idle, .poweredOff, .scanning:
+                // 自动连接主按钮（对标 PIXDOU：点一下就连上，不用在列表里挑）
                 Button {
-                    central.startScan()
+                    if central.autoConnecting {
+                        central.cancelAutoConnect()
+                    } else {
+                        central.autoConnect()
+                    }
                 } label: {
-                    Label("扫描附近设备", systemImage: "dot.radiowaves.left.and.right")
+                    Label(central.autoConnecting ? "正在搜索 PIXDOU…（点此取消）" : "自动连接拼豆板",
+                          systemImage: "bolt.horizontal.circle.fill")
                 }
                 .disabled(central.linkState == .poweredOff)
-            case .scanning:
-                HStack {
-                    ProgressView()
-                    Text("正在搜索…").font(.subheadline)
-                    Spacer()
-                    Button("停止") { central.stopScan() }
+
+                if let failure = central.autoConnectFailure {
+                    Label(failure, systemImage: "exclamationmark.triangle.fill")
                         .font(.caption)
+                        .foregroundStyle(.orange)
                 }
             case .connecting:
                 HStack {
@@ -909,6 +914,10 @@ struct BoardConnectSheet: View {
             }
         } header: {
             Text("状态")
+        } footer: {
+            if central.linkState != .connected {
+                Text("点「自动连接拼豆板」会自动搜索并连接名字带 PIXDOU 的板子（也兼容 iLEDColor / Wofan）；没连上时可在下方列表手动选择。")
+            }
         }
     }
 
@@ -1058,23 +1067,46 @@ struct BoardConnectSheet: View {
 
 // MARK: - 全局连接胶囊（每个 Tab 导航栏右上角复用）
 
-/// 「连接拼豆板」胶囊按钮：未连接显示蓝色「连接」，已连接显示绿色「已连接」；
-/// 点按弹出 `BoardConnectSheet`（扫描 / 连接 / 断开 / 快捷控制）。
+/// 「连接拼豆板」胶囊按钮（各 Tab 导航栏统一放置）。
 ///
-/// 各 Tab 与主要二级页面的导航栏统一放置本组件，保证任何页面都能一键连板子。
-/// 内部直接观察全局 `BoardSession`，连接状态变化会自动刷新胶囊文案与配色。
+/// 交互（对标 PIXDOU「点一下就连上」）：
+/// - **未连接**：点一下**直接自动搜索并连接** PIXDOU 板子（不弹设备列表）；
+///   搜索中显示「搜索中…」转圈，再点一次可取消；自动连接失败时自动弹出连接面板兜底。
+/// - **已连接**：点一下打开连接面板（状态 / 亮度 / 点亮 / 断开）。
+///
+/// 内部直接观察全局 `BoardSession` 与 `BLECentral`，状态变化自动刷新。
 struct BoardConnectCapsule: View {
     @ObservedObject private var board = AppState.shared.board
+    @ObservedObject private var central = AppState.shared.board.central
     @State private var showSheet = false
+
+    private var label: String {
+        if board.isConnected { return "已连接" }
+        if central.autoConnecting { return "搜索中" }
+        return "连接"
+    }
 
     var body: some View {
         Button {
-            showSheet = true
+            if board.isConnected {
+                showSheet = true
+            } else if central.autoConnecting {
+                central.cancelAutoConnect()
+            } else {
+                central.autoConnect()
+            }
         } label: {
             HStack(spacing: 4) {
-                Image(systemName: board.isConnected ? "checkmark.circle.fill" : "link")
-                    .font(.caption2.bold())
-                Text(board.isConnected ? "已连接" : "连接")
+                if central.autoConnecting {
+                    ProgressView()
+                        .scaleEffect(0.55)
+                        .frame(width: 10, height: 10)
+                        .tint(.white)
+                } else {
+                    Image(systemName: board.isConnected ? "checkmark.circle.fill" : "link")
+                        .font(.caption2.bold())
+                }
+                Text(label)
                     .font(.caption2.bold())
             }
             .padding(.horizontal, 9).padding(.vertical, 5)
@@ -1084,6 +1116,10 @@ struct BoardConnectCapsule: View {
             .foregroundStyle(board.isConnected ? Color.green : Color.white)
         }
         .buttonStyle(.plain)
+        // 自动连接失败 → 自动弹出面板，让用户手动选或重试
+        .onChange(of: central.autoConnectFailure) { _, failure in
+            if failure != nil { showSheet = true }
+        }
         .sheet(isPresented: $showSheet) {
             BoardConnectSheet()
         }

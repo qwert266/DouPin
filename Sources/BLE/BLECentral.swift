@@ -56,6 +56,16 @@ final class BLECentral: NSObject, ObservableObject {
     /// App 重启后自动复位为 false，避免用户忘记关掉后又被杂设备列表淹没。
     @Published var showAllDevices = false
 
+    // ---- 自动连接（点「连接」直接连 PIXDOU 板子，不弹设备列表） ----
+
+    /// 是否处于「自动搜索并连接」流程中（UI 显示「搜索中…」）
+    @Published var autoConnecting = false
+    /// 自动连接失败原因（超时未找到候选设备时写入，UI 据此提示并回退手动选择）
+    @Published var autoConnectFailure: String?
+
+    /// 自动连接看门狗任务
+    private var autoConnectTask: Task<Void, Never>?
+
     var onNotify: (([UInt8]) -> Void)?
     var onDisconnect: (() -> Void)?
 
@@ -179,6 +189,44 @@ final class BLECentral: NSObject, ObservableObject {
         }
     }
 
+    /// 名称是否命中自动连接优先目标（PIXDOU / iLEDColor / Wofan 前缀，大小写不敏感）
+    nonisolated static func isAutoConnectTarget(_ name: String) -> Bool {
+        matchesNameAllowlist(name)
+    }
+
+    /// 自动连接：已连接直接返回；否则开始扫描，**发现候选板子立即连**（用户无需在列表里挑）。
+    ///
+    /// 候选判定（严格）：名称命中 PIXDOU/iLEDColor/Wofan 前缀，或广播 A950/AE00 服务，
+    /// 或厂商标记 JLAISDK —— 不采用 `looksLikeBoard` 里的宽松 `led`/`pd` 关键字，
+    /// 避免点一下就把邻居的 LED 灯带连上。
+    ///
+    /// - Parameter timeout: 超时秒数（默认 8s）；超时未找到候选则停扫、置 `autoConnectFailure`。
+    func autoConnect(timeout: TimeInterval = 8) {
+        guard linkState != .connected, linkState != .connecting else { return }
+        autoConnectFailure = nil
+        autoConnecting = true
+        startScan()
+        log("自动连接：搜索 \(Self.strictNamePrefixes.joined(separator: "/")) 拼豆板…（\(Int(timeout))s 超时）")
+
+        autoConnectTask?.cancel()
+        autoConnectTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
+            guard let self, !Task.isCancelled else { return }
+            guard self.autoConnecting else { return }
+            self.autoConnecting = false
+            if self.linkState == .scanning { self.stopScan() }
+            self.autoConnectFailure = "没找到 PIXDOU 拼豆板。请确认板子已通电、蓝牙已开启，或手动选择设备。"
+            self.log("自动连接超时：未发现候选设备，已回退到手动选择")
+        }
+    }
+
+    /// 取消自动连接流程（用户手动选设备 / 断开 / 关闭面板时调用）
+    func cancelAutoConnect() {
+        autoConnectTask?.cancel()
+        autoConnectTask = nil
+        autoConnecting = false
+    }
+
     /// 被名称过滤掉的设备（供 UI 在列表为空时给出解释文案）
     var filteredOutSummary: [String] { filteredOutNames }
 
@@ -196,6 +244,11 @@ final class BLECentral: NSObject, ObservableObject {
     ///    （表现为「点了没反应」）。
     func connect(_ board: DiscoveredBoard) {
         connectTimeoutTask?.cancel()
+        // 手动选择设备时结束自动连接流程（若仍在等待超时）
+        autoConnectTask?.cancel()
+        autoConnectTask = nil
+        autoConnecting = false
+        autoConnectFailure = nil
 
         // 若正连着别的设备，先断开，避免两路连接互相干扰
         if let current = peripheral, current.identifier != board.id {
@@ -256,6 +309,9 @@ final class BLECentral: NSObject, ObservableObject {
         connectTimeoutTask = nil
         charDiscoveryTask?.cancel()
         charDiscoveryTask = nil
+        // 断开后清掉自动连接的残留状态，下次点「连接」重新自动搜索
+        cancelAutoConnect()
+        autoConnectFailure = nil
         if let p = peripheral { central.cancelPeripheralConnection(p) }
     }
 
@@ -391,6 +447,18 @@ extension BLECentral: CBCentralManagerDelegate, CBPeripheralDelegate {
                     boards.append(board)
                     // 新增设备时留一条可追溯的日志，真机排查全靠它
                     log("发现设备：\(name.isEmpty ? "<无名>" : name) RSSI=\(RSSI.intValue)\(board.matchesNameFilter ? " [名称命中]" : "")\(hasBoardService ? " [服务命中]" : "")")
+                }
+
+                // ---- 自动连接：命中候选板子立即连，用户无需在列表里挑 ----
+                // 判定刻意严格（名称白名单 / A950 服务 / JLAISDK 厂商指纹），
+                // 不用 looksLikeBoard 里的宽松 led/pd 关键字，免得点一下连到邻居的灯带。
+                if autoConnecting, linkState == .scanning,
+                   (Self.isAutoConnectTarget(name) || hasBoardService || jlaisdk) {
+                    log("自动连接：命中 \(name.isEmpty ? "<无名>" : name)，开始连接…")
+                    autoConnecting = false
+                    autoConnectTask?.cancel()
+                    autoConnectTask = nil
+                    connect(board)
                 }
             } else {
                 // 被过滤掉的设备名留档，供 UI 在列表为空时给出「其实扫到了 N 台，都被过滤了」
