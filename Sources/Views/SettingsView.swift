@@ -90,6 +90,11 @@ final class UpdateChecker: ObservableObject {
         BuildInfo.commit.isEmpty ? "未知" : BuildInfo.commit
     }
 
+    /// 构建时间（CI 注入的 ISO8601 UTC 串；本地为空）
+    static var localBuiltAt: String {
+        BuildInfo.builtAt
+    }
+
     static let repoURL = URL(string: "https://github.com/qwert266/DouPin")!
 
     func check() async {
@@ -308,6 +313,9 @@ struct SettingsView: View {
         Section {
             LabeledContent("当前版本", value: versionText)
             LabeledContent("构建", value: UpdateChecker.localCommit)
+            if !UpdateChecker.localBuiltAt.isEmpty {
+                LabeledContent("构建时间", value: Self.formatBuiltAt(UpdateChecker.localBuiltAt))
+            }
 
             Button {
                 Task { await updater.check() }
@@ -416,6 +424,15 @@ struct SettingsView: View {
         }
         try? context.save()
         toast = removed > 0 ? "已清除 \(removed) 张原图缓存" : "没有可清除的原图缓存"
+    }
+
+    /// ISO8601(UTC) → 本地「yyyy-MM-dd HH:mm」
+    private static func formatBuiltAt(_ iso: String) -> String {
+        let parser = ISO8601DateFormatter()
+        guard let date = parser.date(from: iso) else { return iso }
+        let out = DateFormatter()
+        out.dateFormat = "yyyy-MM-dd HH:mm"
+        return out.string(from: date)
     }
 
     private static func formatBytes(_ bytes: Int) -> String {
