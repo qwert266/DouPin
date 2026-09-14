@@ -1064,6 +1064,8 @@
 				<string>YES</string>
 				<key>ASSETCATALOG_COMPILER_APPICON_NAME</key>
 				<string>AppIcon</string>
+				<key>INFOPLIST_KEY_DouPinCommit</key>
+				<string>$(DOUPIN_COMMIT)</string>
 				<key>GENERATE_INFOPLIST_FILE</key>
 				<string>YES</string>
 				<key>INFOPLIST_KEY_CFBundleDisplayName</key>
@@ -1110,6 +1112,8 @@
 				<string>YES</string>
 				<key>ASSETCATALOG_COMPILER_APPICON_NAME</key>
 				<string>AppIcon</string>
+				<key>INFOPLIST_KEY_DouPinCommit</key>
+				<string>$(DOUPIN_COMMIT)</string>
 				<key>GENERATE_INFOPLIST_FILE</key>
 				<string>YES</string>
 				<key>INFOPLIST_KEY_CFBundleDisplayName</key>

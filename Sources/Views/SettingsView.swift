@@ -79,6 +79,7 @@ final class UpdateChecker: ObservableObject {
         case checking
         case upToDate(String)      // 最新短 SHA
         case available(String)     // 远端短 SHA（与本地不同）
+        case unknownLocal(String)  // 本地包未注入构建号（旧包），仅报告远端
         case failed(String)
     }
 
@@ -107,7 +108,9 @@ final class UpdateChecker: ObservableObject {
             }
             let remote = String(sha.prefix(7))
             let local = Self.localCommit
-            if local == "未知" || local.caseInsensitiveCompare(remote) == .orderedSame {
+            if local == "未知" {
+                state = .unknownLocal(remote)
+            } else if local.caseInsensitiveCompare(remote) == .orderedSame {
                 state = .upToDate(remote)
             } else {
                 state = .available(remote)
@@ -348,6 +351,8 @@ struct SettingsView: View {
             return ("已是最新版本（\(sha)）", "checkmark.seal.fill", .green)
         case .available(let sha):
             return ("发现新版本（远端 \(sha)）——点上方仓库链接下载最新 IPA", "arrow.down.circle.fill", .orange)
+        case .unknownLocal(let sha):
+            return ("远端最新提交 \(sha)（本包未注入构建号，无法精确对比）", "info.circle.fill", .secondary)
         case .failed(let reason):
             return ("检查失败：\(reason)", "exclamationmark.triangle.fill", .orange)
         }
