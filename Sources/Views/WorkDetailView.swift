@@ -440,7 +440,7 @@ struct WorkDetailView: View {
                     ContentUnavailableView {
                         Label("拼豆板未连接", systemImage: "lightbulb")
                     } description: {
-                        Text("到「拼豆板」标签连接设备后，可以在这里点亮当前行辅助定位。")
+                        Text("点右上角「连接」按钮连上拼豆板后，可以在这里点亮当前行辅助定位。")
                     }
                     .frame(maxHeight: 260)
                 }

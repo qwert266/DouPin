@@ -120,9 +120,9 @@ struct AppRoot: View {
     @EnvironmentObject var app: AppState
 
     var body: some View {
-        // 5 Tab（PRD §4.1）：首页 / 图纸 / 库存 / 拼豆板 / 我的
-        // T04：图纸 Tab 换成 `PatternsTabView`（合并「模板」，含文件夹/标签分段）；
-        // T05：「我的」由占位替换为正式 `MoreView`。
+        // 4 Tab：首页 / 图纸 / 库存 / 我的
+        // 「拼豆板」Tab 已移除（2026-09-14）：连接 → 各页右上角全局连接胶囊；
+        // 发图与分色引导 → 作品详情；灯板日志 → 「我的 → 蓝牙日志控制台」。
         TabView {
             HomeView()
                 .tabItem { Label("首页", systemImage: "house.fill") }
@@ -130,8 +130,6 @@ struct AppRoot: View {
                 .tabItem { Label("图纸", systemImage: "square.grid.3x3.fill") }
             InventoryView()
                 .tabItem { Label("库存", systemImage: "square.stack.3d.up.fill") }
-            BoardTabView()
-                .tabItem { Label("拼豆板", systemImage: "lightbulb.fill") }
             MoreView()
                 .tabItem { Label("我的", systemImage: "person.crop.circle.fill") }
         }

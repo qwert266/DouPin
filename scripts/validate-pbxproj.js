@@ -50,14 +50,20 @@ const bDefs = [...raw.matchAll(/^\s*<key>(B\d{23})<\/key>/gm)].map((m) => m[1]);
 const phase = raw.match(/PBXSourcesBuildPhase[\s\S]*?<key>files<\/key>\s*<array>([\s\S]*?)<\/array>/);
 const phaseFiles = phase ? [...phase[1].matchAll(/B\d{23}/g)].map((m) => m[0]) : [];
 
+// 资源构建阶段（资产目录等走这里，不占 Sources 阶段名额）
+const resPhase = raw.match(/PBXResourcesBuildPhase[\s\S]*?<key>files<\/key>\s*<array>([\s\S]*?)<\/array>/);
+const resourcePhaseFiles = resPhase ? [...resPhase[1].matchAll(/B\d{23}/g)].map((m) => m[0]) : [];
+
 const fSet = new Set(fDefs);
 const bSet = new Set(bDefs);
 
 if (fDefs.length !== bDefs.length) {
   warn(`[P0] 数量不等：PBXFileReference=${fDefs.length}，PBXBuildFile=${bDefs.length}`);
 }
-if (phaseFiles.length !== bDefs.length) {
-  warn(`[P0] SourcesBuildPhase.files=${phaseFiles.length} 与 PBXBuildFile=${bDefs.length} 不等`);
+// Sources + Resources 两阶段合计应覆盖全部 BuildFile
+const allPhaseFiles = [...phaseFiles, ...resourcePhaseFiles];
+if (allPhaseFiles.length !== bDefs.length) {
+  warn(`[P0] 构建阶段条目合计=${allPhaseFiles.length}（Sources ${phaseFiles.length} + Resources ${resourcePhaseFiles.length}）与 PBXBuildFile=${bDefs.length} 不等`);
 }
 
 // 每个 B 的 fileRef 必须指向已定义的 F
@@ -73,9 +79,9 @@ for (const f of fDefs) {
     warn(`[P1] PBXFileReference ${f} 没有被任何 PBXBuildFile 引用（可能是死条目）`);
   }
 }
-// 每个 B 都应在 Sources 阶段里
+// 每个 B 都必须落在某个构建阶段（Sources 或 Resources）
 for (const b of bDefs) {
-  if (!phaseFiles.includes(b)) warn(`[P0] PBXBuildFile ${b} 不在 Sources 构建阶段`);
+  if (!allPhaseFiles.includes(b)) warn(`[P0] PBXBuildFile ${b} 不在任何构建阶段（Sources/Resources）`);
 }
 
 // 磁盘 .swift ↔ F 引用
@@ -94,14 +100,19 @@ const pbxPaths = [...raw.matchAll(/<key>path<\/key>\s*<string>([A-Za-z0-9_+.-]+\
 const diskSet = new Set(diskSwift);
 const pbxSet = new Set(pbxPaths);
 
+// 非源码资源引用（资产目录 / storyboard / plist 等）——它们也占 PBXFileReference 名额，
+// 计算「源码引用数」时必须剔除，否则磁盘 .swift 数永远对不上。
+const resourceRefs = [...raw.matchAll(/<key>path<\/key>\s*<string>([A-Za-z0-9_+.-]+\.(?:xcassets|storyboard|xib|strings|plist|json|png|jpg|pdf|ttf|otf|mlmodel|metal))<\/string>/g)].map((m) => m[1]);
+
 for (const f of diskSwift) {
   if (!pbxSet.has(f)) warn(`[P0] ${f} 在磁盘上但未注册到 pbxproj`);
 }
 for (const f of pbxPaths) {
   if (!diskSet.has(f)) warn(`[P0] pbxproj 引用了不存在的源文件：${f}`);
 }
-if (diskSwift.length !== fDefs.length) {
-  warn(`[P1] 磁盘 .swift 数=${diskSwift.length} 与 PBXFileReference 数=${fDefs.length} 不一致（可能含非 .swift 引用）`);
+const swiftRefCount = fDefs.length - resourceRefs.length;
+if (diskSwift.length !== swiftRefCount) {
+  warn(`[P1] 磁盘 .swift 数=${diskSwift.length} 与 pbxproj 中 .swift 引用数=${swiftRefCount} 不一致（另有资源引用 ${resourceRefs.length} 个）`);
 }
 
 // --- 5. 结构配平 ---
@@ -115,7 +126,7 @@ if (arrOpen !== arrClose) warn(`[P0] <array> 不配平：开=${arrOpen} 闭=${ar
 
 // --- 报告 ---
 console.log('pbxproj 校验');
-console.log(`  PBXFileReference      = ${fDefs.length}`);
+console.log(`  PBXFileReference      = ${fDefs.length}（其中 .swift ${fDefs.length - resourceRefs.length} + 资源 ${resourceRefs.length}）`);
 console.log(`  PBXBuildFile          = ${bDefs.length}`);
 console.log(`  SourcesBuildPhase.files = ${phaseFiles.length}`);
 console.log(`  磁盘 .swift            = ${diskSwift.length}`);

@@ -269,6 +269,13 @@
 			<key>fileRef</key>
 			<string>F00000000000000000000037</string>
 		</dict>
+		<key>B00000000000000000000038</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+			<key>fileRef</key>
+			<string>F00000000000000000000038</string>
+		</dict>
 		<key>F00000000000000000000001</key>
 		<dict>
 			<key>isa</key>
@@ -676,6 +683,17 @@
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
+		<key>F00000000000000000000038</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>folder.assetcatalog</string>
+			<key>path</key>
+			<string>Assets.xcassets</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
 		<key>A00000000000000000000004</key>
 		<dict>
 			<key>isa</key>
@@ -779,7 +797,9 @@
 			<key>buildActionMask</key>
 			<integer>2147483647</integer>
 			<key>files</key>
-			<array/>
+			<array>
+				<string>B00000000000000000000038</string>
+			</array>
 			<key>runOnlyForDeploymentPostprocessing</key>
 			<false/>
 		</dict>
@@ -868,6 +888,7 @@
 				<string>A00000000000000000000018</string>
 				<string>A00000000000000000000019</string>
 				<string>A00000000000000000000020</string>
+				<string>F00000000000000000000038</string>
 			</array>
 			<key>path</key>
 			<string>Sources</string>
@@ -1021,6 +1042,8 @@
 				<string>1</string>
 				<key>ENABLE_PREVIEWS</key>
 				<string>YES</string>
+				<key>ASSETCATALOG_COMPILER_APPICON_NAME</key>
+				<string>AppIcon</string>
 				<key>GENERATE_INFOPLIST_FILE</key>
 				<string>YES</string>
 				<key>INFOPLIST_KEY_CFBundleDisplayName</key>
@@ -1065,6 +1088,8 @@
 				<string>1</string>
 				<key>ENABLE_PREVIEWS</key>
 				<string>YES</string>
+				<key>ASSETCATALOG_COMPILER_APPICON_NAME</key>
+				<string>AppIcon</string>
 				<key>GENERATE_INFOPLIST_FILE</key>
 				<string>YES</string>
 				<key>INFOPLIST_KEY_CFBundleDisplayName</key>
