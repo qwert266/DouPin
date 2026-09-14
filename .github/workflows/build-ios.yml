@@ -14,18 +14,31 @@ jobs:
       - name: Show project info
         run: xcodebuild -project DouPin.xcodeproj -list
 
+      - name: Inject build info
+        run: |
+          set -euxo pipefail
+          COMMIT=$(git rev-parse --short HEAD)
+          BUILT_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          echo "Injecting BuildInfo: commit=$COMMIT builtAt=$BUILT_AT"
+          cat > Sources/App/BuildInfo.swift <<SWIFT
+          import Foundation
+
+          /// 构建信息（由 CI 生成，勿手改）
+          enum BuildInfo {
+              static let commit = "$COMMIT"
+              static let builtAt = "$BUILT_AT"
+          }
+          SWIFT
+          cat Sources/App/BuildInfo.swift
+
       - name: Build unsigned IPA
         run: |
           set -euxo pipefail
-          # 注入提交短 SHA 供 App 内「设置 → 检测更新」对比仓库最新提交
-          COMMIT=$(git rev-parse --short HEAD)
-          echo "DouPinCommit=$COMMIT"
           xcodebuild -project DouPin.xcodeproj \
             -scheme DouPin \
             -configuration Release \
             -destination 'generic/platform=iOS' \
             -archivePath build/DouPin.xcarchive \
-            DOUPIN_COMMIT="$COMMIT" \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
             clean archive
 

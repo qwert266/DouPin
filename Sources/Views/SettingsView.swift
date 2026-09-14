@@ -85,9 +85,9 @@ final class UpdateChecker: ObservableObject {
 
     @Published var state: State = .idle
 
-    /// 当前构建号（短 SHA）
+    /// 当前构建号（短 SHA）；CI 注入，本地/旧包为 "dev"
     static var localCommit: String {
-        (Bundle.main.object(forInfoDictionaryKey: "DouPinCommit") as? String).flatMap { $0.isEmpty ? nil : $0 } ?? "未知"
+        BuildInfo.commit.isEmpty ? "未知" : BuildInfo.commit
     }
 
     static let repoURL = URL(string: "https://github.com/qwert266/DouPin")!
@@ -108,7 +108,7 @@ final class UpdateChecker: ObservableObject {
             }
             let remote = String(sha.prefix(7))
             let local = Self.localCommit
-            if local == "未知" {
+            if local == "dev" || local == "未知" {
                 state = .unknownLocal(remote)
             } else if local.caseInsensitiveCompare(remote) == .orderedSame {
                 state = .upToDate(remote)
