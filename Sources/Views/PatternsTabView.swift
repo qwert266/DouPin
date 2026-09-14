@@ -16,6 +16,7 @@ struct PatternsTabView: View {
 
     enum PatternsSegment: String, CaseIterable, Identifiable {
         case all = "全部"
+        case gallery = "作品"
         case folder = "文件夹"
         case tag = "标签"
         case template = "模板"
@@ -29,6 +30,7 @@ struct PatternsTabView: View {
                 Group {
                     switch segment {
                     case .all:       AllPatternsSection()
+                    case .gallery:   GalleryView()
                     case .folder:    FolderListView()
                     case .tag:       TagFilterView()
                     case .template:  TemplateGalleryView()
@@ -37,7 +39,7 @@ struct PatternsTabView: View {
             }
             .navigationTitle(navigationTitle)
             .toolbar {
-                if segment != .template {
+                if segment == .all || segment == .folder || segment == .tag {
                     ToolbarItem(placement: .topBarTrailing) { createMenu }
                 }
             }
@@ -77,6 +79,7 @@ struct PatternsTabView: View {
     private func segmentIcon(_ s: PatternsSegment) -> String {
         switch s {
         case .all: return "square.grid.3x3.fill"
+        case .gallery: return "photo.stack.fill"
         case .folder: return "folder.fill"
         case .tag: return "tag.fill"
         case .template: return "gift.fill"
@@ -86,6 +89,7 @@ struct PatternsTabView: View {
     private var navigationTitle: String {
         switch segment {
         case .all: return "我的图纸"
+        case .gallery: return "作品集"
         case .folder: return "文件夹"
         case .tag: return "标签"
         case .template: return "模板库"

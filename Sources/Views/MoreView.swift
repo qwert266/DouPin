@@ -123,6 +123,23 @@ struct MoreView: View {
     private var toolSection: some View {
         Section {
             NavigationLink {
+                GalleryView()
+            } label: {
+                Label {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("作品集").font(.headline)
+                        Text("成品归档 · 作品分享卡").font(.caption).foregroundStyle(.secondary)
+                    }
+                } icon: {
+                    Image(systemName: "photo.stack.fill")
+                        .foregroundStyle(.white)
+                        .frame(width: 30, height: 30)
+                        .background(Theme.violet, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                }
+            }
+            .cardRow()
+
+            NavigationLink {
                 StatsView()
             } label: {
                 Label {
