@@ -667,7 +667,7 @@ struct BinManagerSheet: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("新建豆仓") {
+                Section {
                     HStack(spacing: 10) {
                         TextField("仓名，如「漫漫 补充仓」", text: $newName)
                             .textFieldStyle(.plain)
@@ -678,13 +678,17 @@ struct BinManagerSheet: View {
                         }
                         .disabled(newName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     }
+                } header: {
+                    Text("新建豆仓")
                 } footer: {
                     Text("按品牌或用途分区后，各仓的色号与豆量独立管理与统计；补豆清单仍按全部豆仓汇总。")
                 }
 
-                Section("默认仓") {
+                Section {
                     binRow(name: "", label: BeadBinCatalog.defaultName, icon: "tray.full.fill",
                            deletable: false)
+                } header: {
+                    Text("默认仓")
                 } footer: {
                     Text("删除自定义仓时，其中的库存会归回默认仓，不会丢数据。")
                 }
