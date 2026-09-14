@@ -9,6 +9,11 @@ struct BoardTabView: View {
             BoardPanel()
                 .navigationTitle("拼豆板")
                 .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        BoardConnectCapsule()
+                    }
+                }
         }
     }
 }
@@ -1047,6 +1052,40 @@ struct BoardConnectSheet: View {
             Text("快捷控制")
         } footer: {
             Text("连上后可直接回到图纸页点「开始拼豆」发送完整图或分色点亮。")
+        }
+    }
+}
+
+// MARK: - 全局连接胶囊（每个 Tab 导航栏右上角复用）
+
+/// 「连接拼豆板」胶囊按钮：未连接显示蓝色「连接」，已连接显示绿色「已连接」；
+/// 点按弹出 `BoardConnectSheet`（扫描 / 连接 / 断开 / 快捷控制）。
+///
+/// 各 Tab 与主要二级页面的导航栏统一放置本组件，保证任何页面都能一键连板子。
+/// 内部直接观察全局 `BoardSession`，连接状态变化会自动刷新胶囊文案与配色。
+struct BoardConnectCapsule: View {
+    @ObservedObject private var board = AppState.shared.board
+    @State private var showSheet = false
+
+    var body: some View {
+        Button {
+            showSheet = true
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: board.isConnected ? "checkmark.circle.fill" : "link")
+                    .font(.caption2.bold())
+                Text(board.isConnected ? "已连接" : "连接")
+                    .font(.caption2.bold())
+            }
+            .padding(.horizontal, 9).padding(.vertical, 5)
+            .background(board.isConnected
+                        ? AnyShapeStyle(Color.green.opacity(0.16))
+                        : AnyShapeStyle(Theme.sky), in: Capsule())
+            .foregroundStyle(board.isConnected ? Color.green : Color.white)
+        }
+        .buttonStyle(.plain)
+        .sheet(isPresented: $showSheet) {
+            BoardConnectSheet()
         }
     }
 }

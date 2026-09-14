@@ -73,6 +73,9 @@ struct EditorView: View {
                 }
                 .disabled(!model.canUndo)
             }
+            ToolbarItem(placement: .topBarTrailing) {
+                BoardConnectCapsule()
+            }
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Menu {
                     // 原图对比（仅照片来源可用）

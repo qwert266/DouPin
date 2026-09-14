@@ -173,11 +173,9 @@ struct HomeView: View {
             .navigationTitle("豆拼")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                // 纯状态指示（不做跳转：BoardTabView 自带 NavigationStack，
-                // 从这里 push 会形成双导航栈，返回手势与标题都会错乱）
+                // 全局一键连接拼豆板（所有 Tab 统一放置）
                 ToolbarItem(placement: .topBarTrailing) {
-                    Image(systemName: board.isConnected ? "lightbulb.fill" : "lightbulb")
-                        .foregroundStyle(board.isConnected ? .yellow : .secondary)
+                    BoardConnectCapsule()
                 }
             }
         }

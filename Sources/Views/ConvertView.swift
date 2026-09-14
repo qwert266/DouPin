@@ -57,6 +57,11 @@ struct ConvertView: View {
         .background(Theme.pageFill)
         .navigationTitle("照片转图纸")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                BoardConnectCapsule()
+            }
+        }
         .onChange(of: pickedItem) { _, item in
             guard let item else { return }
             result = nil

@@ -96,6 +96,9 @@ struct InventoryView: View {
             .navigationTitle("库存")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
+                    BoardConnectCapsule()
+                }
+                ToolbarItem(placement: .topBarTrailing) {
                     addMenu
                 }
             }

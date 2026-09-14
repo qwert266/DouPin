@@ -42,8 +42,6 @@ struct WorkDetailView: View {
     @State private var whiteMode = false
     /// 显示高亮色号（其余弱化）
     @State private var highlightColorId: Int? = nil
-    /// 连接面板（右上角胶囊）
-    @State private var showConnectSheet = false
 
     enum Mode: String, CaseIterable {
         case pattern = "图纸"
@@ -71,27 +69,10 @@ struct WorkDetailView: View {
         .sheet(item: $sendSheetPattern) { p in
             BoardSendSheet(pattern: p)
         }
-        .sheet(isPresented: $showConnectSheet) {
-            BoardConnectSheet()
-        }
         .toolbar {
-            // 右上角一键连接（对标 PIXDOU：图纸页直接连板子，不用来回切 Tab）
+            // 右上角一键连接（全局统一组件）
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    showConnectSheet = true
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: board.isConnected ? "checkmark.circle.fill" : "link")
-                            .font(.caption2.bold())
-                        Text(board.isConnected ? "已连接" : "连接")
-                            .font(.caption2.bold())
-                    }
-                    .padding(.horizontal, 9).padding(.vertical, 5)
-                    .background(board.isConnected
-                                ? AnyShapeStyle(Color.green.opacity(0.16))
-                                : AnyShapeStyle(Theme.sky), in: Capsule())
-                    .foregroundStyle(board.isConnected ? Color.green : Color.white)
-                }
+                BoardConnectCapsule()
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {

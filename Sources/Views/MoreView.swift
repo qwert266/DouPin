@@ -50,6 +50,11 @@ struct MoreView: View {
             }
             .themedListPage()
             .navigationTitle("我的")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    BoardConnectCapsule()
+                }
+            }
             .confirmationDialog("清除全部原图？",
                                 isPresented: $showClearImagesConfirm,
                                 titleVisibility: .visible) {

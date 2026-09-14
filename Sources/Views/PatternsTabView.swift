@@ -39,6 +39,9 @@ struct PatternsTabView: View {
             }
             .navigationTitle(navigationTitle)
             .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    BoardConnectCapsule()
+                }
                 if segment == .all || segment == .folder || segment == .tag {
                     ToolbarItem(placement: .topBarTrailing) { createMenu }
                 }
