@@ -444,12 +444,20 @@ struct HomeView: View {
                     statDivider
                     statBlock("\(totalStockQuantity)", "总豆量")
                 }
-                Text("库存充足，图纸详情可查看消耗预估")
+                Text(binSummaryText)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
         }
         .cardStyle()
+    }
+
+    /// 库存卡脚注：豆仓数 + 消耗预估提示
+    private var binSummaryText: String {
+        let bins = BeadBinCatalog.customBinNames(from: stocks).count + 1
+        return bins > 1
+            ? "分 \(bins) 个豆仓管理 · 图纸详情可查看消耗预估"
+            : "库存充足，图纸详情可查看消耗预估"
     }
 
     private var statDivider: some View {

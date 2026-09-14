@@ -67,16 +67,27 @@ final class BeadStock {
     /// 最近更新时间
     var updatedAt: Date = Date()
 
+    // MARK: - 多豆仓分区（对标 AI豆仓「按品牌/用途建多个豆仓」）
+
+    /// 所属豆仓名；**空串 = 默认仓「我的豆仓」**。
+    ///
+    /// 设计说明：用字符串分区而非新建 `BeadBin` 实体——只加一个带默认值的存储属性，
+    /// SwiftData 走轻量迁移即可（新增实体需改 Schema 列表，风险更高）；仓名即标识，
+    /// 重命名 = 批量改字符串，删除仓 = 归回默认仓，均不丢数据。
+    var binName: String = ""
+
     /// 便利构造
     /// - Parameters:
     ///   - colorId: 官方色号（1…295）
     ///   - quantity: 现有数量
     ///   - threshold: 缺色预警阈值，默认 0
-    init(colorId: Int, quantity: Int, threshold: Int = 0) {
+    ///   - binName: 所属豆仓名（空串 = 默认仓）
+    init(colorId: Int, quantity: Int, threshold: Int = 0, binName: String = "") {
         self.id = UUID()
         self.colorId = colorId
         self.quantity = max(0, quantity)
         self.threshold = max(0, threshold)
+        self.binName = binName
         self.updatedAt = Date()
     }
 
@@ -86,8 +97,12 @@ final class BeadStock {
         self.colorId = 0
         self.quantity = 0
         self.threshold = 0
+        self.binName = ""
         self.updatedAt = Date()
     }
+
+    /// 展示用仓名（空串 → 默认仓名）
+    var binDisplayName: String { BeadBinCatalog.displayName(binName) }
 
     /// 对应的色板颜色（色号无效时返回 nil）
     var color: BeadColor? { BeadPalette.byId[colorId] }
@@ -110,6 +125,58 @@ final class BeadStock {
     func addQuantity(_ delta: Int) {
         self.quantity = max(0, self.quantity + delta)
         self.updatedAt = Date()
+    }
+}
+
+// MARK: - 豆仓（分区）命名与归纳
+
+/// 多豆仓的轻量目录工具：仓名由 `BeadStock.binName` 归纳而来（不落库独立实体）。
+enum BeadBinCatalog {
+
+    /// 默认仓名（`binName == ""`）
+    static let defaultName = "我的豆仓"
+
+    /// 原始仓名 → 展示名
+    static func displayName(_ raw: String) -> String {
+        raw.isEmpty ? defaultName : raw
+    }
+
+    /// 从库存归纳自定义仓名（不含默认仓），按名称排序
+    static func customBinNames(from stocks: [BeadStock]) -> [String] {
+        var set = Set<String>()
+        for s in stocks where !s.binName.isEmpty { set.insert(s.binName) }
+        return set.sorted()
+    }
+
+    /// 某仓的库存条目
+    static func stocks(in raw: String, from all: [BeadStock]) -> [BeadStock] {
+        all.filter { $0.binName == raw }
+    }
+
+    /// 仓重命名（`newName` 为空 = 归回默认仓）；返回受影响的记录数
+    @discardableResult
+    static func rename(in stocks: [BeadStock], from old: String, to newName: String) -> Int {
+        let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let target = (trimmed == defaultName) ? "" : trimmed
+        var n = 0
+        for s in stocks where s.binName == old {
+            s.binName = target
+            s.updatedAt = Date()
+            n += 1
+        }
+        return n
+    }
+
+    /// 删除仓：其库存**归回默认仓**（不删数据）；返回受影响的记录数
+    @discardableResult
+    static func dissolve(in stocks: [BeadStock], bin raw: String) -> Int {
+        var n = 0
+        for s in stocks where s.binName == raw {
+            s.binName = ""
+            s.updatedAt = Date()
+            n += 1
+        }
+        return n
     }
 }
 

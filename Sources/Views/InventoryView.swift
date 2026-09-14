@@ -31,18 +31,29 @@ struct InventoryView: View {
     /// 提示 toast
     @State private var toast: String?
 
+    // MARK: 多豆仓（分区）
+    /// 当前豆仓（"" = 默认仓「我的豆仓」）；跨会话记忆
+    @AppStorage("activeBinName") private var activeBin = ""
+    /// 豆仓管理 Sheet
+    @State private var showBinManager = false
+    /// 新建豆仓弹窗
+    @State private var showNewBinAlert = false
+    @State private var newBinName = ""
+
     /// 全部色系首字母（A…Z，按现有数据出现的系列生成）
     private var allSeries: [String] {
         BeadPalette.groups.map { $0.letter }
     }
 
-    /// 经过搜索 + 系列筛选后、按 Mard 顺序排列的库存
+    /// 经过「豆仓 + 搜索 + 色系」筛选后、按 Mard 顺序排列的库存
     private var filteredStocks: [BeadStock] {
         // 先按 colorId 映射到 BeadColor，保证 Mard 顺序
         var list = stocks.compactMap { s -> (stock: BeadStock, color: BeadColor)? in
             guard let c = BeadPalette.byId[s.colorId] else { return nil }
             return (s, c)
         }
+        // 豆仓筛选
+        list = list.filter { $0.stock.binName == activeBin }
         // 系列筛选
         if !seriesFilter.isEmpty {
             list = list.filter { String($0.color.mard.prefix(1)) == seriesFilter }
@@ -63,9 +74,14 @@ struct InventoryView: View {
         return list.map { $0.stock }.sorted { $0.colorId < $1.colorId }
     }
 
-    /// 总豆量（所有库存数量之和）
+    /// 当前豆仓的库存条目
+    private var currentBinStocks: [BeadStock] {
+        stocks.filter { $0.binName == activeBin }
+    }
+
+    /// 当前豆仓总豆量
     private var totalQuantity: Int {
-        stocks.reduce(0) { $0 + $1.quantity }
+        currentBinStocks.reduce(0) { $0 + $1.quantity }
     }
 
     var body: some View {
@@ -86,13 +102,23 @@ struct InventoryView: View {
             .searchable(text: $searchText, prompt: "搜索色号（Mard/可可/漫漫…）")
         }
         .sheet(isPresented: $showAdd) {
-            StockQuickAddView { msg in toast = msg }
+            StockQuickAddView(onSaved: { msg in toast = msg }, binName: activeBin)
         }
         .sheet(isPresented: $showImport) {
-            StockImportView { msg in toast = msg }
+            StockImportView(onFinished: { msg in toast = msg }, binName: activeBin)
+        }
+        .sheet(isPresented: $showBinManager) {
+            BinManagerSheet(activeBin: $activeBin, onFinished: { msg in toast = msg })
         }
         .sheet(item: $editing) { stock in
             StockQuantityEditSheet(stock: stock) { msg in toast = msg }
+        }
+        .alert("新建豆仓", isPresented: $showNewBinAlert) {
+            TextField("仓名，如「Mard 主仓」", text: $newBinName)
+            Button("创建") { createBin() }
+            Button("取消", role: .cancel) { newBinName = "" }
+        } message: {
+            Text("按品牌或用途给豆子分区，各仓独立管理与统计。")
         }
         .confirmationDialog("删除该色号库存？",
                             isPresented: Binding(get: { pendingDelete != nil },
@@ -125,12 +151,17 @@ struct InventoryView: View {
 
     private var stockList: some View {
         List {
-            // 渐变英雄统计条
+            // 渐变英雄统计条（当前豆仓）
             Section {
                 inventoryHero
                     .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
+            }
+
+            // 多豆仓切换
+            Section {
+                binBar
             }
 
             // 色系筛选
@@ -160,33 +191,117 @@ struct InventoryView: View {
                 }
             } footer: {
                 if filteredStocks.isEmpty {
-                    Text("没有匹配的色号")
+                    Text(currentBinStocks.isEmpty
+                         ? "「\(BeadBinCatalog.displayName(activeBin))」还没有库存，点右上角「+」添加或批量导入"
+                         : "没有匹配的色号")
                 }
             }
         }
         .themedListPage()
     }
 
-    /// 顶部英雄统计：品牌渐变 + 豆点装饰 + 三栏数字
+    // MARK: - 多豆仓切换条
+
+    /// 仓名 chips：默认仓 + 自定义仓 + 新建 + 管理
+    private var binBar: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                binChip(name: "", label: BeadBinCatalog.defaultName, icon: "tray.full.fill")
+                ForEach(BeadBinCatalog.customBinNames(from: stocks), id: \.self) { raw in
+                    binChip(name: raw, label: raw, icon: "shippingbox.fill")
+                }
+                Button {
+                    newBinName = ""
+                    showNewBinAlert = true
+                } label: {
+                    Label("新建仓", systemImage: "plus")
+                        .font(.caption.bold())
+                        .padding(.horizontal, 11).padding(.vertical, 7)
+                        .background(Theme.cardFill, in: Capsule())
+                        .foregroundStyle(Theme.accent)
+                        .overlay(Capsule().stroke(Theme.accent.opacity(0.35)))
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    showBinManager = true
+                } label: {
+                    Label("管理", systemImage: "slider.horizontal.3")
+                        .font(.caption.bold())
+                        .padding(.horizontal, 11).padding(.vertical, 7)
+                        .background(Theme.cardFill, in: Capsule())
+                        .foregroundStyle(.secondary)
+                        .overlay(Capsule().stroke(Color.secondary.opacity(0.15)))
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.vertical, 2)
+        }
+        .listRowInsets(EdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 12))
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
+    }
+
+    private func binChip(name: String, label: String, icon: String) -> some View {
+        let active = activeBin == name
+        let count = stocks.filter { $0.binName == name }.count
+        return Button {
+            activeBin = name
+        } label: {
+            HStack(spacing: 5) {
+                Image(systemName: icon).font(.caption2.bold())
+                Text(label).font(.caption.weight(active ? .bold : .regular))
+                Text("\(count)")
+                    .font(.caption2.monospacedDigit())
+                    .foregroundStyle(active ? .white.opacity(0.85) : .secondary)
+            }
+            .padding(.horizontal, 11).padding(.vertical, 7)
+            .background(active ? AnyShapeStyle(Theme.brand) : AnyShapeStyle(Theme.cardFill), in: Capsule())
+            .foregroundStyle(active ? .white : Color.primary)
+            .overlay(Capsule().stroke(Color.secondary.opacity(0.15)))
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// 新建豆仓：仅登记仓名（库存为空，录入时归入）
+    private func createBin() {
+        let name = newBinName.trimmingCharacters(in: .whitespacesAndNewlines)
+        newBinName = ""
+        guard !name.isEmpty, name != BeadBinCatalog.defaultName else { return }
+        activeBin = name
+        toast = "已切到新仓「\(name)」，录入的豆子会归入此仓"
+    }
+
+    /// 顶部英雄统计：品牌渐变 + 豆点装饰 + 当前仓名 + 三栏数字
     private var inventoryHero: some View {
         ZStack(alignment: .topTrailing) {
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(Theme.brand)
             BeadDots()
                 .padding(.top, 14).padding(.trailing, 16)
-            HStack(spacing: 0) {
-                heroCell("\(stocks.count)", "已录入色号")
-                heroCell("\(totalQuantity)", "总豆量")
-                heroCell("\(lowCount)", lowCount > 0 ? "缺色 ⚠︎" : "缺色")
+            VStack(spacing: 10) {
+                HStack(spacing: 6) {
+                    Image(systemName: "shippingbox.fill").font(.caption2.bold())
+                    Text("当前豆仓 · \(BeadBinCatalog.displayName(activeBin))")
+                        .font(.caption.bold())
+                    Spacer()
+                }
+                .foregroundStyle(.white.opacity(0.92))
+
+                HStack(spacing: 0) {
+                    heroCell("\(currentBinStocks.count)", "已录入色号")
+                    heroCell("\(totalQuantity)", "总豆量")
+                    heroCell("\(lowCount)", lowCount > 0 ? "缺色 ⚠︎" : "缺色")
+                }
             }
-            .padding(.vertical, 16)
+            .padding(16)
         }
-        .frame(height: 84)
+        .frame(height: 104)
         .shadow(color: Theme.accent.opacity(0.22), radius: 10, y: 4)
     }
 
-    /// 低于阈值的色号数
-    private var lowCount: Int { stocks.filter { $0.isLow }.count }
+    /// 当前仓低于阈值的色号数
+    private var lowCount: Int { currentBinStocks.filter { $0.isLow }.count }
 
     private func heroCell(_ value: String, _ title: String) -> some View {
         VStack(spacing: 4) {
@@ -284,7 +399,7 @@ struct InventoryView: View {
         ContentUnavailableView {
             Label("库存还是空的", systemImage: "shippingbox")
         } description: {
-            Text("可以先「逐条添加」几个常用色号，或把一段「色号 数量」文本「批量导入」。")
+            Text("可以先「逐条添加」几个常用色号，或把一段「色号 数量」文本「批量导入」。豆子多的话，还能按品牌/用途建多个豆仓分区管理。")
         } actions: {
             Button {
                 showAdd = true
@@ -298,6 +413,14 @@ struct InventoryView: View {
                 showImport = true
             } label: {
                 Label("批量导入", systemImage: "doc.on.clipboard")
+            }
+            .buttonStyle(.bordered)
+
+            Button {
+                newBinName = ""
+                showNewBinAlert = true
+            } label: {
+                Label("新建豆仓", systemImage: "shippingbox")
             }
             .buttonStyle(.bordered)
         }
@@ -316,6 +439,18 @@ struct InventoryView: View {
                 showImport = true
             } label: {
                 Label("批量导入", systemImage: "doc.on.clipboard")
+            }
+            Divider()
+            Button {
+                showBinManager = true
+            } label: {
+                Label("管理豆仓", systemImage: "shippingbox")
+            }
+            Button {
+                newBinName = ""
+                showNewBinAlert = true
+            } label: {
+                Label("新建豆仓", systemImage: "plus.rectangle.on.folder")
             }
         } label: {
             Image(systemName: "plus.circle.fill")
@@ -342,6 +477,9 @@ struct StockQuickAddView: View {
 
     /// 保存成功回调（用于外层 toast）
     var onSaved: (String) -> Void = { _ in }
+
+    /// 目标豆仓（"" = 默认仓）；新增条目归入该仓，同色号查重也限定在该仓内
+    var binName: String = ""
 
     @State private var selectedId: Int = 199
     @State private var quantityText = ""
@@ -382,9 +520,12 @@ struct StockQuickAddView: View {
                     TextField("例如 500", text: $quantityText)
                         .keyboardType(.numberPad)
                     if let c = selectedColor, let existing = existingStock(c.id) {
-                        Text("该色号已有库存 \(existing.quantity) 颗（保存将累加）")
+                        Text("该色号在本仓已有 \(existing.quantity) 颗（保存将累加）")
                             .font(.caption).foregroundStyle(.secondary)
                     }
+                    LabeledContent("归入豆仓", value: BeadBinCatalog.displayName(binName))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
 
                 if addedCount > 0 {
@@ -412,9 +553,9 @@ struct StockQuickAddView: View {
         }
     }
 
-    /// 查已存在的同色号库存
+    /// 查当前仓内已存在的同色号库存
     private func existingStock(_ colorId: Int) -> BeadStock? {
-        stocks.first { $0.colorId == colorId }
+        stocks.first { $0.colorId == colorId && $0.binName == binName }
     }
 
     /// 保存（累加语义）；保存后清空数量，方便连续添加
@@ -424,7 +565,7 @@ struct StockQuickAddView: View {
         if let existing = existingStock(selectedId) {
             existing.addQuantity(quantity)
         } else {
-            context.insert(BeadStock(colorId: selectedId, quantity: quantity))
+            context.insert(BeadStock(colorId: selectedId, quantity: quantity, binName: binName))
         }
         try? context.save()
         addedCount += 1
@@ -492,5 +633,181 @@ struct StockQuantityEditSheet: View {
             }
             .onAppear { quantityText = "\(stock.quantity)" }
         }
+    }
+}
+
+// MARK: - 豆仓管理 Sheet（对标 AI豆仓「多豆仓分区」）
+
+/// 豆仓管理：新建 / 切换 / 重命名 / 解散（库存归回默认仓，不删数据）。
+@MainActor
+struct BinManagerSheet: View {
+    @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
+    @Query(sort: \BeadStock.colorId) private var stocks: [BeadStock]
+
+    /// 当前选中仓（双向绑定到外层 `@AppStorage`）
+    @Binding var activeBin: String
+    var onFinished: (String) -> Void = { _ in }
+
+    @State private var newName = ""
+    @State private var renaming: String?
+    @State private var renameText = ""
+    @State private var pendingDissolve: String?
+
+    private var customBins: [String] { BeadBinCatalog.customBinNames(from: stocks) }
+
+    private func count(_ raw: String) -> Int {
+        stocks.filter { $0.binName == raw }.count
+    }
+
+    private func total(_ raw: String) -> Int {
+        stocks.filter { $0.binName == raw }.reduce(0) { $0 + $1.quantity }
+    }
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section("新建豆仓") {
+                    HStack(spacing: 10) {
+                        TextField("仓名，如「漫漫 补充仓」", text: $newName)
+                            .textFieldStyle(.plain)
+                        Button {
+                            createBin()
+                        } label: {
+                            Label("创建", systemImage: "plus.circle.fill")
+                        }
+                        .disabled(newName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }
+                } footer: {
+                    Text("按品牌或用途分区后，各仓的色号与豆量独立管理与统计；补豆清单仍按全部豆仓汇总。")
+                }
+
+                Section("默认仓") {
+                    binRow(name: "", label: BeadBinCatalog.defaultName, icon: "tray.full.fill",
+                           deletable: false)
+                } footer: {
+                    Text("删除自定义仓时，其中的库存会归回默认仓，不会丢数据。")
+                }
+
+                if !customBins.isEmpty {
+                    Section("自定义豆仓（\(customBins.count)）") {
+                        ForEach(customBins, id: \.self) { raw in
+                            binRow(name: raw, label: raw, icon: "shippingbox.fill", deletable: true)
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    Button(role: .destructive) {
+                                        pendingDissolve = raw
+                                    } label: {
+                                        Label("解散", systemImage: "trash")
+                                    }
+                                    Button {
+                                        renaming = raw
+                                        renameText = raw
+                                    } label: {
+                                        Label("重命名", systemImage: "pencil")
+                                    }
+                                    .tint(.blue)
+                                }
+                        }
+                    }
+                }
+            }
+            .themedListPage()
+            .navigationTitle("豆仓管理")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("完成") { dismiss() }
+                }
+            }
+            .alert("重命名豆仓", isPresented: Binding(get: { renaming != nil },
+                                               set: { if !$0 { renaming = nil } })) {
+                TextField("新的仓名", text: $renameText)
+                Button("保存") { applyRename() }
+                Button("取消", role: .cancel) { renaming = nil }
+            } message: {
+                Text("重命名后，该仓内所有色号记录一并更新。")
+            }
+            .confirmationDialog("解散该豆仓？",
+                                isPresented: Binding(get: { pendingDissolve != nil },
+                                                     set: { if !$0 { pendingDissolve = nil } }),
+                                titleVisibility: .visible) {
+                Button("解散，库存归回默认仓", role: .destructive) { dissolve() }
+                Button("取消", role: .cancel) { pendingDissolve = nil }
+            } message: {
+                Text(pendingDissolve.map { "「\($0)」中的库存会移动到「\(BeadBinCatalog.defaultName)」，记录不会删除。" } ?? "")
+            }
+        }
+    }
+
+    /// 单行豆仓：点按切换为当前仓
+    private func binRow(name: String, label: String, icon: String, deletable: Bool) -> some View {
+        let active = activeBin == name
+        return Button {
+            activeBin = name
+            onFinished("已切到「\(BeadBinCatalog.displayName(name))」")
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.subheadline)
+                    .foregroundStyle(.white)
+                    .frame(width: 32, height: 32)
+                    .background(active ? AnyShapeStyle(Theme.brand) : AnyShapeStyle(Theme.mint),
+                                in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(label)
+                        .font(.subheadline.weight(active ? .bold : .medium))
+                        .foregroundStyle(.primary)
+                    Text("\(count(name)) 个色号 · \(total(name)) 颗")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                if active {
+                    Text("当前")
+                        .font(.caption2.bold())
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 8).padding(.vertical, 3)
+                        .background(Theme.brand, in: Capsule())
+                } else {
+                    Image(systemName: "chevron.right")
+                        .font(.caption2.bold())
+                        .foregroundStyle(.tertiary)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: 动作
+
+    private func createBin() {
+        let name = newName.trimmingCharacters(in: .whitespacesAndNewlines)
+        newName = ""
+        guard !name.isEmpty, name != BeadBinCatalog.defaultName else { return }
+        activeBin = name
+        onFinished("已新建并切到「\(name)」")
+    }
+
+    private func applyRename() {
+        guard let old = renaming else { return }
+        let newValue = renameText
+        renaming = nil
+        let n = BeadBinCatalog.rename(in: stocks, from: old, to: newValue)
+        try? context.save()
+        // 当前仓若被重命名，跟随更新选中态
+        if activeBin == old {
+            let trimmed = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            activeBin = (trimmed == BeadBinCatalog.defaultName) ? "" : trimmed
+        }
+        onFinished(n > 0 ? "已重命名为「\(BeadBinCatalog.displayName(newValue))」" : "没有需要更新的记录")
+    }
+
+    private func dissolve() {
+        guard let raw = pendingDissolve else { return }
+        pendingDissolve = nil
+        let n = BeadBinCatalog.dissolve(in: stocks, bin: raw)
+        try? context.save()
+        if activeBin == raw { activeBin = "" }
+        onFinished(n > 0 ? "「\(raw)」的 \(n) 条库存已归回默认仓" : "该仓没有库存记录")
     }
 }

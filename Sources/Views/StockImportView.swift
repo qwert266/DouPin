@@ -14,6 +14,9 @@ struct StockImportView: View {
     /// 导入完成回调（用于外层 toast）
     var onFinished: (String) -> Void = { _ in }
 
+    /// 目标豆仓（"" = 默认仓）；查重与写入均限定在该仓内
+    var binName: String = ""
+
     /// 冲突处理策略
     enum ConflictPolicy: String, CaseIterable {
         case add = "累加"
@@ -65,6 +68,13 @@ struct StockImportView: View {
                 conflictSection
 
                 previewSection
+
+                Section {
+                    LabeledContent("归入豆仓", value: BeadBinCatalog.displayName(binName))
+                        .font(.subheadline)
+                } footer: {
+                    Text("查重与写入都在该豆仓内进行；同色号在其他仓的记录不受影响。")
+                }
 
                 if let summary = resultSummary {
                     Section {
@@ -173,21 +183,21 @@ struct StockImportView: View {
     // MARK: - 查表
 
     private func existing(_ colorId: Int) -> BeadStock? {
-        stocks.first { $0.colorId == colorId }
+        stocks.first { $0.colorId == colorId && $0.binName == binName }
     }
 
     // MARK: - 导入
 
-    /// 批量 upsert：按 colorId 查改 / 插入
+    /// 批量 upsert：按 colorId 在当前仓内查改 / 插入
     private func performImport() {
         let result = parseResult
         var inserted = 0
         var updated = 0
         var skipped = 0
 
-        // 同一色号在文本中多次出现时，按顺序合并到同一条目
+        // 同一色号在文本中多次出现时，按顺序合并到同一条目（限定当前仓）
         var index: [Int: BeadStock] = [:]
-        for s in stocks where s.colorId > 0 { index[s.colorId] = s }
+        for s in stocks where s.colorId > 0 && s.binName == binName { index[s.colorId] = s }
 
         for item in result.ok {
             if let stock = index[item.colorId] {
@@ -202,7 +212,7 @@ struct StockImportView: View {
                     skipped += 1
                 }
             } else {
-                let newStock = BeadStock(colorId: item.colorId, quantity: item.quantity)
+                let newStock = BeadStock(colorId: item.colorId, quantity: item.quantity, binName: binName)
                 context.insert(newStock)
                 index[item.colorId] = newStock
                 inserted += 1
