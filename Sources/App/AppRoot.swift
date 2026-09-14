@@ -170,7 +170,7 @@ struct HomeView: View {
                 .padding(.bottom, 24)
             }
             .background(Theme.pageFill)
-            .navigationTitle("豆拼")
+            .navigationTitle("豆绘小栈")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 // 全局一键连接拼豆板（所有 Tab 统一放置）
@@ -190,7 +190,7 @@ struct HomeView: View {
             BeadDots()
                 .padding(.top, 18).padding(.trailing, 20)
             VStack(alignment: .leading, spacing: 10) {
-                Text("豆拼 DouPin")
+                Text("豆绘小栈")
                     .font(.title2.bold())
                     .foregroundStyle(.white)
                 Text("照片变图纸，图纸点亮拼豆板")

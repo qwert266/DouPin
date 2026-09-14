@@ -105,13 +105,13 @@ struct MoreView: View {
                         .foregroundStyle(.white)
                 }
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("豆拼 DouPin")
+                    Text("豆绘小栈")
                         .font(.headline)
                         .foregroundStyle(.white)
                     Text("照片变图纸 · 图纸点亮拼豆板")
                         .font(.caption)
                         .foregroundStyle(.white.opacity(0.85))
-                    Text("版本 1.1 · 本地优先 · 无账户")
+                    Text("版本 1.2 · 本地优先 · 无账户")
                         .font(.caption2)
                         .foregroundStyle(.white.opacity(0.7))
                 }
@@ -301,7 +301,7 @@ struct MoreView: View {
     private var aboutSection: some View {
         Section {
             LabeledContent {
-                Text("豆拼 DouPin").font(.headline)
+                Text("豆绘小栈").font(.headline)
             } label: {
                 Label("应用名", systemImage: "app.badge")
             }

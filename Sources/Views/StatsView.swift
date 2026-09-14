@@ -232,7 +232,7 @@ struct StatsView: View {
 
     /// 复制补豆清单文本（沿用消耗预估清单格式）
     private func copyRestockList() {
-        var lines = ["【豆拼】补豆清单（全部图纸汇总）"]
+        var lines = ["【豆绘小栈】补豆清单（全部图纸汇总）"]
         for row in restockRows {
             lines.append("\(row.color.mard)  需\(row.need) 有\(row.have) 缺\(row.shortage)")
         }

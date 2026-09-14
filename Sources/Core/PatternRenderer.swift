@@ -122,7 +122,7 @@ enum PatternRenderer {
             }
 
             // 落款
-            ("豆拼 DouPin" as NSString).draw(
+            ("豆绘小栈" as NSString).draw(
                 at: CGPoint(x: 36, y: H - 54),
                 withAttributes: [.font: UIFont.boldSystemFont(ofSize: 15),
                                  .foregroundColor: UIColor.white.withAlphaComponent(0.92)])
@@ -197,7 +197,7 @@ enum PatternRenderer {
                     .foregroundColor: UIColor.black
                 ]
                 (options.title as NSString).draw(at: CGPoint(x: margin, y: margin), withAttributes: attrs)
-                let sub = "宽 \(width) × 高 \(height) 格 · 共 \(cells.filter { $0 > 0 }.count) 颗 · 豆拼 DouPin"
+                let sub = "宽 \(width) × 高 \(height) 格 · 共 \(cells.filter { $0 > 0 }.count) 颗 · 豆绘小栈"
                 let subAttrs: [NSAttributedString.Key: Any] = [
                     .font: UIFont.systemFont(ofSize: 13),
                     .foregroundColor: UIColor.darkGray

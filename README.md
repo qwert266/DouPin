@@ -1,4 +1,4 @@
-# 豆拼 DouPin — 智能拼豆 iOS App
+# 豆绘小栈 DouPin — 智能拼豆 iOS App
 
 面向 Wofan / PIXDOU 类智能拼豆灯板的 iOS 原生应用（SwiftUI + SwiftData，iOS 17+，无会员系统）。
 

@@ -1024,7 +1024,7 @@
 				<key>GENERATE_INFOPLIST_FILE</key>
 				<string>YES</string>
 				<key>INFOPLIST_KEY_CFBundleDisplayName</key>
-				<string>豆拼</string>
+				<string>豆绘小栈</string>
 				<key>INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription</key>
 				<string>用于连接智能拼豆板，发送图纸并引导拼豆</string>
 				<key>INFOPLIST_KEY_UILaunchScreen_Generation</key>
@@ -1068,7 +1068,7 @@
 				<key>GENERATE_INFOPLIST_FILE</key>
 				<string>YES</string>
 				<key>INFOPLIST_KEY_CFBundleDisplayName</key>
-				<string>豆拼</string>
+				<string>豆绘小栈</string>
 				<key>INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription</key>
 				<string>用于连接智能拼豆板，发送图纸并引导拼豆</string>
 				<key>INFOPLIST_KEY_UILaunchScreen_Generation</key>

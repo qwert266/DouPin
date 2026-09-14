@@ -100,8 +100,8 @@ enum PDFExporter {
         let format = UIGraphicsPDFRendererFormat()
         // 元数据（可选，便于打印/分享时识别）
         format.documentInfo = [
-            kCGPDFContextTitle as String: options.title.isEmpty ? "豆拼图纸" : options.title,
-            kCGPDFContextCreator as String: "豆拼 DouPin"
+            kCGPDFContextTitle as String: options.title.isEmpty ? "豆绘小栈图纸" : options.title,
+            kCGPDFContextCreator as String: "豆绘小栈"
         ]
         let renderer = UIGraphicsPDFRenderer(bounds: bounds, format: format)
 
@@ -155,7 +155,7 @@ enum PDFExporter {
     /// - Returns: 临时文件 URL；写入失败返回 `nil`
     static func writePDFToTemp(_ data: Data, name: String) -> URL? {
         let safeName = sanitizeFileName(name)
-        let fileName = safeName.isEmpty ? "豆拼图纸.pdf" : "\(safeName).pdf"
+        let fileName = safeName.isEmpty ? "豆绘小栈图纸.pdf" : "\(safeName).pdf"
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
         do {
             // 覆盖旧同名临时文件
@@ -217,7 +217,7 @@ enum PDFExporter {
             .font: UIFont.boldSystemFont(ofSize: 14),
             .foregroundColor: UIColor.black
         ]
-        let titleText = options.title.isEmpty ? "豆拼图纸" : options.title
+        let titleText = options.title.isEmpty ? "豆绘小栈图纸" : options.title
         (titleText as NSString).draw(at: CGPoint(x: originX, y: originY + 4),
                                      withAttributes: titleAttrs)
 
