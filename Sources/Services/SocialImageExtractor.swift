@@ -68,6 +68,9 @@ enum SocialImageExtractor {
 
         var hasImages: Bool { !imageURLs.isEmpty && error == nil }
 
+        /// 失败且建议走相册兜底（UI 据此显示「改用从相册选择图片」入口）
+        var shouldFallbackToAlbum: Bool { !hasImages && suggestAlbum }
+
         static func success(_ urls: [URL], title: String?, platform: Platform) -> Result {
             Result(imageURLs: urls, title: title, platform: platform, error: nil, suggestAlbum: false)
         }
