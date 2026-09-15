@@ -113,7 +113,7 @@ final class UpdateChecker: ObservableObject {
             }
             let remote = String(sha.prefix(7))
             let local = Self.localCommit
-            if local == "dev" || local == "未知" {
+            if local == "dev" || local == L10n.s("未知") {
                 state = .unknownLocal(remote)
             } else if local.caseInsensitiveCompare(remote) == .orderedSame {
                 state = .upToDate(remote)

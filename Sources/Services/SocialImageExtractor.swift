@@ -32,10 +32,10 @@ enum SocialImageExtractor {
         /// 界面展示名（保持品牌原名，不翻译）
         var displayName: String {
             switch self {
-            case .douyin: return "抖音"
-            case .xiaohongshu: return "小红书"
-            case .kuaishou: return "快手"
-            case .weibo: return "微博"
+            case .douyin: return L10n.s("抖音")
+            case .xiaohongshu: return L10n.s("小红书")
+            case .kuaishou: return L10n.s("快手")
+            case .weibo: return L10n.s("微博")
             case .generic: return L10n.s("网页")
             }
         }
