@@ -54,10 +54,10 @@ enum EditorTool: String, CaseIterable {
 
     var label: String {
         switch self {
-        case .brush: return "画笔"
-        case .eraser: return "橡皮"
-        case .eyedropper: return "吸管"
-        case .bucket: return "填充"
+        case .brush: return L10n.s("画笔")
+        case .eraser: return L10n.s("橡皮")
+        case .eyedropper: return L10n.s("吸管")
+        case .bucket: return L10n.s("填充")
         }
     }
 }

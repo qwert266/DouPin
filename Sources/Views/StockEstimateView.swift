@@ -32,7 +32,7 @@ struct StockEstimateView: View {
                 consumeSection
             }
         }
-        .navigationTitle("消耗预估")
+        .navigationTitle(L10n.s("消耗预估"))
         .navigationBarTitleDisplayMode(.inline)
         .overlay(alignment: .bottom) {
             if let toast {
@@ -54,14 +54,14 @@ struct StockEstimateView: View {
     private var emptyStockSection: some View {
         Section {
             ContentUnavailableView {
-                Label("还没有库存数据", systemImage: "shippingbox")
+                Label(L10n.s("还没有库存数据"), systemImage: "shippingbox")
             } description: {
-                Text("先到「库存」标签录入色号数量，再回来查看这张图纸的缺色情况。")
+                Text(L10n.s("先到「库存」标签录入色号数量，再回来查看这张图纸的缺色情况。"))
             } actions: {
                 NavigationLink {
                     InventoryView()
                 } label: {
-                    Label("去录入库存", systemImage: "square.stack.3d.up.fill")
+                    Label(L10n.s("去录入库存"), systemImage: "square.stack.3d.up.fill")
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(.pink)
@@ -73,11 +73,11 @@ struct StockEstimateView: View {
     // MARK: - 顶部汇总
 
     private var summarySection: some View {
-        Section("汇总") {
+        Section(L10n.k("汇总")) {
             HStack(spacing: 20) {
-                summaryCell("总需豆量", "\(estimate.totalNeed)")
-                summaryCell("库存总豆量", "\(estimate.totalHave)")
-                summaryCell("缺色种数", "\(estimate.shortCount)",
+                summaryCell(L10n.s("总需豆量"), "\(estimate.totalNeed)")
+                summaryCell(L10n.s("库存总豆量"), "\(estimate.totalHave)")
+                summaryCell(L10n.s("缺色种数"), "\(estimate.shortCount)",
                             highlight: estimate.hasShortage)
             }
             .frame(maxWidth: .infinity)
@@ -123,12 +123,12 @@ struct StockEstimateView: View {
             }
         } header: {
             HStack {
-                Text("明细")
+                Text(L10n.s("明细"))
                 Spacer()
-                Text("色号 · 需要 · 现有 · 差额").font(.caption).foregroundStyle(.secondary)
+                Text(L10n.s("色号 · 需要 · 现有 · 差额")).font(.caption).foregroundStyle(.secondary)
             }
         } footer: {
-            Text("差额 = 现有 − 需要；负数（不够）标红，正数（富余）标绿。")
+            Text(L10n.s("差额 = 现有 − 需要；负数（不够）标红，正数（富余）标绿。"))
         }
     }
 
@@ -146,25 +146,25 @@ struct StockEstimateView: View {
                         Text(row.color.mard)
                             .font(.subheadline.monospaced().weight(.medium))
                         Spacer()
-                        Text("缺 \(row.shortage)")
+                        Text(L10n.p("缺 {0}", "\(row.shortage)"))
                             .font(.subheadline.monospacedDigit().weight(.semibold))
                             .foregroundStyle(.red)
                     }
                 }
                 Button {
                     UIPasteboard.general.string = StockEstimator.missingListText(estimate)
-                    toast = "缺色清单已复制"
+                    toast = L10n.s("缺色清单已复制")
                 } label: {
-                    Label("一键复制缺色清单", systemImage: "doc.on.doc")
+                    Label(L10n.s("一键复制缺色清单"), systemImage: "doc.on.doc")
                 }
             } else {
-                Label("库存充足，无缺色 🎉", systemImage: "checkmark.seal.fill")
+                Label(L10n.s("库存充足，无缺色 🎉"), systemImage: "checkmark.seal.fill")
                     .foregroundStyle(.green)
             }
         } header: {
-            Text("缺色清单")
+            Text(L10n.s("缺色清单"))
         } footer: {
-            Text("只列出不够的色号及缺口，可复制后发给卖家补豆。")
+            Text(L10n.s("只列出不够的色号及缺口，可复制后发给卖家补豆。"))
         }
     }
 
@@ -175,11 +175,11 @@ struct StockEstimateView: View {
             Button(role: .destructive) {
                 consume()
             } label: {
-                Label("按本图纸用量扣减库存（便利）", systemImage: "minus.circle")
+                Label(L10n.s("按本图纸用量扣减库存（便利）"), systemImage: "minus.circle")
             }
             .disabled(estimate.rows.isEmpty)
         } footer: {
-            Text("仅按图纸用量一次性扣减已存在的色号；不记录出入库流水，扣减后可在库存页手动修正。")
+            Text(L10n.s("仅按图纸用量一次性扣减已存在的色号；不记录出入库流水，扣减后可在库存页手动修正。"))
         }
     }
 
@@ -188,6 +188,6 @@ struct StockEstimateView: View {
         let deducted = StockEstimator.consumeOnce(pattern: pattern, stocks: &mutable)
         // BeadStock 为 @Model 引用类型，`consumeOnce` 的原地修改已直接生效，这里只需保存
         try? context.save()
-        toast = "已按用量扣减 \(deducted.count) 个色号"
+        toast = L10n.p("已按用量扣减 {0} 个色号", "\(deducted.count)")
     }
 }

@@ -38,9 +38,9 @@ struct SplitBoardView: View {
                 if result.tiles.isEmpty {
                     Section {
                         ContentUnavailableView {
-                            Label("无法拆板", systemImage: "exclamationmark.triangle")
+                            Label(L10n.s("无法拆板"), systemImage: "exclamationmark.triangle")
                         } description: {
-                            Text("图纸尺寸或板尺寸不合法（需 > 0）。")
+                            Text(L10n.s("图纸尺寸或板尺寸不合法（需 > 0）。"))
                         }
                         .frame(maxHeight: 200)
                     }
@@ -53,7 +53,7 @@ struct SplitBoardView: View {
                 }
             }
         }
-        .navigationTitle("拆板")
+        .navigationTitle(L10n.s("拆板"))
         .navigationBarTitleDisplayMode(.inline)
         .onAppear(perform: loadDefaults)
         .onChange(of: boardW) { _, _ in recompute() }
@@ -62,15 +62,15 @@ struct SplitBoardView: View {
         .sheet(item: $previewTile) { tile in
             tilePreviewSheet(tile)
         }
-        .alert("已保存", isPresented: Binding(get: { savedCount != nil },
+        .alert(L10n.s("已保存"), isPresented: Binding(get: { savedCount != nil },
                                             set: { if !$0 { savedCount = nil } })) {
-            Button("好") { dismiss() }
+            Button(L10n.s("好")) { dismiss() }
         } message: {
-            Text("已保存 \(savedCount ?? 0) 块子图，可在「图纸」中逐块查看与打卡。")
+            Text(L10n.p("已保存 {0} 块子图，可在「图纸」中逐块查看与打卡。", "\(savedCount ?? 0)"))
         }
-        .alert("保存失败", isPresented: Binding(get: { saveError != nil },
+        .alert(L10n.s("保存失败"), isPresented: Binding(get: { saveError != nil },
                                              set: { if !$0 { saveError = nil } })) {
-            Button("好", role: .cancel) { saveError = nil }
+            Button(L10n.s("好"), role: .cancel) { saveError = nil }
         } message: {
             Text(saveError ?? "")
         }
@@ -81,7 +81,7 @@ struct SplitBoardView: View {
     private var settingsSection: some View {
         Section {
             HStack {
-                Text("板尺寸预设")
+                Text(L10n.s("板尺寸预设"))
                 Spacer()
                 ForEach(presets, id: \.self) { side in
                     Button("\(side)×\(side)") {
@@ -96,32 +96,32 @@ struct SplitBoardView: View {
                 }
             }
 
-            Toggle("自定义板尺寸", isOn: $showCustom)
+            Toggle(L10n.s("自定义板尺寸"), isOn: $showCustom)
 
             if showCustom {
                 Stepper(value: $boardW, in: 1...104) {
-                    LabeledContent("板宽", value: "\(boardW) 格")
+                    LabeledContent(L10n.k("板宽"), value: L10n.p("{0} 格", "\(boardW)"))
                 }
                 Stepper(value: $boardH, in: 1...104) {
-                    LabeledContent("板高", value: "\(boardH) 格")
+                    LabeledContent(L10n.k("板高"), value: L10n.p("{0} 格", "\(boardH)"))
                 }
             }
 
             Stepper(value: $overlap, in: 0...maxOverlap) {
-                LabeledContent("重叠行（对齐用）", value: "\(overlap) 行")
+                LabeledContent(L10n.k("重叠行（对齐用）"), value: L10n.p("{0} 行", "\(overlap)"))
             }
 
             HStack {
-                Label("预计拆分为", systemImage: "square.grid.3x3.square")
+                Label(L10n.s("预计拆分为"), systemImage: "square.grid.3x3.square")
                 Spacer()
                 Text(estimatedText)
                     .font(.headline.monospacedDigit())
                     .foregroundStyle(.pink)
             }
         } header: {
-            Text("拆板设置")
+            Text(L10n.s("拆板设置"))
         } footer: {
-            Text("默认严格切分（重叠 0）。图纸 \(pattern.width)×\(pattern.height) 格。")
+            Text(L10n.p("默认严格切分（重叠 0）。图纸 {0}×{1} 格。", "\(pattern.width)", "\(pattern.height)"))
         }
     }
 
@@ -134,7 +134,7 @@ struct SplitBoardView: View {
         let r = BoardSplitter.split(cells: pattern.cells, width: pattern.width, height: pattern.height,
                                     boardW: boardW, boardH: boardH, overlap: overlap)
         guard !r.tiles.isEmpty else { return "—" }
-        return "\(r.cols) × \(r.rows) = \(r.tiles.count) 块"
+        return L10n.p("{0} × {1} = {2} 块", "\(r.cols)", "\(r.rows)", "\(r.tiles.count)")
     }
 
     // MARK: - 单块提示
@@ -142,9 +142,9 @@ struct SplitBoardView: View {
     private func singleTileSection(_ result: BoardSplitter.SplitResult) -> some View {
         Section {
             ContentUnavailableView {
-                Label("无需拆分", systemImage: "checkmark.circle")
+                Label(L10n.s("无需拆分"), systemImage: "checkmark.circle")
             } description: {
-                Text("图纸不超过一块板（\(boardW)×\(boardH)），无需拆分。")
+                Text(L10n.p("图纸不超过一块板（{0}×{1}），无需拆分。", "\(boardW)", "\(boardH)"))
             }
             .frame(maxHeight: 200)
         }
@@ -153,7 +153,7 @@ struct SplitBoardView: View {
     // MARK: - 拼板布局图
 
     private func layoutSection(_ result: BoardSplitter.SplitResult) -> some View {
-        Section("拼板布局") {
+        Section(L10n.k("拼板布局")) {
             Canvas { ctx, size in
                 drawLayout(ctx: &ctx, size: size, result: result)
             }
@@ -161,7 +161,7 @@ struct SplitBoardView: View {
             .background(Color(white: 0.96))
             .clipShape(RoundedRectangle(cornerRadius: 10))
             .listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
-            Text("虚线为板边界，每块左上角为编号（R行C列）。")
+            Text(L10n.s("虚线为板边界，每块左上角为编号（R行C列）。"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -199,7 +199,7 @@ struct SplitBoardView: View {
     // MARK: - 子块列表
 
     private func tilesSection(_ result: BoardSplitter.SplitResult) -> some View {
-        Section("子块（\(result.tiles.count) 块）") {
+        Section(L10n.pk("子块（{0} 块）", "\(result.tiles.count)")) {
             ForEach(result.tiles, id: \.index) { tile in
                 Button {
                     previewTile = tile
@@ -217,7 +217,7 @@ struct SplitBoardView: View {
                         VStack(alignment: .leading, spacing: 3) {
                             Text(tile.index)
                                 .font(.subheadline.monospaced().bold())
-                            Text("\(tile.width)×\(tile.height) · \(tile.colorCount) 色 · \(tile.beadTotal) 颗")
+                            Text(L10n.p("{0}×{1} · {2} 色 · {3} 颗", "\(tile.width)", "\(tile.height)", "\(tile.colorCount)", "\(tile.beadTotal)"))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                             if !tile.edgeHints.isEmpty {
@@ -244,11 +244,11 @@ struct SplitBoardView: View {
             Button {
                 saveAll(result)
             } label: {
-                Label("保存全部子图（\(result.tiles.count) 块）", systemImage: "square.and.arrow.down")
+                Label(L10n.p("保存全部子图（{0} 块）", "\(result.tiles.count)"), systemImage: "square.and.arrow.down")
                     .font(.headline)
             }
         } footer: {
-            Text("每块子图独立保存为图纸，可逐块上板拼、逐块打卡。")
+            Text(L10n.s("每块子图独立保存为图纸，可逐块上板拼、逐块打卡。"))
         }
     }
 
@@ -257,21 +257,21 @@ struct SplitBoardView: View {
     private func tilePreviewSheet(_ tile: BoardSplitter.SplitTile) -> some View {
         NavigationStack {
             List {
-                Section("预览") {
+                Section(L10n.k("预览")) {
                     GridView(cells: tile.cells, width: tile.width, height: tile.height)
                         .frame(maxHeight: 320)
                         .listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
                 }
-                Section("信息") {
-                    LabeledContent("编号", value: tile.index)
-                    LabeledContent("尺寸", value: "\(tile.width) × \(tile.height)")
-                    LabeledContent("豆子总数", value: "\(tile.beadTotal) 颗")
-                    LabeledContent("使用颜色", value: "\(tile.colorCount) 种")
+                Section(L10n.k("信息")) {
+                    LabeledContent(L10n.k("编号"), value: tile.index)
+                    LabeledContent(L10n.k("尺寸"), value: "\(tile.width) × \(tile.height)")
+                    LabeledContent(L10n.k("豆子总数"), value: L10n.p("{0} 颗", "\(tile.beadTotal)"))
+                    LabeledContent(L10n.k("使用颜色"), value: L10n.p("{0} 种", "\(tile.colorCount)"))
                     if !tile.edgeHints.isEmpty {
-                        LabeledContent("接缝", value: tile.edgeHints.joined(separator: " / "))
+                        LabeledContent(L10n.k("接缝"), value: tile.edgeHints.joined(separator: " / "))
                     }
                 }
-                Section("用色清单") {
+                Section(L10n.k("用色清单")) {
                     ForEach(tile.beadCounts, id: \.color.id) { item in
                         HStack(spacing: 10) {
                             RoundedRectangle(cornerRadius: 4)
@@ -281,7 +281,7 @@ struct SplitBoardView: View {
                             Text("Mard \(item.color.mard)")
                                 .font(.subheadline.monospaced())
                             Spacer()
-                            Text("\(item.count) 颗")
+                            Text(L10n.p("{0} 颗", "\(item.count)"))
                                 .font(.subheadline.monospacedDigit())
                                 .foregroundStyle(.secondary)
                         }
@@ -292,7 +292,7 @@ struct SplitBoardView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("完成") { previewTile = nil }
+                    Button(L10n.s("完成")) { previewTile = nil }
                 }
             }
         }
@@ -322,14 +322,14 @@ struct SplitBoardView: View {
         guard !result.tiles.isEmpty else { return }
         let created = PatternFactory.saveAllTiles(result, from: pattern, context: context)
         guard !created.isEmpty else {
-            saveError = "未生成任何子图，请检查图纸数据。"
+            saveError = L10n.s("未生成任何子图，请检查图纸数据。")
             return
         }
         do {
             try context.save()
             savedCount = created.count
         } catch {
-            saveError = "保存失败：\(error.localizedDescription)"
+            saveError = L10n.p("保存失败：{0}", "\(error.localizedDescription)")
         }
     }
 }

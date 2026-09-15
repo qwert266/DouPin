@@ -91,13 +91,13 @@ struct GalleryView: View {
             BeadDots()
                 .padding(.top, 16).padding(.trailing, 18)
             VStack(alignment: .leading, spacing: 12) {
-                Label("我的作品集", systemImage: "photo.stack.fill")
+                Label(L10n.s("我的作品集"), systemImage: "photo.stack.fill")
                     .font(.subheadline.bold())
                     .foregroundStyle(.white.opacity(0.92))
                 HStack(spacing: 0) {
-                    heroStat("\(doneWorks.count)", "作品")
-                    heroStat("\(totalBeads)", "累计颗数")
-                    heroStat("\(monthCount)", "本月完成")
+                    heroStat("\(doneWorks.count)", L10n.s("作品"))
+                    heroStat("\(totalBeads)", L10n.s("累计颗数"))
+                    heroStat("\(monthCount)", L10n.s("本月完成"))
                 }
             }
             .padding(18)
@@ -131,7 +131,7 @@ struct GalleryView: View {
                     Button {
                         filter = f
                     } label: {
-                        Text(f.rawValue)
+                        Text(L10n.s(f.rawValue))
                             .font(.caption.weight(active ? .bold : .regular))
                             .padding(.horizontal, 13).padding(.vertical, 7)
                             .background(active ? AnyShapeStyle(Theme.brand) : AnyShapeStyle(Theme.cardFill), in: Capsule())
@@ -159,7 +159,7 @@ struct GalleryView: View {
                         .frame(maxWidth: .infinity)
                         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                     if p.resultPhoto != nil {
-                        Text("成品照")
+                        Text(L10n.s("成品照"))
                             .font(.caption2.bold())
                             .foregroundStyle(.white)
                             .padding(.horizontal, 7).padding(.vertical, 3)
@@ -174,7 +174,7 @@ struct GalleryView: View {
                 HStack(spacing: 5) {
                     Text("\(p.width)×\(p.height)")
                     Text("·")
-                    Text("\(p.totalBeads) 颗")
+                    Text(L10n.p("{0} 颗", "\(p.totalBeads)"))
                     if let d = p.completedAt {
                         Text("·")
                         Text(d.formatted(.dateTime.month().day()))
@@ -213,11 +213,11 @@ struct GalleryView: View {
             Image(systemName: "photo.stack")
                 .font(.system(size: 42))
                 .foregroundStyle(.tertiary)
-            Text(doneWorks.isEmpty ? "还没有完成的作品" : "该筛选下没有作品")
+            Text(doneWorks.isEmpty ? L10n.s("还没有完成的作品") : L10n.s("该筛选下没有作品"))
                 .font(.headline)
             Text(doneWorks.isEmpty
-                 ? "拼完一张图纸并打卡完成后，会自动出现在这里；上传成品照片还能生成作品卡分享。"
-                 : "换个筛选条件看看。")
+                 ? L10n.s("拼完一张图纸并打卡完成后，会自动出现在这里；上传成品照片还能生成作品卡分享。")
+                 : L10n.s("换个筛选条件看看。"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -263,7 +263,7 @@ struct WorkShowcaseSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("关闭") { dismiss() }
+                    Button(L10n.s("关闭")) { dismiss() }
                 }
             }
             .sheet(isPresented: $showShareSheet) {
@@ -294,9 +294,9 @@ struct WorkShowcaseSheet: View {
             }
 
             if photoImage != nil {
-                Picker("查看", selection: $showPatternGrid) {
-                    Text("成品照片").tag(false)
-                    Text("图纸").tag(true)
+                Picker(L10n.s("查看"), selection: $showPatternGrid) {
+                    Text(L10n.s("成品照片")).tag(false)
+                    Text(L10n.s("图纸")).tag(true)
                 }
                 .pickerStyle(.segmented)
             }
@@ -309,21 +309,21 @@ struct WorkShowcaseSheet: View {
     private var infoCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 0) {
-                infoCell("\(pattern.width)×\(pattern.height)", "图纸尺寸")
-                infoCell("\(pattern.totalBeads)", "总颗数")
-                infoCell("\(pattern.beadCounts.count)", "用色数")
+                infoCell("\(pattern.width)×\(pattern.height)", L10n.s("图纸尺寸"))
+                infoCell("\(pattern.totalBeads)", L10n.s("总颗数"))
+                infoCell("\(pattern.beadCounts.count)", L10n.s("用色数"))
             }
             if let done = pattern.completedAt {
                 HStack(spacing: 6) {
                     Image(systemName: "checkmark.seal.fill").foregroundStyle(.green)
-                    Text("完成于 \(done.formatted(.dateTime.year().month().day().hour().minute()))")
+                    Text(L10n.p("完成于 {0}", "\(done.formatted(.dateTime.year().month().day().hour().minute()))"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
             }
             if let start = pattern.startedAt, let done = pattern.completedAt {
                 let days = max(1, Int(done.timeIntervalSince(start) / 86400) + 1)
-                Text("用时约 \(days) 天")
+                Text(L10n.p("用时约 {0} 天", "\(days)"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -346,7 +346,7 @@ struct WorkShowcaseSheet: View {
             Button {
                 generateShareCard()
             } label: {
-                Label("生成作品分享卡", systemImage: "square.and.arrow.up.fill")
+                Label(L10n.s("生成作品分享卡"), systemImage: "square.and.arrow.up.fill")
                     .font(.headline)
                     .foregroundStyle(.white)
                     .frame(height: 22)
@@ -357,15 +357,15 @@ struct WorkShowcaseSheet: View {
             .buttonStyle(.plain)
             .shadow(color: .black.opacity(0.10), radius: 10, y: 4)
 
-            Text("竖版长图：成品照（或图纸）+ 尺寸豆量 + 色号用量 Top6，可直接发微信/小红书。")
+            Text(L10n.s("竖版长图：成品照（或图纸）+ 尺寸豆量 + 色号用量 Top6，可直接发微信/小红书。"))
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
                 .multilineTextAlignment(.center)
 
             if let shareImage {
                 ShareLink(item: Image(uiImage: shareImage),
-                          preview: SharePreview("\(pattern.name) · 作品卡", image: Image(uiImage: shareImage))) {
-                    Label("分享作品卡", systemImage: "paperplane.fill")
+                          preview: SharePreview(L10n.p("{0} · 作品卡", "\(pattern.name)"), image: Image(uiImage: shareImage))) {
+                    Label(L10n.s("分享作品卡"), systemImage: "paperplane.fill")
                         .font(.subheadline.bold())
                         .foregroundStyle(Theme.accent)
                         .frame(height: 18)
@@ -382,7 +382,7 @@ struct WorkShowcaseSheet: View {
     private func generateShareCard() {
         var opts = PatternRenderer.ShareCardOptions()
         opts.title = pattern.name
-        var parts: [String] = ["\(pattern.width)×\(pattern.height) 格", "\(pattern.totalBeads) 颗"]
+        var parts: [String] = [L10n.p("{0}×{1} 格", "\(pattern.width)", "\(pattern.height)"), L10n.p("{0} 颗", "\(pattern.totalBeads)")]
         if let done = pattern.completedAt {
             parts.append(done.formatted(.dateTime.year().month().day()))
         }
@@ -412,13 +412,13 @@ private struct SharePreviewSheet: View {
                         .scaledToFit()
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                         .shadow(color: .black.opacity(0.15), radius: 12, y: 6)
-                    Text("长按图片可存储到相册，或点右上角分享")
+                    Text(L10n.s("长按图片可存储到相册，或点右上角分享"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
 
                     ShareLink(item: Image(uiImage: image),
-                              preview: SharePreview("作品分享卡", image: Image(uiImage: image))) {
-                        Label("分享 / 存储", systemImage: "square.and.arrow.up")
+                              preview: SharePreview(L10n.s("作品分享卡"), image: Image(uiImage: image))) {
+                        Label(L10n.s("分享 / 存储"), systemImage: "square.and.arrow.up")
                             .font(.headline)
                             .foregroundStyle(.white)
                             .frame(height: 22)
@@ -431,11 +431,11 @@ private struct SharePreviewSheet: View {
                 .padding(16)
             }
             .background(Theme.pageFill)
-            .navigationTitle("作品分享卡")
+            .navigationTitle(L10n.s("作品分享卡"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("完成") { dismiss() }
+                    Button(L10n.s("完成")) { dismiss() }
                 }
             }
         }

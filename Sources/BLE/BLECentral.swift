@@ -30,8 +30,8 @@ struct DiscoveredBoard: Identifiable, Equatable {
     static func == (l: DiscoveredBoard, r: DiscoveredBoard) -> Bool { l.id == r.id }
 
     var summary: String {
-        if looksLikeBoard { return "拼豆板" }
-        if name.isEmpty { return "未知设备" }
+        if looksLikeBoard { return L10n.s("拼豆板") }
+        if name.isEmpty { return L10n.s("未知设备") }
         return name
     }
 }
@@ -215,7 +215,7 @@ final class BLECentral: NSObject, ObservableObject {
             guard self.autoConnecting else { return }
             self.autoConnecting = false
             if self.linkState == .scanning { self.stopScan() }
-            self.autoConnectFailure = "没找到 PIXDOU 拼豆板。请确认板子已通电、蓝牙已开启，或手动选择设备。"
+            self.autoConnectFailure = L10n.s("没找到 PIXDOU 拼豆板。请确认板子已通电、蓝牙已开启，或手动选择设备。")
             self.log("自动连接超时：未发现候选设备，已回退到手动选择")
         }
     }
@@ -282,7 +282,7 @@ final class BLECentral: NSObject, ObservableObject {
             guard let self, !Task.isCancelled else { return }
             guard self.linkState == .connecting else { return }
             self.log("⚠️ 连接超时（\(Int(Self.connectTimeout))s 未完成）。已强制复位。请确认：板子通电并在近处、未被官方 App 占用、蓝牙已开启。")
-            self.abortConnection(p, reason: "连接超时")
+            self.abortConnection(p, reason: L10n.s("连接超时"))
         }
     }
 
@@ -464,7 +464,7 @@ extension BLECentral: CBCentralManagerDelegate, CBPeripheralDelegate {
                 // 被过滤掉的设备名留档，供 UI 在列表为空时给出「其实扫到了 N 台，都被过滤了」
                 // 的解释文案 —— 否则用户面对的是一片空白，无从判断哪里出了问题。
                 // 去重：附近常有多台同名设备（如多个「LED-01」），不去重会让「已过滤 N 台」虚高。
-                let display = name.isEmpty ? "<无名 \(peripheral.identifier.uuidString.prefix(8))>" : name
+                let display = name.isEmpty ? L10n.p("<无名 {0}>", "\(peripheral.identifier.uuidString.prefix(8))") : name
                 if filteredOutNames.count < 40, !filteredOutNames.contains(display) {
                     filteredOutNames.append(display)
                 }
@@ -503,12 +503,12 @@ extension BLECentral: CBCentralManagerDelegate, CBPeripheralDelegate {
                 guard self.peripheral?.identifier == peripheral.identifier else { return }
                 guard self.cmdChar == nil || self.dataChar == nil else { return }
                 var missing: [String] = []
-                if self.cmdChar == nil { missing.append("A951(指令)") }
-                if self.dataChar == nil { missing.append("A952(数据)") }
-                if self.notifyChar == nil { missing.append("A953(通知，可选)") }
+                if self.cmdChar == nil { missing.append(L10n.s("A951(指令)")) }
+                if self.dataChar == nil { missing.append(L10n.s("A952(数据)")) }
+                if self.notifyChar == nil { missing.append(L10n.s("A953(通知，可选)")) }
                 let found = (peripheral.services ?? []).flatMap { $0.characteristics ?? [] }
                     .map { $0.uuid.uuidString }
-                self.abortConnection(peripheral, reason: "\(Int(Self.charDiscoveryTimeout))s 内未发现必需特征（缺 \(missing.joined(separator: "、"))）。已发现的特征：[\(found.isEmpty ? "无" : found.joined(separator: ", "))]。这可能不是拼豆板，或固件使用了不同的特征 UUID")
+                self.abortConnection(peripheral, reason: L10n.p("{0}s 内未发现必需特征（缺 {1}）。已发现的特征：[{2}]。这可能不是拼豆板，或固件使用了不同的特征 UUID", "\(Int(Self.charDiscoveryTimeout))", "\(missing.joined(separator: "、"))", "\(found.isEmpty ? "无" : found.joined(separator: ", "))"))
             }
         }
     }
@@ -516,7 +516,7 @@ extension BLECentral: CBCentralManagerDelegate, CBPeripheralDelegate {
     nonisolated func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         Task { @MainActor in
             // P0-D：走统一收尾路径，保证超时看门狗被取消、特征缓存被清空
-            abortConnection(peripheral, reason: "系统连接失败：\(error?.localizedDescription ?? "未知错误")")
+            abortConnection(peripheral, reason: L10n.p("系统连接失败：{0}", "\(error?.localizedDescription ?? "未知错误")"))
         }
     }
 
@@ -549,12 +549,12 @@ extension BLECentral: CBCentralManagerDelegate, CBPeripheralDelegate {
 
             if let error {
                 // P0-D：发现服务失败也必须收尾，不能停在 .connecting
-                abortConnection(peripheral, reason: "发现服务失败：\(error.localizedDescription)")
+                abortConnection(peripheral, reason: L10n.p("发现服务失败：{0}", "\(error.localizedDescription)"))
                 return
             }
             let svcList = peripheral.services ?? []
             guard !svcList.isEmpty else {
-                abortConnection(peripheral, reason: "该设备没有暴露任何 GATT 服务（可能不是拼豆板，或已被官方 App 占用）")
+                abortConnection(peripheral, reason: L10n.s("该设备没有暴露任何 GATT 服务（可能不是拼豆板，或已被官方 App 占用）"))
                 return
             }
             // 服务全貌是排查「特征找不到」的第一手证据，必须完整打印

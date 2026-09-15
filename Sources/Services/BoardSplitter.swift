@@ -184,10 +184,10 @@ enum BoardSplitter {
     static func edgeHints(row: Int, col: Int, rows: Int, cols: Int) -> [String] {
         var hints: [String] = []
         if col + 1 < cols {
-            hints.append("右接 R\(row + 1)C\(col + 2)")
+            hints.append(L10n.p("右接 R{0}C{1}", "\(row + 1)", "\(col + 2)"))
         }
         if row + 1 < rows {
-            hints.append("下接 R\(row + 2)C\(col + 1)")
+            hints.append(L10n.p("下接 R{0}C{1}", "\(row + 2)", "\(col + 1)"))
         }
         return hints
     }

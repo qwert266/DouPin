@@ -351,17 +351,17 @@ enum PaletteTier: Int, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .full: return "295 色（全色板）"
-        case .stockOnly: return "仅我的库存色"
-        default: return "\(rawValue) 色"
+        case .full: return L10n.s("295 色（全色板）")
+        case .stockOnly: return L10n.s("仅我的库存色")
+        default: return L10n.p("{0} 色", "\(rawValue)")
         }
     }
 
     var shortTitle: String {
         switch self {
-        case .full: return "295 色"
-        case .stockOnly: return "仅库存"
-        default: return "\(rawValue) 色"
+        case .full: return L10n.s("295 色")
+        case .stockOnly: return L10n.s("仅库存")
+        default: return L10n.p("{0} 色", "\(rawValue)")
         }
     }
 
@@ -401,16 +401,16 @@ enum BoardPreset: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .custom: return "自定义"
+        case .custom: return L10n.s("自定义")
         default: return rawValue
         }
     }
 
     /// 「PD52 · 52×52 格 · 约 14cm」
     var detail: String {
-        guard let s = side else { return "手动设置边长" }
+        guard let s = side else { return L10n.s("手动设置边长") }
         let cm = Int((Double(s) * 0.27).rounded())
-        return "\(s)×\(s) 格 · 约 \(cm)cm"
+        return L10n.p("{0}×{1} 格 · 约 {2}cm", "\(s)", "\(s)", "\(cm)")
     }
 }
 

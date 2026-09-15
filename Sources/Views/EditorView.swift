@@ -63,7 +63,7 @@ struct EditorView: View {
                 .padding(.vertical, 8)
         }
         .navigationBarTitleDisplayMode(.inline)
-        .navigationTitle(pattern == nil ? "手绘画布" : name.isEmpty ? "编辑图纸" : name)
+        .navigationTitle(pattern == nil ? L10n.s("手绘画布") : name.isEmpty ? L10n.s("编辑图纸") : name)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
@@ -82,7 +82,7 @@ struct EditorView: View {
                     Button {
                         showCompare.toggle()
                     } label: {
-                        Label(showCompare ? "退出原图对比" : "原图对比",
+                        Label(showCompare ? L10n.s("退出原图对比") : L10n.s("原图对比"),
                               systemImage: showCompare ? "square.split.1x2.slash" : "square.split.1x2")
                     }
                     .disabled(!(pattern?.hasSourceImage ?? false))
@@ -90,14 +90,14 @@ struct EditorView: View {
                     Button {
                         showReplace = true
                     } label: {
-                        Label("替换配色", systemImage: "arrow.triangle.2.circlepath")
+                        Label(L10n.s("替换配色"), systemImage: "arrow.triangle.2.circlepath")
                     }
                     .disabled(!hasContent)
 
                     Button {
                         showMerge = true
                     } label: {
-                        Label("合并相近色", systemImage: "circle.lefthalf.filled.righthalf.striped.horizontal")
+                        Label(L10n.s("合并相近色"), systemImage: "circle.lefthalf.filled.righthalf.striped.horizontal")
                     }
                     .disabled(!hasContent)
 
@@ -106,7 +106,7 @@ struct EditorView: View {
                     Button {
                         scale = 1; offset = .zero
                     } label: {
-                        Label("复位缩放", systemImage: "arrow.counterclockwise")
+                        Label(L10n.s("复位缩放"), systemImage: "arrow.counterclockwise")
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
@@ -122,7 +122,7 @@ struct EditorView: View {
                 Button {
                     save()
                 } label: {
-                    Text("保存").bold()
+                    Text(L10n.s("保存")).bold()
                 }
                 .disabled(!hasContent)
             }
@@ -136,21 +136,21 @@ struct EditorView: View {
         .sheet(isPresented: $showReplace) {
             ReplaceColorSheet(model: model)
         }
-        .alert(pattern == nil ? "保存图纸" : "已保存", isPresented: $saved) {
-            Button("好") { dismiss() }
+        .alert(pattern == nil ? L10n.s("保存图纸") : L10n.s("已保存"), isPresented: $saved) {
+            Button(L10n.s("好")) { dismiss() }
         } message: {
-            Text(pattern == nil ? "图纸已保存，可在「图纸」标签中查看" : "修改已保存")
+            Text(pattern == nil ? L10n.s("图纸已保存，可在「图纸」标签中查看") : L10n.s("修改已保存"))
         }
-        .alert("重命名", isPresented: $showRename) {
-            TextField("名称", text: $name)
-            Button("确定") {
+        .alert(L10n.s("重命名"), isPresented: $showRename) {
+            TextField(L10n.s("名称"), text: $name)
+            Button(L10n.s("确定")) {
                 // P0-4 修复：写回名称并 touch()（此前为空闭包，改名无效）
                 let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard let pattern = pattern, !trimmed.isEmpty else { return }
                 pattern.name = trimmed
                 pattern.touch()
             }
-            Button("取消", role: .cancel) {}
+            Button(L10n.s("取消"), role: .cancel) {}
         }
     }
 
@@ -185,7 +185,7 @@ struct EditorView: View {
             } label: {
                 VStack(spacing: 2) {
                     Image(systemName: "arrow.left.and.right.right").font(.body)
-                    Text("镜像").font(.caption2)
+                    Text(L10n.s("镜像")).font(.caption2)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 6)
@@ -201,7 +201,7 @@ struct EditorView: View {
             } label: {
                 VStack(spacing: 2) {
                     Image(systemName: "grid").font(.body)
-                    Text("辅助线").font(.caption2)
+                    Text(L10n.s("辅助线")).font(.caption2)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 6)
@@ -234,7 +234,7 @@ struct EditorView: View {
                     } label: {
                         HStack(spacing: 4) {
                             RoundedRectangle(cornerRadius: 3).fill(c.color).frame(width: 14, height: 14)
-                            Text("高亮中，点此取消").font(.caption)
+                            Text(L10n.s("高亮中，点此取消")).font(.caption)
                         }
                     }
                     .buttonStyle(.bordered)
@@ -248,7 +248,7 @@ struct EditorView: View {
                         model.highlightColorId = model.selectedColorId
                     }
                 } label: {
-                    Label("高亮", systemImage: "sparkle.magnifyingglass")
+                    Label(L10n.s("高亮"), systemImage: "sparkle.magnifyingglass")
                         .font(.caption)
                 }
                 .buttonStyle(.bordered)
@@ -272,7 +272,7 @@ struct EditorView: View {
                     } label: {
                         VStack(spacing: 2) {
                             Image(systemName: "paintpalette.fill")
-                            Text("全部").font(.caption2)
+                            Text(L10n.s("全部")).font(.caption2)
                         }
                         .frame(width: 40, height: 40)
                         .background(Color(white: 0.92))
@@ -313,7 +313,7 @@ struct EditorView: View {
             pattern.cells = model.cells
             pattern.touch()
         } else {
-            let p = Pattern(name: trimmed.isEmpty ? "手绘画布" : trimmed,
+            let p = Pattern(name: trimmed.isEmpty ? L10n.s("手绘画布") : trimmed,
                             width: model.width, height: model.height,
                             cells: model.cells, source: "manual")
             context.insert(p)
@@ -423,17 +423,17 @@ private struct ColorMergeSheet: View {
             List {
                 Section {
                     VStack(alignment: .leading, spacing: 6) {
-                        LabeledContent("相似度阈值", value: String(format: "%.3f", threshold))
+                        LabeledContent(L10n.k("相似度阈值"), value: String(format: "%.3f", threshold))
                         Slider(value: $threshold, in: 0...0.30, step: 0.005)
-                        Text("阈值越大合并越狠（0 = 不合并）。")
+                        Text(L10n.s("阈值越大合并越狠（0 = 不合并）。"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                 } header: {
-                    Text("阈值")
+                    Text(L10n.s("阈值"))
                 }
 
-                Section("预览") {
+                Section(L10n.k("预览")) {
                     GridView(cells: previewCells, width: model.width, height: model.height)
                         .frame(maxHeight: 280)
                         .listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
@@ -441,7 +441,7 @@ private struct ColorMergeSheet: View {
 
                 Section {
                     if suggestions.isEmpty {
-                        Text("当前阈值下无相近色可合并。")
+                        Text(L10n.s("当前阈值下无相近色可合并。"))
                             .foregroundStyle(.secondary)
                     } else {
                         ForEach(suggestions, id: \.from.id) { item in
@@ -465,17 +465,17 @@ private struct ColorMergeSheet: View {
                         }
                     }
                 } header: {
-                    Text("合并明细（\(suggestions.count) 项）")
+                    Text(L10n.p("合并明细（{0} 项）", "\(suggestions.count)"))
                 }
             }
-            .navigationTitle("合并相近色")
+            .navigationTitle(L10n.s("合并相近色"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("取消") { dismiss() }
+                    Button(L10n.s("取消")) { dismiss() }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("应用") {
+                    Button(L10n.s("应用")) {
                         guard !mapping.isEmpty else { dismiss(); return }
                         model.pushUndo()
                         model.cells = previewCells
@@ -514,7 +514,7 @@ private struct ReplaceColorSheet: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("原色号（要替换掉的）") {
+                Section(L10n.k("原色号（要替换掉的）")) {
                     ForEach(usedColors, id: \.color.id) { item in
                         HStack(spacing: 10) {
                             RoundedRectangle(cornerRadius: 4).fill(item.color.color)
@@ -532,7 +532,7 @@ private struct ReplaceColorSheet: View {
                     }
                 }
 
-                Section("新色号（替换为）") {
+                Section(L10n.k("新色号（替换为）")) {
                     Button {
                         showToPicker = true
                     } label: {
@@ -543,7 +543,7 @@ private struct ReplaceColorSheet: View {
                                     .overlay(RoundedRectangle(cornerRadius: 4).stroke(.gray.opacity(0.3)))
                                 Text("Mard \(c.mard)").font(.subheadline.monospaced())
                             } else {
-                                Text("选择新色号").foregroundStyle(.secondary)
+                                Text(L10n.s("选择新色号")).foregroundStyle(.secondary)
                             }
                             Spacer()
                             Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)
@@ -551,23 +551,23 @@ private struct ReplaceColorSheet: View {
                     }
                     .buttonStyle(.plain)
                     if fromId != 0 {
-                        Button("替换为空（清空该色）") { toId = 0 }
+                        Button(L10n.s("替换为空（清空该色）")) { toId = 0 }
                             .foregroundStyle(.red)
                     }
                 }
 
                 Section {
-                    LabeledContent("受影响格数", value: "\(affected) 格")
+                    LabeledContent(L10n.k("受影响格数"), value: L10n.p("{0} 格", "\(affected)"))
                 }
             }
-            .navigationTitle("替换配色")
+            .navigationTitle(L10n.s("替换配色"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("取消") { dismiss() }
+                    Button(L10n.s("取消")) { dismiss() }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("应用") {
+                    Button(L10n.s("应用")) {
                         guard fromId != toId else { dismiss(); return }
                         model.pushUndo()
                         model.cells = ColorMerge.replaceColor(cells: model.cells, from: fromId, to: toId)
@@ -687,7 +687,7 @@ struct FullPaletteSheet: View {
                 if tierLimited {
                     HStack(spacing: 6) {
                         Image(systemName: "line.3.horizontal.decrease.circle.fill")
-                        Text("当前档位：\(PaletteTier(rawValue: paletteTier)?.shortTitle ?? "")（可在「设置 → 颜色」调整）")
+                        Text(L10n.p("当前档位：{0}（可在「设置 → 颜色」调整）", "\(PaletteTier(rawValue: paletteTier)?.shortTitle ?? "")"))
                         Spacer()
                     }
                     .font(.caption2)
@@ -713,14 +713,14 @@ struct FullPaletteSheet: View {
                     }
                 }
             }
-            .navigationTitle(family == .all ? "色板 · \(BeadPalette.all.count) 色" : "色板 · \(family.rawValue)")
+            .navigationTitle(family == .all ? L10n.p("色板 · {0} 色", "\(BeadPalette.all.count)") : L10n.p("色板 · {0}", "\(family.rawValue)"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("完成") { dismiss() }
+                    Button(L10n.s("完成")) { dismiss() }
                 }
             }
-            .searchable(text: $searchText, prompt: "按色号搜索（Mard/可可/漫漫…）")
+            .searchable(text: $searchText, prompt: L10n.s("按色号搜索（Mard/可可/漫漫…）"))
         }
     }
 
@@ -729,7 +729,7 @@ struct FullPaletteSheet: View {
         return Button {
             family = f
         } label: {
-            Text(f.rawValue)
+            Text(L10n.s(f.rawValue))
                 .font(.caption.weight(active ? .bold : .regular))
                 .padding(.horizontal, 12).padding(.vertical, 7)
                 .background(active ? AnyShapeStyle(Theme.brand) : AnyShapeStyle(Theme.cardFill), in: Capsule())

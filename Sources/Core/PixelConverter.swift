@@ -25,6 +25,8 @@ enum PixelConverter {
         var whiteToEmpty: Bool = true
         /// 自动亮度归一化（默认开；用户手动调过亮度时可在调用侧关掉）
         var autoLevels: Bool = true
+        /// 灰世界自动白平衡（默认开）：消除室内暖光/冷光造成的整体色偏
+        var autoWhiteBalance: Bool = true
         /// 允许使用的色号（nil = 全色板）。来自「设置 → 色板档位」
         /// （如 221 色套装、或「仅我的库存色」），确保转出来的色号都买得到。
         var allowedColorIds: [Int]? = nil
@@ -63,8 +65,53 @@ enum PixelConverter {
             midH = midLong
             midW = max(gh, Int(round(CGFloat(midLong) * srcW / srcH)))
         }
-        guard let midBuf = renderRGBA(cg, width: midW, height: midH) else {
+        guard var midBuf = renderRGBA(cg, width: midW, height: midH) else {
             return Result(width: 0, height: 0, cells: [])
+        }
+
+        // ---- 灰世界白平衡（消除整体色偏：暖光偏黄 / 冷光偏蓝）----
+        //
+        // 室内照片常整体偏色；色差公式再准，也会把"整张都偏黄"照实转成偏黄的豆色。
+        // 灰世界假设：场景平均反射为中性灰 → 用各通道均值求增益，按 0.8 强度混合，
+        // 并把单通道增益限制在 0.75…1.35，避免把本来就有主色调的画面（如整片蓝天）拉灰。
+        if options.autoWhiteBalance {
+            var sumR = 0.0, sumG = 0.0, sumB = 0.0, cnt = 0.0
+            for i in 0..<(midW * midH) {
+                let off = i * 4
+                guard midBuf[off + 3] >= 128 else { continue }
+                sumR += Double(midBuf[off]); sumG += Double(midBuf[off + 1]); sumB += Double(midBuf[off + 2])
+                cnt += 1
+            }
+            if cnt > 32 {
+                let mR = sumR / cnt, mG = sumG / cnt, mB = sumB / cnt
+                let mean = (mR + mG + mB) / 3
+                if mean > 1, mR > 1, mG > 1, mB > 1 {
+                    let strength = 0.8
+                    func gain(_ m: Double) -> Double {
+                        let g = (mean / m) * strength + (1 - strength)
+                        return min(1.35, max(0.75, g))
+                    }
+                    let gR = gain(mR), gG = gain(mG), gB = gain(mB)
+                    // 增益偏离 1 极小则跳过，省掉一次全图遍历
+                    if abs(gR - 1) > 0.01 || abs(gG - 1) > 0.01 || abs(gB - 1) > 0.01 {
+                        var lutR = [UInt8](repeating: 0, count: 256)
+                        var lutG = [UInt8](repeating: 0, count: 256)
+                        var lutB = [UInt8](repeating: 0, count: 256)
+                        for v in 0...255 {
+                            lutR[v] = UInt8(min(255, max(0, Double(v) * gR)).rounded())
+                            lutG[v] = UInt8(min(255, max(0, Double(v) * gG)).rounded())
+                            lutB[v] = UInt8(min(255, max(0, Double(v) * gB)).rounded())
+                        }
+                        for i in 0..<(midW * midH) {
+                            let off = i * 4
+                            guard midBuf[off + 3] > 0 else { continue }
+                            midBuf[off] = lutR[Int(midBuf[off])]
+                            midBuf[off + 1] = lutG[Int(midBuf[off + 1])]
+                            midBuf[off + 2] = lutB[Int(midBuf[off + 2])]
+                        }
+                    }
+                }
+            }
         }
 
         // ---- 自动亮度归一化（luma p5/p95 线性拉伸） ----
@@ -92,11 +139,13 @@ enum PixelConverter {
 
         // ---- 候选色集 + 色板 Lab 缓存 ----
         let pal = candidates(for: options.colorLimit, allowed: options.allowedColorIds)
-        let palLab: [(id: Int, l: Double, a: Double, b2: Double)] =
+        let palLab: [(id: Int, lab: LabColor)] =
             (pal ?? BeadPalette.all).map { c in
-                let l = lab(r: Double(c.r), g: Double(c.g), b: Double(c.b))
-                return (c.id, l.l, l.a, l.b)
+                (c.id, ColorScience.lab(r8: Double(c.r), g8: Double(c.g), b8: Double(c.b)))
             }
+        var labById: [Int: LabColor] = [:]
+        labById.reserveCapacity(palLab.count)
+        for p in palLab { labById[p.id] = p.lab }
 
         // ---- 分块平均 + 匹配 ----
         var cells = [Int](repeating: 0, count: gw * gh)
@@ -108,7 +157,13 @@ enum PixelConverter {
                 let x0 = Int((Double(gx) * Double(midW) / Double(gw)).rounded(.down))
                 let x1 = max(x0 + 1, Int((Double(gx + 1) * Double(midW) / Double(gw)).rounded(.down)))
 
-                var sr = 0.0, sg = 0.0, sb = 0.0, sa = 0.0, n = 0.0
+                // ---- 块内抗混色采样：按亮度截尾均值（剔除最亮/最暗各 25%）----
+                //
+                // 直接平均会被边缘像素与高光/阴影污染：例如黑色描边渗进浅色区、
+                // 反光把颜色拉白、阴影把颜色压黑——这是"颜色识别不准"的常见来源。
+                // 先按亮度排序、剔除两端各 25% 再平均，抗污染且不丢主色调。
+                var samples: [(luma: Double, r: Double, g: Double, b: Double, w: Double)] = []
+                samples.reserveCapacity(max(1, (y1 - y0) * (x1 - x0)))
                 for y in y0..<min(y1, midH) {
                     for x in x0..<min(x1, midW) {
                         let off = (y * midW + x) * 4
@@ -118,18 +173,29 @@ enum PixelConverter {
                         let r = clamp255((Double(midBuf[off]) - lo) * 255.0 / range)
                         let g = clamp255((Double(midBuf[off + 1]) - lo) * 255.0 / range)
                         let b = clamp255((Double(midBuf[off + 2]) - lo) * 255.0 / range)
-                        // sRGB → linear 再平均（伽马正确），权重按 alpha
-                        let w = a / 255.0
-                        sr += srgbToLinear(r / 255.0) * w
-                        sg += srgbToLinear(g / 255.0) * w
-                        sb += srgbToLinear(b / 255.0) * w
-                        sa += w
-                        n += 1
+                        let luma = 0.2126 * r + 0.7152 * g + 0.0722 * b
+                        samples.append((luma, r, g, b, a / 255.0))
                     }
                 }
-                guard n > 0, sa > 0 else { continue }   // 全透明 → 空格
-                let alphaCoverage = sa / n
-                if alphaCoverage < 0.5 { continue }      // 透明为主 → 空格
+                guard !samples.isEmpty else { continue }
+                var alphaSum = 0.0
+                for smp in samples { alphaSum += smp.w }
+                if alphaSum / Double(samples.count) < 0.5 { continue }   // 透明为主 → 空格
+
+                samples.sort { $0.luma < $1.luma }
+                let cut = samples.count >= 8 ? samples.count / 4 : 0
+                let startIdx = cut
+                let endIdx = max(startIdx + 1, samples.count - cut)
+
+                var sr = 0.0, sg = 0.0, sb = 0.0, sa = 0.0
+                for i in startIdx..<endIdx {
+                    let smp = samples[i]
+                    sr += srgbToLinear(smp.r / 255.0) * smp.w
+                    sg += srgbToLinear(smp.g / 255.0) * smp.w
+                    sb += srgbToLinear(smp.b / 255.0) * smp.w
+                    sa += smp.w
+                }
+                guard sa > 0 else { continue }
 
                 // linear 平均 → 压回 sRGB
                 let r8 = linearToSrgb(sr / sa) * 255.0
@@ -139,13 +205,34 @@ enum PixelConverter {
                 // 白底转空（用平均后的实际像素值，阈值略收紧避免误删浅色主体）
                 if options.whiteToEmpty && r8 > 240 && g8 > 240 && b8 > 240 { continue }
 
-                let lab = lab(r: r8, g: g8, b: b8)
-                var bestId = palLab[0].id
-                var bestDist = Double.greatestFiniteMagnitude
+                // ---- 匹配：粗筛（彩度加权 ΔE76 取前 3）→ 精筛（CIEDE2000）----
+                //
+                // 全量 ΔE00 匹配每格要算 295 次三角/幂运算（上万格就明显卡顿）；
+                // 先用廉价距离取前 3 名、再对这 3 个算 ΔE00——两者排序高度一致，
+                // 结果与全量 ΔE00 等价，但每格只需 3 次 ΔE00。
+                let lab = ColorScience.lab(r8: r8, g8: g8, b8: b8)
+                var f1 = Double.greatestFiniteMagnitude, i1 = palLab[0].id
+                var f2 = Double.greatestFiniteMagnitude, i2 = i1
+                var f3 = Double.greatestFiniteMagnitude, i3 = i1
                 for p in palLab {
-                    let dl = lab.l - p.l, da = lab.a - p.a, db = lab.b - p.b2
-                    let dist = dl * dl + da * da + db * db
-                    if dist < bestDist { bestDist = dist; bestId = p.id }
+                    let d = ColorScience.deltaEFilter(lab, p.lab)
+                    if d < f1 {
+                        i3 = i2; f3 = f2
+                        i2 = i1; f2 = f1
+                        i1 = p.id; f1 = d
+                    } else if d < f2 {
+                        i3 = i2; f3 = f2
+                        i2 = p.id; f2 = d
+                    } else if d < f3 {
+                        i3 = p.id; f3 = d
+                    }
+                }
+                var bestId = i1
+                var bestDist = Double.greatestFiniteMagnitude
+                for cid in [i1, i2, i3] {
+                    guard let pl = labById[cid] else { continue }
+                    let d = ColorScience.deltaE2000(lab, pl)
+                    if d < bestDist { bestDist = d; bestId = cid }
                 }
                 cells[gy * gw + gx] = bestId
             }
@@ -160,57 +247,121 @@ enum PixelConverter {
 
     // MARK: - 颜色匹配（对外保留，内部走 Lab）
 
-    /// Lab ΔE76 最近色号匹配（palette 为 nil 时用全 295 色）
+    /// 最近色号匹配：彩度加权粗筛取前 3 → CIEDE2000 精筛（palette 为 nil 时用全 295 色）
     static func nearestColorId(r: UInt8, g: UInt8, b: UInt8, palette: [BeadColor]?) -> Int {
-        let cand = (palette ?? BeadPalette.all).map { c -> (id: Int, l: Double, a: Double, b2: Double) in
-            let l = lab(r: Double(c.r), g: Double(c.g), b: Double(c.b))
-            return (c.id, l.l, l.a, l.b)
+        let cand = (palette ?? BeadPalette.all).map { c in
+            (id: c.id, lab: ColorScience.lab(r8: Double(c.r), g8: Double(c.g), b8: Double(c.b)))
         }
-        let lab0 = lab(r: Double(r), g: Double(g), b: Double(b))
-        var bestId = cand[0].id
-        var bestDist = Double.greatestFiniteMagnitude
+        guard !cand.isEmpty else { return 0 }
+        let lab0 = ColorScience.lab(r8: Double(r), g8: Double(g), b8: Double(b))
+
+        var f1 = Double.greatestFiniteMagnitude, i1 = cand[0].id
+        var f2 = Double.greatestFiniteMagnitude, i2 = i1
+        var f3 = Double.greatestFiniteMagnitude, i3 = i1
         for p in cand {
-            let dl = lab0.l - p.l, da = lab0.a - p.a, db = lab0.b - p.b2
-            let dist = dl * dl + da * da + db * db
-            if dist < bestDist { bestDist = dist; bestId = p.id }
+            let d = ColorScience.deltaEFilter(lab0, p.lab)
+            if d < f1 {
+                i3 = i2; f3 = f2; i2 = i1; f2 = f1; i1 = p.id; f1 = d
+            } else if d < f2 {
+                i3 = i2; f3 = f2; i2 = p.id; f2 = d
+            } else if d < f3 {
+                i3 = p.id; f3 = d
+            }
+        }
+        var bestId = i1
+        var bestDist = Double.greatestFiniteMagnitude
+        for cid in [i1, i2, i3] {
+            guard let p = cand.first(where: { $0.id == cid }) else { continue }
+            let d = ColorScience.deltaE2000(lab0, p.lab)
+            if d < bestDist { bestDist = d; bestId = cid }
         }
         return bestId
     }
 
     // MARK: - 限色
 
-    /// 把用量最少的颜色并入最接近的常用色，直到颜色数 <= limit（Lab 距离）
+    /// 限色收敛：以「视觉损失最小」为准合并颜色，直到颜色数 <= limit。
+    ///
+    /// 与旧版（只砍"用量最少"的颜色）的区别：
+    /// - 合并代价 = **频次 × (1 + ΔE00)**：既要数量少，也要颜色接近；
+    ///   不会为了凑数把一块显眼的少量色硬并到远处色号上（旧版常见"大面积错色"）；
+    /// - 距离用 CIEDE2000（感知一致），且对每个色号预计算前 8 个近邻（一次 O(k²)），
+    ///   合并循环里只查缓存，整轮开销远低于每轮重算全对距离。
     static func limitColors(_ cells: [Int], limit: Int) -> [Int] {
         var counts: [Int: Int] = [:]
         for c in cells where c > 0 { counts[c, default: 0] += 1 }
         guard counts.count > limit else { return cells }
 
-        var mapping: [Int: Int] = [:]   // 稀有色 → 目标色
-        var active = counts             // 仍然存活的色
+        // Lab 缓存
+        var labs: [Int: LabColor] = [:]
+        labs.reserveCapacity(counts.count)
+        for id in counts.keys {
+            guard let c = BeadPalette.byId[id] else { continue }
+            labs[id] = ColorScience.lab(r8: Double(c.r), g8: Double(c.g), b8: Double(c.b))
+        }
+
+        // 预计算近邻表（ΔE00 升序取前 8）：只在开始时算一次
+        let ids = Array(counts.keys)
+        var neighbors: [Int: [(id: Int, d: Double)]] = [:]
+        neighbors.reserveCapacity(ids.count)
+        for id in ids {
+            guard let l0 = labs[id] else { continue }
+            var list: [(id: Int, d: Double)] = []
+            list.reserveCapacity(ids.count - 1)
+            for oid in ids where oid != id {
+                guard let l1 = labs[oid] else { continue }
+                list.append((oid, ColorScience.deltaE2000(l0, l1)))
+            }
+            list.sort { $0.d < $1.d }
+            neighbors[id] = Array(list.prefix(8))
+        }
+
+        var mapping: [Int: Int] = [:]   // 被合并色 → 目标色
+        var active = counts
 
         while active.count > limit {
-            guard let rare = active.min(by: { $0.value < $1.value }),
-                  let rareColor = BeadPalette.byId[rare.key] else { break }
-            active.removeValue(forKey: rare.key)
+            var bestFrom = -1
+            var bestTo = -1
+            var bestCost = Double.greatestFiniteMagnitude
 
-            let rareLab = lab(r: Double(rareColor.r), g: Double(rareColor.g), b: Double(rareColor.b))
-            var nearestId: Int? = nil
-            var nearestDist = Double.greatestFiniteMagnitude
-            for (id, _) in active {
-                guard let c = BeadPalette.byId[id] else { continue }
-                let l = lab(r: Double(c.r), g: Double(c.g), b: Double(c.b))
-                let dl = rareLab.l - l.l, da = rareLab.a - l.a, db = rareLab.b - l.b
-                let dist = dl * dl + da * da + db * db
-                if dist < nearestDist { nearestDist = dist; nearestId = id }
+            for (id, count) in active {
+                guard let cands = neighbors[id] else { continue }
+                // 取最近的"仍然存活"的色号
+                var target = -1
+                var dist = Double.greatestFiniteMagnitude
+                for cand in cands where cand.id != id {
+                    if active[cand.id] != nil {
+                        target = cand.id
+                        dist = cand.d
+                        break
+                    }
+                }
+                guard target >= 0, dist.isFinite else { continue }
+                let cost = Double(count) * (1 + dist)
+                if cost < bestCost {
+                    bestCost = cost
+                    bestFrom = id
+                    bestTo = target
+                }
             }
-            if let n = nearestId {
-                mapping[rare.key] = n
-                active[n, default: 0] += rare.value
-            } else {
-                mapping[rare.key] = 0
-            }
+
+            guard bestFrom >= 0, bestTo >= 0 else { break }
+            mapping[bestFrom] = bestTo
+            active[bestTo, default: 0] += active[bestFrom] ?? 0
+            active.removeValue(forKey: bestFrom)
         }
-        return cells.map { mapping[$0] ?? $0 }
+
+        // 链式映射收敛（A→B→C 需压成 A→C）
+        func resolve(_ id: Int) -> Int {
+            var cur = id
+            var guardCount = 0
+            while let next = mapping[cur], guardCount < 64 {
+                cur = next
+                guardCount += 1
+            }
+            return cur
+        }
+        return cells.map { $0 > 0 ? resolve($0) : $0 }
     }
 
     // MARK: - 依限色目标返回常用色候选子集（nil 表示全 295 色）
@@ -273,20 +424,8 @@ enum PixelConverter {
         c <= 0.0031308 ? c * 12.92 : 1.055 * pow(max(0, c), 1.0 / 2.4) - 0.055
     }
 
-    /// 0-255 RGB → CIE Lab（D65 白点）
-    static func lab(r: Double, g: Double, b: Double) -> (l: Double, a: Double, b: Double) {
-        let rl = srgbToLinear(clamp01(r / 255.0))
-        let gl = srgbToLinear(clamp01(g / 255.0))
-        let bl = srgbToLinear(clamp01(b / 255.0))
-        let x = rl * 0.4124564 + gl * 0.3575761 + bl * 0.1804375
-        let y = rl * 0.2126729 + gl * 0.7151522 + bl * 0.0721750
-        let z = rl * 0.0193339 + gl * 0.1191920 + bl * 0.9503041
-        let xn = 0.95047, yn = 1.0, zn = 1.08883
-        func f(_ t: Double) -> Double { t > 0.008856 ? pow(t, 1.0 / 3.0) : (7.787 * t + 16.0 / 116.0) }
-        let fx = f(x / xn), fy = f(y / yn), fz = f(z / zn)
-        return (116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz))
-    }
-
-    private static func clamp01(_ v: Double) -> Double { min(1, max(0, v)) }
+    // 说明：sRGB → CIE Lab 与色差（ΔE76 / CIEDE2000）已统一到 `ColorScience`，
+    // 避免两处实现漂移（旧版本地 lab() 使用的 0.008856 阈值已被 ColorScience 的
+    // 216/24389 精确阈值取代）。
     private static func clamp255(_ v: Double) -> Double { min(255, max(0, v)) }
 }

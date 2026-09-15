@@ -51,8 +51,8 @@ struct WorkDetailView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Picker("模式", selection: $mode) {
-                ForEach(Mode.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+            Picker(L10n.s("模式"), selection: $mode) {
+                ForEach(Mode.allCases, id: \.self) { Text(L10n.s($0.rawValue)).tag($0) }
             }
             .pickerStyle(.segmented)
             .padding(.horizontal, 12)
@@ -79,65 +79,65 @@ struct WorkDetailView: View {
                     Button {
                         sendSheetPattern = pattern
                     } label: {
-                        Label("开始拼豆（发送拼豆板）", systemImage: "lightbulb.max")
+                        Label(L10n.s("开始拼豆（发送拼豆板）"), systemImage: "lightbulb.max")
                     }
                     Button {
                         renameText = pattern.name
                         showRename = true
                     } label: {
-                        Label("重命名", systemImage: "pencil")
+                        Label(L10n.s("重命名"), systemImage: "pencil")
                     }
                     Button {
                         UIPasteboard.general.string = PatternRenderer.beadListText(
                             name: pattern.name, cells: pattern.cells)
-                        toast = "豆子清单已复制"
+                        toast = L10n.s("豆子清单已复制")
                     } label: {
-                        Label("复制豆子清单", systemImage: "doc.on.doc")
+                        Label(L10n.s("复制豆子清单"), systemImage: "doc.on.doc")
                     }
                     NavigationLink {
                         StockEstimateView(pattern: pattern)
                     } label: {
-                        Label("消耗预估", systemImage: "shippingbox")
+                        Label(L10n.s("消耗预估"), systemImage: "shippingbox")
                     }
                     NavigationLink {
                         SplitBoardView(pattern: pattern)
                     } label: {
-                        Label("拆板", systemImage: "square.split.2x2")
+                        Label(L10n.s("拆板"), systemImage: "square.split.2x2")
                     }
                     ShareLink(item: Image(uiImage: exportImage),
                               preview: SharePreview(pattern.name, image: Image(uiImage: exportImage))) {
-                        Label("导出图纸图片", systemImage: "square.and.arrow.up")
+                        Label(L10n.s("导出图纸图片"), systemImage: "square.and.arrow.up")
                     }
                     Button {
                         exportPDF()
                     } label: {
-                        Label("导出 PDF", systemImage: "doc.richtext")
+                        Label(L10n.s("导出 PDF"), systemImage: "doc.richtext")
                     }
                     if let pdfURL {
                         ShareLink(item: pdfURL) {
-                            Label("分享 PDF（\(pattern.name).pdf）", systemImage: "square.and.arrow.up.on.square")
+                            Label(L10n.p("分享 PDF（{0}.pdf）", "\(pattern.name)"), systemImage: "square.and.arrow.up.on.square")
                         }
                     }
                     Button {
                         showMoveFolder = true
                     } label: {
-                        Label("移动到文件夹", systemImage: "folder")
+                        Label(L10n.s("移动到文件夹"), systemImage: "folder")
                     }
                     Button {
                         showTagEditor = true
                     } label: {
-                        Label("编辑标签", systemImage: "tag")
+                        Label(L10n.s("编辑标签"), systemImage: "tag")
                     }
                     Button(role: .destructive) {
                         showResetConfirm = true
                     } label: {
-                        Label("清空拼制进度", systemImage: "arrow.counterclockwise")
+                        Label(L10n.s("清空拼制进度"), systemImage: "arrow.counterclockwise")
                     }
                     Divider()
                     Button(role: .destructive) {
                         showDeleteConfirm = true
                     } label: {
-                        Label("删除作品", systemImage: "trash")
+                        Label(L10n.s("删除作品"), systemImage: "trash")
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
@@ -157,13 +157,13 @@ struct WorkDetailView: View {
                     }
             }
         }
-        .alert("重命名", isPresented: $showRename) {
-            TextField("名称", text: $renameText)
-            Button("确定") {
+        .alert(L10n.s("重命名"), isPresented: $showRename) {
+            TextField(L10n.s("名称"), text: $renameText)
+            Button(L10n.s("确定")) {
                 let t = renameText.trimmingCharacters(in: .whitespaces)
                 if !t.isEmpty { pattern.name = t; pattern.touch() }
             }
-            Button("取消", role: .cancel) {}
+            Button(L10n.s("取消"), role: .cancel) {}
         }
         .sheet(isPresented: $showMoveFolder) {
             MoveFolderSheet(pattern: pattern, folders: folders)
@@ -171,20 +171,20 @@ struct WorkDetailView: View {
         .sheet(isPresented: $showTagEditor) {
             TagEditorSheet(pattern: pattern)
         }
-        .confirmationDialog("清空拼制进度？", isPresented: $showResetConfirm, titleVisibility: .visible) {
-            Button("清空", role: .destructive) { pattern.resetProgress() }
-            Button("取消", role: .cancel) {}
+        .confirmationDialog(L10n.s("清空拼制进度？"), isPresented: $showResetConfirm, titleVisibility: .visible) {
+            Button(L10n.s("清空"), role: .destructive) { pattern.resetProgress() }
+            Button(L10n.s("取消"), role: .cancel) {}
         } message: {
-            Text("所有已拼标记将被清除")
+            Text(L10n.s("所有已拼标记将被清除"))
         }
-        .confirmationDialog("删除作品？", isPresented: $showDeleteConfirm, titleVisibility: .visible) {
-            Button("删除", role: .destructive) {
+        .confirmationDialog(L10n.s("删除作品？"), isPresented: $showDeleteConfirm, titleVisibility: .visible) {
+            Button(L10n.s("删除"), role: .destructive) {
                 context.delete(pattern)
                 dismiss()
             }
-            Button("取消", role: .cancel) {}
+            Button(L10n.s("取消"), role: .cancel) {}
         } message: {
-            Text("「\(pattern.name)」及其进度将被永久删除")
+            Text(L10n.p("「{0}」及其进度将被永久删除", "\(pattern.name)"))
         }
     }
 
@@ -194,7 +194,7 @@ struct WorkDetailView: View {
         List {
             if pattern.isTile {
                 Section {
-                    Label("属于「\(pattern.name.replacingOccurrences(of: " \(pattern.tileIndex ?? "")", with: ""))」的第 \(pattern.tileIndex ?? "") 块",
+                    Label(L10n.p("属于「{0}」的第 {1} 块", "\(pattern.name.replacingOccurrences(of: " \(pattern.tileIndex ?? "")", with: ""))", "\(pattern.tileIndex ?? "")"),
                           systemImage: "square.split.2x2")
                         .font(.subheadline)
                         .foregroundStyle(.pink)
@@ -212,7 +212,7 @@ struct WorkDetailView: View {
                     .listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
                     .overlay(alignment: .topTrailing) {
                         if markMode {
-                            Label("打卡模式", systemImage: "checkmark.circle.fill")
+                            Label(L10n.s("打卡模式"), systemImage: "checkmark.circle.fill")
                                 .font(.caption.weight(.semibold))
                                 .padding(.horizontal, 10).padding(.vertical, 5)
                                 .background(.green.opacity(0.15), in: Capsule())
@@ -224,29 +224,29 @@ struct WorkDetailView: View {
                 // 显示控制：高亮模式 / 色号 / 全显（对标 PIXDOU 拼豆模式）
                 VStack(alignment: .leading, spacing: 10) {
                     HStack(spacing: 8) {
-                        Text("高亮模式")
+                        Text(L10n.s("高亮模式"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
-                        Picker("高亮模式", selection: $whiteMode) {
-                            Text("原色").tag(false)
-                            Text("白色").tag(true)
+                        Picker(L10n.s("高亮模式"), selection: $whiteMode) {
+                            Text(L10n.s("原色")).tag(false)
+                            Text(L10n.s("白色")).tag(true)
                         }
                         .pickerStyle(.segmented)
                         .frame(maxWidth: 170)
                         Spacer()
                     }
                     HStack(spacing: 8) {
-                        chipButton("色号", icon: "textformat.abc", active: showLabels) {
+                        chipButton(L10n.s("色号"), icon: "textformat.abc", active: showLabels) {
                             showLabels.toggle()
                         }
-                        chipButton("全显", icon: "arrow.up.left.and.arrow.down.right", active: false) {
+                        chipButton(L10n.s("全显"), icon: "arrow.up.left.and.arrow.down.right", active: false) {
                             highlightColorId = nil
                             whiteMode = false
                         }
                         if let hi = highlightColorId, let c = BeadPalette.byId[hi] {
                             HStack(spacing: 5) {
                                 BeadDot(color: c, size: 16)
-                                Text("仅 \(c.mard)")
+                                Text(L10n.p("仅 {0}", "\(c.mard)"))
                                     .font(.caption.bold())
                                 Button {
                                     highlightColorId = nil
@@ -264,9 +264,9 @@ struct WorkDetailView: View {
                 }
                 .listRowInsets(EdgeInsets(top: 4, leading: 14, bottom: 10, trailing: 14))
             } header: {
-                Text("图纸 · 拼豆模式")
+                Text(L10n.s("图纸 · 拼豆模式"))
             } footer: {
-                Text("放大网格后格内会显示 Mard 色号；「白色」模式去掉颜色只看形状，适合确认轮廓。")
+                Text(L10n.s("放大网格后格内会显示 Mard 色号；「白色」模式去掉颜色只看形状，适合确认轮廓。"))
             }
 
             // 色号统计条：点色块高亮该色（对标 PIXDOU「色号统计 / 点击下方色块高亮显示」）
@@ -282,17 +282,17 @@ struct WorkDetailView: View {
                 }
                 .listRowInsets(EdgeInsets(top: 4, leading: 14, bottom: 4, trailing: 14))
             } header: {
-                Text("色号统计（共 \(pattern.beadCounts.count) 种颜色）")
+                Text(L10n.p("色号统计（共 {0} 种颜色）", "\(pattern.beadCounts.count)"))
             } footer: {
-                Text("点击下方色块高亮显示；再点一次或点「全显」恢复。")
+                Text(L10n.s("点击下方色块高亮显示；再点一次或点「全显」恢复。"))
             }
 
             Section {
                 HStack(spacing: 14) {
-                    statCell("已拼", "\(pattern.placedCount)")
-                    statCell("总数", "\(pattern.totalBeads)")
-                    statCell("剩余", "\(pattern.totalBeads - pattern.placedCount)")
-                    statCell("颜色", "\(pattern.beadCounts.count)")
+                    statCell(L10n.s("已拼"), "\(pattern.placedCount)")
+                    statCell(L10n.s("总数"), "\(pattern.totalBeads)")
+                    statCell(L10n.s("剩余"), "\(pattern.totalBeads - pattern.placedCount)")
+                    statCell(L10n.s("颜色"), "\(pattern.beadCounts.count)")
                 }
                 .listRowInsets(EdgeInsets())
                 VStack(alignment: .leading, spacing: 4) {
@@ -306,16 +306,16 @@ struct WorkDetailView: View {
             }
 
             Section {
-                Toggle("逐格打卡模式（点击格子标记已拼）", isOn: $markMode)
+                Toggle(L10n.s("逐格打卡模式（点击格子标记已拼）"), isOn: $markMode)
                 NavigationLink {
                     EditorView(pattern: pattern)
                 } label: {
-                    Label("编辑图纸", systemImage: "paintbrush")
+                    Label(L10n.s("编辑图纸"), systemImage: "paintbrush")
                 }
             }
 
             if let photo = pattern.resultPhoto, let ui = UIImage(data: photo) {
-                Section("成品") {
+                Section(L10n.k("成品")) {
                     Image(uiImage: ui)
                         .resizable()
                         .scaledToFit()
@@ -323,7 +323,7 @@ struct WorkDetailView: View {
                     Button(role: .destructive) {
                         pattern.resultPhoto = nil
                     } label: {
-                        Label("移除成品照片", systemImage: "trash")
+                        Label(L10n.s("移除成品照片"), systemImage: "trash")
                     }
                 }
             } else {
@@ -337,9 +337,9 @@ struct WorkDetailView: View {
     }
 
     private var resultPhotoSection: some View {
-        Section("成品照片") {
+        Section(L10n.k("成品照片")) {
             PhotosPicker(selection: $resultItem, matching: .images) {
-                Label(pattern.resultPhoto == nil ? "添加成品照片" : "更换成品照片",
+                Label(pattern.resultPhoto == nil ? L10n.s("添加成品照片") : L10n.s("更换成品照片"),
                       systemImage: "camera")
             }
         }
@@ -353,17 +353,17 @@ struct WorkDetailView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     ProgressView(value: pattern.progressPercent)
                         .tint(pattern.progressPercent >= 1 ? .green : .pink)
-                    Text("\(pattern.placedCount) / \(pattern.totalBeads) 颗 · \(Int(pattern.progressPercent * 100))%")
+                    Text(L10n.p("{0} / {1} 颗 · {2}%", "\(pattern.placedCount)", "\(pattern.totalBeads)", "\(Int(pattern.progressPercent * 100))"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
                 if pattern.status == .done {
-                    Label("已完成！\(pattern.completedAt?.formatted(date: .abbreviated, time: .omitted) ?? "")",
+                    Label(L10n.p("已完成！{0}", "\(pattern.completedAt?.formatted(date: .abbreviated, time: .omitted) ?? "")"),
                           systemImage: "checkmark.seal.fill")
                         .foregroundStyle(.green)
                 }
             } header: {
-                Text("总进度")
+                Text(L10n.s("总进度"))
             }
 
             Section {
@@ -374,7 +374,7 @@ struct WorkDetailView: View {
                         Button {
                             toggleRow(row)
                         } label: {
-                            Text("第\(row + 1)行")
+                            Text(L10n.p("第{0}行", "\(row + 1)"))
                                 .font(.caption.weight(done ? .semibold : .regular))
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 7)
@@ -390,9 +390,9 @@ struct WorkDetailView: View {
                     }
                 }
             } header: {
-                Text("逐行打卡")
+                Text(L10n.s("逐行打卡"))
             } footer: {
-                Text("拼完一行点一下；点错了再点一次即可撤销该行。")
+                Text(L10n.s("拼完一行点一下；点错了再点一次即可撤销该行。"))
             }
 
             Section {
@@ -406,7 +406,7 @@ struct WorkDetailView: View {
                             .overlay(RoundedRectangle(cornerRadius: 5).stroke(.gray.opacity(0.3)))
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Mard \(item.color.mard)").font(.subheadline.monospaced().weight(.medium))
-                            Text("\(placedN) / \(item.count) 颗")
+                            Text(L10n.p("{0} / {1} 颗", "\(placedN)", "\(item.count)"))
                                 .font(.caption)
                                 .foregroundStyle(colorDone ? .green : .secondary)
                         }
@@ -414,7 +414,7 @@ struct WorkDetailView: View {
                         if colorDone {
                             Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
                         } else {
-                            Button("全拼完") {
+                            Button(L10n.s("全拼完")) {
                                 pattern.placeColor(colorId: item.color.id)
                             }
                             .font(.caption)
@@ -424,9 +424,9 @@ struct WorkDetailView: View {
                     }
                 }
             } header: {
-                Text("分色打卡")
+                Text(L10n.s("分色打卡"))
             } footer: {
-                Text("一种颜色一次买齐、一次拼完时，用右侧按钮整色打卡。")
+                Text(L10n.s("一种颜色一次买齐、一次拼完时，用右侧按钮整色打卡。"))
             }
         }
     }
@@ -438,14 +438,14 @@ struct WorkDetailView: View {
             if !board.isConnected {
                 Section {
                     ContentUnavailableView {
-                        Label("拼豆板未连接", systemImage: "lightbulb")
+                        Label(L10n.s("拼豆板未连接"), systemImage: "lightbulb")
                     } description: {
-                        Text("点右上角「连接」按钮连上拼豆板后，可以在这里点亮当前行辅助定位。")
+                        Text(L10n.s("点右上角「连接」按钮连上拼豆板后，可以在这里点亮当前行辅助定位。"))
                     }
                     .frame(maxHeight: 260)
                 }
             } else {
-                Section("当前行引导") {
+                Section(L10n.k("当前行引导")) {
                     HStack {
                         Button {
                             if guideRow > 0 { guideRow -= 1; sendRowGuide() }
@@ -456,10 +456,10 @@ struct WorkDetailView: View {
 
                         Spacer()
                         VStack(spacing: 2) {
-                            Text("第 \(guideRow + 1) / \(pattern.height) 行")
+                            Text(L10n.p("第 {0} / {1} 行", "\(guideRow + 1)", "\(pattern.height)"))
                                 .font(.title3.monospacedDigit().bold())
                             if pattern.isRowPlaced(guideRow) {
-                                Text("本行已拼完").font(.caption).foregroundStyle(.green)
+                                Text(L10n.s("本行已拼完")).font(.caption).foregroundStyle(.green)
                             }
                         }
                         Spacer()
@@ -476,10 +476,10 @@ struct WorkDetailView: View {
                         HStack(spacing: 8) {
                             RoundedRectangle(cornerRadius: 4).fill(c.color)
                                 .frame(width: 22, height: 22)
-                            Text("仅显示 Mard \(c.mard)")
+                            Text(L10n.p("仅显示 Mard {0}", "\(c.mard)"))
                                 .font(.subheadline)
                             Spacer()
-                            Button("取消分色") {
+                            Button(L10n.s("取消分色")) {
                                 guideColorId = nil
                                 sendRowGuide()
                             }
@@ -492,14 +492,14 @@ struct WorkDetailView: View {
                     Button {
                         sendRowGuide()
                     } label: {
-                        Label("点亮当前行（含相邻行微亮）", systemImage: "light.beacon.max")
+                        Label(L10n.s("点亮当前行（含相邻行微亮）"), systemImage: "light.beacon.max")
                     }
                     .disabled(boardBusy)
 
                     Button {
                         Task { await sendFullPreview() }
                     } label: {
-                        Label("发送完整预览图", systemImage: "square.grid.3x3")
+                        Label(L10n.s("发送完整预览图"), systemImage: "square.grid.3x3")
                     }
                     .disabled(boardBusy)
 
@@ -510,12 +510,12 @@ struct WorkDetailView: View {
                                 sendRowGuide()
                             } label: {
                                 HStack {
-                                    Text("仅 \(item.color.mard)（\(item.count) 颗）")
+                                    Text(L10n.p("仅 {0}（{1} 颗）", "\(item.color.mard)", "\(item.count)"))
                                 }
                             }
                         }
                     } label: {
-                        Label("按颜色过滤当前行…", systemImage: "line.3.horizontal.decrease.circle")
+                        Label(L10n.s("按颜色过滤当前行…"), systemImage: "line.3.horizontal.decrease.circle")
                     }
                     .disabled(pattern.beadCounts.isEmpty)
                 }
@@ -536,7 +536,7 @@ struct WorkDetailView: View {
                         Button {
                             sendColorGuide()
                         } label: {
-                            Label("点亮该色", systemImage: "lightbulb.max.fill")
+                            Label(L10n.s("点亮该色"), systemImage: "lightbulb.max.fill")
                                 .font(.subheadline.bold())
                                 .foregroundStyle(.white)
                                 .frame(height: 20)
@@ -552,7 +552,7 @@ struct WorkDetailView: View {
                         Button {
                             finishColorAndAdvance()
                         } label: {
-                            Label("此色拼完 → 下一色", systemImage: "checkmark.circle.badge.arrow.forward")
+                            Label(L10n.s("此色拼完 → 下一色"), systemImage: "checkmark.circle.badge.arrow.forward")
                                 .font(.subheadline.bold())
                                 .foregroundStyle(Theme.accent)
                                 .frame(height: 20)
@@ -564,29 +564,29 @@ struct WorkDetailView: View {
                         .disabled(guideColorId == nil || boardBusy)
                     }
                 } header: {
-                    Text("分色引导 · 全图点亮")
+                    Text(L10n.s("分色引导 · 全图点亮"))
                 } footer: {
-                    Text("只点亮选中色号在全图中的位置。逐颗拼完可到「进度」打卡；整色拼完点「此色拼完」自动打卡并点亮下一色（未拼颗数多的优先）。")
+                    Text(L10n.s("只点亮选中色号在全图中的位置。逐颗拼完可到「进度」打卡；整色拼完点「此色拼完」自动打卡并点亮下一色（未拼颗数多的优先）。"))
                 }
 
                 Section {
                     Button {
                         finishRowAndAdvance()
                     } label: {
-                        Label("本行拼完 → 下一行", systemImage: "checkmark.circle.badge.arrow.forward")
+                        Label(L10n.s("本行拼完 → 下一行"), systemImage: "checkmark.circle.badge.arrow.forward")
                             .font(.headline)
                     }
                     .disabled(boardBusy || guideRow >= pattern.height - 1 && pattern.isRowPlaced(guideRow))
                 } header: {
-                    Text("打卡 + 前进")
+                    Text(L10n.s("打卡 + 前进"))
                 } footer: {
-                    Text("拼完当前行后点击，会自动标记该行已拼并点亮下一行。")
+                    Text(L10n.s("拼完当前行后点击，会自动标记该行已拼并点亮下一行。"))
                 }
 
                 if board.isSending {
                     Section {
                         VStack(alignment: .leading, spacing: 6) {
-                            Text("正在发送引导图… \(Int(board.sendProgress * 100))%")
+                            Text(L10n.p("正在发送引导图… {0}%", "\(Int(board.sendProgress * 100))"))
                                 .font(.subheadline)
                             ProgressView(value: board.sendProgress)
                         }
@@ -599,7 +599,7 @@ struct WorkDetailView: View {
     }
 
     private var quickControls: some View {
-        Section("快捷控制") {
+        Section(L10n.k("快捷控制")) {
             QuickBrightnessRow()
             QuickDisplayToggleRow()
         }
@@ -726,7 +726,7 @@ struct WorkDetailView: View {
                 BeadDot(color: row.color, size: 20)
                 Text(row.color.mard)
                     .font(.caption.monospaced().weight(.semibold))
-                Text("剩\(row.remaining)")
+                Text(L10n.p("剩{0}", "\(row.remaining)"))
                     .font(.caption2.monospacedDigit())
                     .foregroundStyle(.secondary)
             }
@@ -773,9 +773,9 @@ struct WorkDetailView: View {
                                                   options: opts,
                                                   name: pattern.name) {
             pdfURL = url
-            toast = "PDF 已生成，可点「分享 PDF」导出"
+            toast = L10n.s("PDF 已生成，可点「分享 PDF」导出")
         } else {
-            toast = "PDF 生成失败，请重试"
+            toast = L10n.s("PDF 生成失败，请重试")
         }
     }
 
@@ -910,7 +910,7 @@ private struct QuickBrightnessRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            LabeledContent("板子亮度", value: "\(pct)%")
+            LabeledContent(L10n.k("板子亮度"), value: "\(pct)%")
             Slider(value: Binding(get: { Double(pct) }, set: { pct = Int($0) }),
                    in: 10...100, step: 5)
                 .onChange(of: pct) { _, v in
@@ -930,7 +930,7 @@ private struct QuickDisplayToggleRow: View {
     @State private var on = true
 
     var body: some View {
-        Toggle("点亮灯板", isOn: Binding(
+        Toggle(L10n.s("点亮灯板"), isOn: Binding(
             get: { on },
             set: { v in
                 on = v
@@ -957,7 +957,7 @@ struct MoveFolderSheet: View {
                         dismiss()
                     } label: {
                         HStack {
-                            Label("移出文件夹", systemImage: "tray")
+                            Label(L10n.s("移出文件夹"), systemImage: "tray")
                             Spacer()
                             if pattern.folderId == nil {
                                 Image(systemName: "checkmark").foregroundStyle(.pink)
@@ -965,9 +965,9 @@ struct MoveFolderSheet: View {
                         }
                     }
                 }
-                Section("文件夹") {
+                Section(L10n.k("文件夹")) {
                     if folders.isEmpty {
-                        Text("还没有文件夹，可到「图纸 → 文件夹」新建")
+                        Text(L10n.s("还没有文件夹，可到「图纸 → 文件夹」新建"))
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     } else {
@@ -988,11 +988,11 @@ struct MoveFolderSheet: View {
                     }
                 }
             }
-            .navigationTitle("移动到文件夹")
+            .navigationTitle(L10n.s("移动到文件夹"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("完成") { dismiss() }
+                    Button(L10n.s("完成")) { dismiss() }
                 }
             }
         }
@@ -1014,7 +1014,7 @@ struct TagEditorSheet: View {
             Form {
                 Section {
                     if pattern.tags.isEmpty {
-                        Text("还没有标签").foregroundStyle(.secondary)
+                        Text(L10n.s("还没有标签")).foregroundStyle(.secondary)
                     } else {
                         ForEach(pattern.tags, id: \.self) { tag in
                             HStack {
@@ -1030,29 +1030,29 @@ struct TagEditorSheet: View {
                         }
                     }
                 } header: {
-                    Text("现有标签")
+                    Text(L10n.s("现有标签"))
                 }
 
                 Section {
                     HStack {
-                        TextField("输入标签", text: $newTag)
-                        Button("添加") {
+                        TextField(L10n.s("输入标签"), text: $newTag)
+                        Button(L10n.s("添加")) {
                             pattern.addTag(newTag)
                             newTag = ""
                         }
                         .disabled(newTag.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     }
                 } header: {
-                    Text("新增标签")
+                    Text(L10n.s("新增标签"))
                 } footer: {
-                    Text("标签用于「图纸 → 标签」分段筛选。")
+                    Text(L10n.s("标签用于「图纸 → 标签」分段筛选。"))
                 }
             }
-            .navigationTitle("编辑标签")
+            .navigationTitle(L10n.s("编辑标签"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("完成") { dismiss() }
+                    Button(L10n.s("完成")) { dismiss() }
                 }
             }
         }

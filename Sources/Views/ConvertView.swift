@@ -58,7 +58,7 @@ struct ConvertView: View {
             .padding(.bottom, 24)
         }
         .background(Theme.pageFill)
-        .navigationTitle("照片转图纸")
+        .navigationTitle(L10n.s("照片转图纸"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -72,14 +72,14 @@ struct ConvertView: View {
                 if let data = try? await item.loadTransferable(type: Data.self),
                    let ui = UIImage(data: data) {
                     image = ui
-                    name = name.isEmpty ? "照片图纸 \(Date().formatted(.dateTime.month().day()))" : name
+                    name = name.isEmpty ? L10n.p("照片图纸 {0}", "\(Date().formatted(.dateTime.month().day()))") : name
                 }
             }
         }
-        .alert("已保存", isPresented: Binding(get: { savedID != nil }, set: { if !$0 { savedID = nil } })) {
-            Button("好", role: .cancel) { savedID = nil }
+        .alert(L10n.s("已保存"), isPresented: Binding(get: { savedID != nil }, set: { if !$0 { savedID = nil } })) {
+            Button(L10n.s("好"), role: .cancel) { savedID = nil }
         } message: {
-            Text("图纸已保存，可在「图纸」标签中查看")
+            Text(L10n.s("图纸已保存，可在「图纸」标签中查看"))
         }
         .sheet(item: $sendPattern) { p in
             BoardSendSheet(pattern: p)
@@ -97,7 +97,7 @@ struct ConvertView: View {
                     .frame(maxHeight: 240)
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 PhotosPicker(selection: $pickedItem, matching: .images) {
-                    Label("重新选择", systemImage: "arrow.triangle.2.circlepath")
+                    Label(L10n.s("重新选择"), systemImage: "arrow.triangle.2.circlepath")
                         .font(.subheadline.bold())
                         .foregroundStyle(Theme.accent)
                 }
@@ -115,9 +115,9 @@ struct ConvertView: View {
                                 .foregroundStyle(.white)
                         }
                         .frame(height: 110)
-                        Text("点击选择照片")
+                        Text(L10n.s("点击选择照片"))
                             .font(.headline)
-                        Text("自动匹配 295 色豆号，亮度和色彩智能校正")
+                        Text(L10n.s("自动匹配 295 色豆号，亮度和色彩智能校正"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -135,15 +135,15 @@ struct ConvertView: View {
 
     private var paramSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Label("转换参数", systemImage: "slider.horizontal.3")
+            Label(L10n.s("转换参数"), systemImage: "slider.horizontal.3")
                 .font(.subheadline.bold())
 
             // 尺寸滑杆
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    Text("图纸尺寸").font(.subheadline)
+                    Text(L10n.s("图纸尺寸")).font(.subheadline)
                     Spacer()
-                    Text("\(maxSide) 格").font(.subheadline.bold().monospacedDigit())
+                    Text(L10n.p("{0} 格", "\(maxSide)")).font(.subheadline.bold().monospacedDigit())
                         .foregroundStyle(Theme.accent)
                 }
                 Slider(value: Binding(
@@ -154,22 +154,22 @@ struct ConvertView: View {
 
             // 色数胶囊
             VStack(alignment: .leading, spacing: 8) {
-                Text("颜色数量").font(.subheadline)
+                Text(L10n.s("颜色数量")).font(.subheadline)
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
-                        colorChip(value: 16, label: "16 色")
-                        colorChip(value: 24, label: "24 色")
-                        colorChip(value: 32, label: "32 色")
-                        colorChip(value: 48, label: "48 色")
-                        colorChip(value: 64, label: "64 色")
-                        colorChip(value: 0, label: "295 色")
+                        colorChip(value: 16, label: L10n.s("16 色"))
+                        colorChip(value: 24, label: L10n.s("24 色"))
+                        colorChip(value: 32, label: L10n.s("32 色"))
+                        colorChip(value: 48, label: L10n.s("48 色"))
+                        colorChip(value: 64, label: L10n.s("64 色"))
+                        colorChip(value: 0, label: L10n.s("295 色"))
                     }
                 }
             }
 
-            Toggle("自动亮度校正", isOn: $autoLevels)
+            Toggle(L10n.s("自动亮度校正"), isOn: $autoLevels)
                 .font(.subheadline)
-            Toggle("白底转空格", isOn: $whiteToEmpty)
+            Toggle(L10n.s("白底转空格"), isOn: $whiteToEmpty)
                 .font(.subheadline)
 
             // 转换按钮
@@ -179,10 +179,10 @@ struct ConvertView: View {
                 HStack(spacing: 8) {
                     if converting {
                         ProgressView().tint(.white)
-                        Text("转换中…")
+                        Text(L10n.s("转换中…"))
                     } else {
                         Image(systemName: "wand.and.stars")
-                        Text("开始转换")
+                        Text(L10n.s("开始转换"))
                     }
                 }
                 .font(.headline)
@@ -220,17 +220,17 @@ struct ConvertView: View {
 
     private func previewSection(_ result: PixelConverter.Result) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("转换预览", systemImage: "eye")
+            Label(L10n.s("转换预览"), systemImage: "eye")
                 .font(.subheadline.bold())
             GridView(cells: result.cells, width: result.width, height: result.height)
                 .frame(maxHeight: 320)
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             HStack(spacing: 0) {
-                statBlock("\(result.width)×\(result.height)", "图纸尺寸")
+                statBlock("\(result.width)×\(result.height)", L10n.s("图纸尺寸"))
                 divider
-                statBlock("\(beadCounts.count)", "使用颜色")
+                statBlock("\(beadCounts.count)", L10n.s("使用颜色"))
                 divider
-                statBlock("\(result.cells.filter { $0 > 0 }.count)", "豆子总数")
+                statBlock("\(result.cells.filter { $0 > 0 }.count)", L10n.s("豆子总数"))
             }
         }
         .cardStyle()
@@ -250,10 +250,10 @@ struct ConvertView: View {
         let items = sortedCounts
         return VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Label("用色清单", systemImage: "list.bullet.rectangle")
+                Label(L10n.s("用色清单"), systemImage: "list.bullet.rectangle")
                     .font(.subheadline.bold())
                 Spacer()
-                Text("共 \(items.count) 色").font(.caption).foregroundStyle(.secondary)
+                Text(L10n.p("共 {0} 色", "\(items.count)")).font(.caption).foregroundStyle(.secondary)
             }
             ForEach(items.prefix(40), id: \.id) { item in
                 if let c = BeadPalette.byId[item.id] {
@@ -265,14 +265,14 @@ struct ConvertView: View {
                         Text("Mard \(c.mard)")
                             .font(.subheadline.monospaced().weight(.medium))
                         Spacer()
-                        Text("\(item.count) 颗")
+                        Text(L10n.p("{0} 颗", "\(item.count)"))
                             .font(.caption.bold().monospacedDigit())
                             .foregroundStyle(.secondary)
                     }
                 }
             }
             if items.count > 40 {
-                Text("…等共 \(items.count) 色，保存后可在图纸详情查看完整清单")
+                Text(L10n.p("…等共 {0} 色，保存后可在图纸详情查看完整清单", "\(items.count)"))
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
             }
@@ -298,22 +298,22 @@ struct ConvertView: View {
     /// - 空白区由"板尺寸 − 图纸尺寸"隐含表达，**不把 cells 扩成板大小**（空区为空格，不点灯、不计豆量）。
     private func boardSizeCard(_ result: PixelConverter.Result) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Toggle("设置实际拼板尺寸", isOn: $useBoard)
+            Toggle(L10n.s("设置实际拼板尺寸"), isOn: $useBoard)
                 .font(.subheadline.weight(.medium))
             if useBoard {
                 Stepper(value: $boardW, in: max(result.width, 1)...104) {
-                    LabeledContent("板宽", value: "\(boardW) 格")
+                    LabeledContent(L10n.k("板宽"), value: L10n.p("{0} 格", "\(boardW)"))
                 }
                 .font(.subheadline)
                 Stepper(value: $boardH, in: max(result.height, 1)...104) {
-                    LabeledContent("板高", value: "\(boardH) 格")
+                    LabeledContent(L10n.k("板高"), value: L10n.p("{0} 格", "\(boardH)"))
                 }
                 .font(.subheadline)
                 HStack {
                     Button {
                         offsetX = 0; offsetY = 0
                     } label: {
-                        Label("左上角", systemImage: "arrow.up.left")
+                        Label(L10n.s("左上角"), systemImage: "arrow.up.left")
                             .font(.caption)
                     }
                     .buttonStyle(.bordered)
@@ -323,24 +323,24 @@ struct ConvertView: View {
                         offsetX = max(0, (boardW - result.width) / 2)
                         offsetY = max(0, (boardH - result.height) / 2)
                     } label: {
-                        Label("居中", systemImage: "rectangle.center.inset.filled")
+                        Label(L10n.s("居中"), systemImage: "rectangle.center.inset.filled")
                             .font(.caption)
                     }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
                 }
                 Stepper(value: $offsetX, in: 0...max(0, boardW - result.width)) {
-                    LabeledContent("水平偏移", value: "\(offsetX) 格")
+                    LabeledContent(L10n.k("水平偏移"), value: L10n.p("{0} 格", "\(offsetX)"))
                 }
                 .font(.subheadline)
                 Stepper(value: $offsetY, in: 0...max(0, boardH - result.height)) {
-                    LabeledContent("垂直偏移", value: "\(offsetY) 格")
+                    LabeledContent(L10n.k("垂直偏移"), value: L10n.p("{0} 格", "\(offsetY)"))
                 }
                 .font(.subheadline)
             }
             Text(useBoard
-                 ? "图纸 \(result.width)×\(result.height) 落在 \(boardW)×\(boardH) 板上，空白区视为空格（不点灯）。"
-                 : "默认板尺寸与图纸一致。小图也可放到大板上指定位置。")
+                 ? L10n.p("图纸 {0}×{1} 落在 {2}×{3} 板上，空白区视为空格（不点灯）。", "\(result.width)", "\(result.height)", "\(boardW)", "\(boardH)")
+                 : L10n.s("默认板尺寸与图纸一致。小图也可放到大板上指定位置。"))
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
         }
@@ -351,7 +351,7 @@ struct ConvertView: View {
 
     private func saveCard(_ result: PixelConverter.Result) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            TextField("图纸名称", text: $name)
+            TextField(L10n.s("图纸名称"), text: $name)
                 .font(.subheadline)
                 .padding(12)
                 .background(Theme.pageFill, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
@@ -359,7 +359,7 @@ struct ConvertView: View {
             Button {
                 saveAndStart(result)
             } label: {
-                Label("保存并开始拼豆（发送拼豆板）", systemImage: "lightbulb.max.fill")
+                Label(L10n.s("保存并开始拼豆（发送拼豆板）"), systemImage: "lightbulb.max.fill")
                     .font(.headline)
                     .foregroundStyle(.white)
                     .frame(height: 22)
@@ -375,7 +375,7 @@ struct ConvertView: View {
             Button {
                 if let p = save(result) { savedID = p.id }
             } label: {
-                Label("仅保存图纸", systemImage: "square.and.arrow.down.fill")
+                Label(L10n.s("仅保存图纸"), systemImage: "square.and.arrow.down.fill")
                     .font(.subheadline.bold())
                     .foregroundStyle(Theme.accent)
                     .frame(height: 18)

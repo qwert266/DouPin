@@ -54,8 +54,8 @@ struct TemplateGalleryView: View {
                         HStack(spacing: 8) {
                             Image(systemName: Self.setIcon(for: cat))
                                 .foregroundStyle(Theme.accent)
-                            Text(cat).font(.title3.bold())
-                            Text("\(templates.filter { $0.category == cat }.count) 个")
+                            Text(L10n.s(cat)).font(.title3.bold())
+                            Text(L10n.p("{0} 个", "\(templates.filter { $0.category == cat }.count)"))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -68,7 +68,7 @@ struct TemplateGalleryView: View {
             }
             .padding(.vertical, 12)
         }
-        .navigationTitle("模板库")
+        .navigationTitle(L10n.s("模板库"))
     }
 }
 
@@ -84,7 +84,7 @@ struct TemplateCard: View {
                     RoundedRectangle(cornerRadius: 10)
                         .stroke(Color.gray.opacity(0.25)))
             Text(template.name).font(.footnote.weight(.medium))
-            Text("\(template.width)×\(template.height) · \(template.cells.filter { $0 > 0 }.count)颗")
+            Text(L10n.p("{0}×{1} · {2}颗", "\(template.width)", "\(template.height)", "\(template.cells.filter { $0 > 0 }.count)"))
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
@@ -109,13 +109,13 @@ struct TemplatePreviewView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 10))
 
                 HStack(spacing: 12) {
-                    stat("尺寸", "\(template.width)×\(template.height)")
-                    stat("颜色", "\(colorCounts.count) 种")
-                    stat("豆子", "\(template.cells.filter { $0 > 0 }.count) 颗")
+                    stat(L10n.s("尺寸"), "\(template.width)×\(template.height)")
+                    stat(L10n.s("颜色"), L10n.p("{0} 种", "\(colorCounts.count)"))
+                    stat(L10n.s("豆子"), L10n.p("{0} 颗", "\(template.cells.filter { $0 > 0 }.count)"))
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("用色清单").font(.headline)
+                    Text(L10n.s("用色清单")).font(.headline)
                     ForEach(Array(colorCounts.enumerated()), id: \.offset) { _, item in
                         HStack(spacing: 10) {
                             RoundedRectangle(cornerRadius: 4)
@@ -143,7 +143,7 @@ struct TemplatePreviewView: View {
                 context.insert(p)
                 created = p
             } label: {
-                Label("使用此模板开始拼", systemImage: "play.circle.fill")
+                Label(L10n.s("使用此模板开始拼"), systemImage: "play.circle.fill")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)

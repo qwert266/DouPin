@@ -45,13 +45,13 @@ struct StockImportView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("粘贴文本") {
+                Section(L10n.k("粘贴文本")) {
                     TextEditor(text: $text)
                         .frame(minHeight: 140)
                         .font(.body.monospaced())
                         .overlay(alignment: .topLeading) {
                             if text.isEmpty {
-                                Text("每行：色号 数量\n例如：\nA1 500\nA2,300\nH7\t120")
+                                Text(L10n.s("每行：色号 数量\\n例如：\\nA1 500\\nA2,300\\nH7\\t120"))
                                     .font(.body.monospaced())
                                     .foregroundStyle(.secondary)
                                     .padding(.top, 8).padding(.leading, 5)
@@ -61,7 +61,7 @@ struct StockImportView: View {
                     Button {
                         if let clip = UIPasteboard.general.string { text = clip }
                     } label: {
-                        Label("从剪贴板粘贴", systemImage: "doc.on.clipboard")
+                        Label(L10n.s("从剪贴板粘贴"), systemImage: "doc.on.clipboard")
                     }
                 }
 
@@ -70,32 +70,32 @@ struct StockImportView: View {
                 previewSection
 
                 Section {
-                    LabeledContent("归入豆仓", value: BeadBinCatalog.displayName(binName))
+                    LabeledContent(L10n.k("归入豆仓"), value: BeadBinCatalog.displayName(binName))
                         .font(.subheadline)
                 } footer: {
-                    Text("查重与写入都在该豆仓内进行；同色号在其他仓的记录不受影响。")
+                    Text(L10n.s("查重与写入都在该豆仓内进行；同色号在其他仓的记录不受影响。"))
                 }
 
                 if let summary = resultSummary {
                     Section {
                         VStack(alignment: .leading, spacing: 6) {
-                            Label("导入完成", systemImage: "checkmark.circle.fill")
+                            Label(L10n.s("导入完成"), systemImage: "checkmark.circle.fill")
                                 .foregroundStyle(.green)
-                            Text("新增 \(summary.inserted) 条 · 更新 \(summary.updated) 条 · 跳过 \(summary.skipped) 条 · 失败 \(summary.failed) 行")
+                            Text(L10n.p("新增 {0} 条 · 更新 {1} 条 · 跳过 {2} 条 · 失败 {3} 行", "\(summary.inserted)", "\(summary.updated)", "\(summary.skipped)", "\(summary.failed)"))
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
                     }
                 }
             }
-            .navigationTitle("批量导入")
+            .navigationTitle(L10n.s("批量导入"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("取消") { dismiss() }
+                    Button(L10n.s("取消")) { dismiss() }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("确认导入") { performImport() }
+                    Button(L10n.s("确认导入")) { performImport() }
                         .disabled(parseResult.ok.isEmpty)
                 }
             }
@@ -106,14 +106,14 @@ struct StockImportView: View {
 
     private var conflictSection: some View {
         Section {
-            Picker("冲突时", selection: $policy) {
-                ForEach(ConflictPolicy.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+            Picker(L10n.s("冲突时"), selection: $policy) {
+                ForEach(ConflictPolicy.allCases, id: \.self) { Text(L10n.s($0.rawValue)).tag($0) }
             }
             .pickerStyle(.segmented)
         } header: {
-            Text("冲突处理")
+            Text(L10n.s("冲突处理"))
         } footer: {
-            Text("当导入的色号已有库存时：累加 = 原数量 + 导入数量；覆盖 = 直接改为导入数量；跳过 = 保留原库存。")
+            Text(L10n.s("当导入的色号已有库存时：累加 = 原数量 + 导入数量；覆盖 = 直接改为导入数量；跳过 = 保留原库存。"))
         }
     }
 
@@ -123,7 +123,7 @@ struct StockImportView: View {
         Section {
             let result = parseResult
             if result.ok.isEmpty && result.failed.isEmpty {
-                Text("粘贴文本后将在此处显示解析预览")
+                Text(L10n.s("粘贴文本后将在此处显示解析预览"))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             } else {
@@ -141,7 +141,7 @@ struct StockImportView: View {
                             .font(.subheadline.monospacedDigit())
                             .foregroundStyle(.secondary)
                         if existing(item.colorId) != nil {
-                            Text("已存在")
+                            Text(L10n.s("已存在"))
                                 .font(.caption2)
                                 .padding(.horizontal, 6).padding(.vertical, 2)
                                 .background(Color.orange.opacity(0.15), in: Capsule())
@@ -154,7 +154,7 @@ struct StockImportView: View {
                     HStack(spacing: 10) {
                         Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.red)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("第 \(f.line) 行：\(f.text)")
+                            Text(L10n.p("第 {0} 行：{1}", "\(f.line)", "\(f.text)"))
                                 .font(.subheadline.monospaced())
                                 .foregroundStyle(.red)
                             Text(f.reason)
@@ -168,11 +168,11 @@ struct StockImportView: View {
             }
         } header: {
             HStack {
-                Text("解析预览")
+                Text(L10n.s("解析预览"))
                 Spacer()
                 let r = parseResult
                 if !r.ok.isEmpty || !r.failed.isEmpty {
-                    Text("成功 \(r.okCount) · 失败 \(r.failedCount)")
+                    Text(L10n.p("成功 {0} · 失败 {1}", "\(r.okCount)", "\(r.failedCount)"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -226,6 +226,6 @@ struct StockImportView: View {
                                     skipped: skipped,
                                     failed: result.failedCount)
         resultSummary = summary
-        onFinished("导入完成：新增 \(inserted) / 更新 \(updated) / 跳过 \(skipped) / 失败 \(result.failedCount)")
+        onFinished(L10n.p("导入完成：新增 {0} / 更新 {1} / 跳过 {2} / 失败 {3}", "\(inserted)", "\(updated)", "\(skipped)", "\(result.failedCount)"))
     }
 }

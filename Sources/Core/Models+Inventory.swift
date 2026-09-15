@@ -14,7 +14,7 @@ final class PatternFolder {
     /// 唯一标识
     @Attribute(.unique) var id: UUID = UUID()
     /// 文件夹名称（默认「新建文件夹」）
-    var name: String = "新建文件夹"
+    var name: String = L10n.s("新建文件夹")
     /// 排序序号（拖动排序用，越小越靠前）
     var sortOrder: Int = 0
     /// 创建时间
@@ -34,7 +34,7 @@ final class PatternFolder {
     /// 默认无参构造（SwiftData 需要）
     init() {
         self.id = UUID()
-        self.name = "新建文件夹"
+        self.name = L10n.s("新建文件夹")
         self.sortOrder = 0
         self.createdAt = Date()
     }
@@ -134,7 +134,7 @@ final class BeadStock {
 enum BeadBinCatalog {
 
     /// 默认仓名（`binName == ""`）
-    static let defaultName = "我的豆仓"
+    static let defaultName = L10n.s("我的豆仓")
 
     /// 原始仓名 → 展示名
     static func displayName(_ raw: String) -> String {
@@ -231,12 +231,12 @@ struct StockEstimate {
     /// 共 1 种色号不足
     /// ```
     var shortText: String {
-        guard hasShortage else { return "【\(patternName)】库存充足，无缺色 🎉" }
-        var lines: [String] = ["【\(patternName)】缺色清单"]
+        guard hasShortage else { return L10n.p("【{0}】库存充足，无缺色 🎉", "\(patternName)") }
+        var lines: [String] = [L10n.p("【{0}】缺色清单", "\(patternName)")]
         for row in shortRows {
-            lines.append("\(row.color.mard)  需\(row.need) 有\(row.have) 缺\(row.shortage)")
+            lines.append(L10n.p("{0}  需{1} 有{2} 缺{3}", "\(row.color.mard)", "\(row.need)", "\(row.have)", "\(row.shortage)"))
         }
-        lines.append("共 \(shortCount) 种色号不足")
+        lines.append(L10n.p("共 {0} 种色号不足", "\(shortCount)"))
         return lines.joined(separator: "\n")
     }
 
@@ -284,7 +284,7 @@ struct StockEstimate {
     }
 
     /// 空结果（无图纸/无用量时使用）
-    static func empty(patternName: String = "未命名") -> StockEstimate {
+    static func empty(patternName: String = L10n.s("未命名")) -> StockEstimate {
         StockEstimate(name: patternName, counts: [], stocks: [])
     }
 }

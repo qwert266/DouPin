@@ -53,7 +53,7 @@ struct PatternTemplate: Identifiable {
 
 enum TemplateLibrary {
     static let all: [PatternTemplate] = [
-        PatternTemplate(name: "爱心", category: "爱心系", rows: [
+        PatternTemplate(name: L10n.s("爱心"), category: L10n.s("爱心系"), rows: [
             "................",
             "..RRRR....RRRR..",
             ".RRRRRR..RRRRRR.",
@@ -69,7 +69,7 @@ enum TemplateLibrary {
             ".......RR.......",
             "................",
         ]),
-        PatternTemplate(name: "笑脸", category: "表情包", rows: [
+        PatternTemplate(name: L10n.s("笑脸"), category: L10n.s("表情包"), rows: [
             "....YYYYYYYY....",
             "..YYYYYYYYYYYY..",
             ".YYYYYYYYYYYYYY.",
@@ -85,7 +85,7 @@ enum TemplateLibrary {
             "....YYYYYYYY....",
             "................",
         ]),
-        PatternTemplate(name: "五角星", category: "日常物件", rows: [
+        PatternTemplate(name: L10n.s("五角星"), category: L10n.s("日常物件"), rows: [
             ".......AA.......",
             ".......AA.......",
             "......AAAA......",
@@ -103,7 +103,7 @@ enum TemplateLibrary {
             "AA............AA",
             "................",
         ]),
-        PatternTemplate(name: "西瓜", category: "食物甜点", rows: [
+        PatternTemplate(name: L10n.s("西瓜"), category: L10n.s("食物甜点"), rows: [
             "....gggggggg....",
             "..ggllllllllgg..",
             ".gllRRRRRRRRllg.",
@@ -119,7 +119,7 @@ enum TemplateLibrary {
             ".......gg.......",
             "................",
         ]),
-        PatternTemplate(name: "蘑菇", category: "植物花语", rows: [
+        PatternTemplate(name: L10n.s("蘑菇"), category: L10n.s("植物花语"), rows: [
             ".....RRRRRR.....",
             "...RRWWRRRRRR...",
             "..RRRWWRRRRRRR..",
@@ -136,7 +136,7 @@ enum TemplateLibrary {
             "....MMMMMMMM....",
             "................",
         ]),
-        PatternTemplate(name: "小猫", category: "像素小动物", rows: [
+        PatternTemplate(name: L10n.s("小猫"), category: L10n.s("像素小动物"), rows: [
             "..KKK......KKK..",
             "..KWK......KWK..",
             "..KKK......KKK..",
@@ -154,7 +154,7 @@ enum TemplateLibrary {
             "...KKK....KKK...",
             "................",
         ]),
-        PatternTemplate(name: "兔子", category: "像素小动物", rows: [
+        PatternTemplate(name: L10n.s("兔子"), category: L10n.s("像素小动物"), rows: [
             "...WW......WW...",
             "..WWWW....WWWW..",
             "..WKKW....WKKW..",
@@ -172,7 +172,7 @@ enum TemplateLibrary {
             "...WWWWWWWWWW...",
             ".....WWWWWW.....",
         ]),
-        PatternTemplate(name: "冰淇淋", category: "食物甜点", rows: [
+        PatternTemplate(name: L10n.s("冰淇淋"), category: L10n.s("食物甜点"), rows: [
             "......PPPP......",
             ".....PPPPPP.....",
             "....PPPPPPPP....",
@@ -190,7 +190,7 @@ enum TemplateLibrary {
             "....BBBBBB......",
             ".....BBBB.......",
         ]),
-        PatternTemplate(name: "蝴蝶结", category: "日常物件", rows: [
+        PatternTemplate(name: L10n.s("蝴蝶结"), category: L10n.s("日常物件"), rows: [
             "....HH....HH....",
             "..HHHHH.HHHHH...",
             ".HHPPHHHHHPPHH..",
@@ -205,7 +205,7 @@ enum TemplateLibrary {
             "....HH....HH....",
             "................",
         ]),
-        PatternTemplate(name: "月亮", category: "太空星球", rows: [
+        PatternTemplate(name: L10n.s("月亮"), category: L10n.s("太空星球"), rows: [
             "......YYYY......",
             "....YYYYYY......",
             "...YYYYY........",
@@ -223,7 +223,7 @@ enum TemplateLibrary {
             "................",
             "................",
         ]),
-        PatternTemplate(name: "音符", category: "日常物件", rows: [
+        PatternTemplate(name: L10n.s("音符"), category: L10n.s("日常物件"), rows: [
             ".....KKKKKKK....",
             ".....KKKKKKKK...",
             ".....KKKKKKKK...",
@@ -239,7 +239,7 @@ enum TemplateLibrary {
             "...KKK..........",
             "................",
         ]),
-        PatternTemplate(name: "圣诞树", category: "节日", rows: [
+        PatternTemplate(name: L10n.s("圣诞树"), category: L10n.s("节日"), rows: [
             ".......dd.......",
             "......dddd......",
             ".....dddddd.....",
@@ -256,7 +256,7 @@ enum TemplateLibrary {
             "....BBBBBBBB....",
             "................",
         ]),
-        PatternTemplate(name: "南瓜", category: "节日", rows: [
+        PatternTemplate(name: L10n.s("南瓜"), category: L10n.s("节日"), rows: [
             ".....gggggg.....",
             "......gggg......",
             "....OOOOOOOO....",
@@ -273,7 +273,7 @@ enum TemplateLibrary {
             "....OOOOOOOO....",
             "................",
         ]),
-        PatternTemplate(name: "彩虹", category: "自然风景", rows: [
+        PatternTemplate(name: L10n.s("彩虹"), category: L10n.s("自然风景"), rows: [
             ".....RRRRRR.....",
             "...RRRRRRRRRR...",
             "..RRRRRRRRRRRR..",
@@ -294,7 +294,7 @@ enum TemplateLibrary {
         // ===== T05 扩充：套装分组（全部使用既有 charMap 字符，行长严格等长） =====
 
         // ----- 像素小动物 -----
-        PatternTemplate(name: "熊猫", category: "像素小动物", rows: [
+        PatternTemplate(name: L10n.s("熊猫"), category: L10n.s("像素小动物"), rows: [
             "....KKKKKKKK....",
             "..KKWWWWWWWWKK..",
             ".KKWWWWWWWWWWKK.",
@@ -312,7 +312,7 @@ enum TemplateLibrary {
             "................",
             "................",
         ]),
-        PatternTemplate(name: "小狗", category: "像素小动物", rows: [
+        PatternTemplate(name: L10n.s("小狗"), category: L10n.s("像素小动物"), rows: [
             "..BB........BB..",
             ".BBBB......BBBB.",
             ".BBBBBBBBBBBBBB.",
@@ -330,7 +330,7 @@ enum TemplateLibrary {
             "....BB....BB....",
             "....BB....BB....",
         ]),
-        PatternTemplate(name: "小牛", category: "像素小动物", rows: [
+        PatternTemplate(name: L10n.s("小牛"), category: L10n.s("像素小动物"), rows: [
             "...KK......KK...",
             "..KKKK....KKKK..",
             "..KWWKK..KKWWK..",
@@ -346,7 +346,7 @@ enum TemplateLibrary {
             "....KKKKKKKK....",
             "................",
         ]),
-        PatternTemplate(name: "小狐狸", category: "像素小动物", rows: [
+        PatternTemplate(name: L10n.s("小狐狸"), category: L10n.s("像素小动物"), rows: [
             "..OO........OO..",
             ".OOOO......OOOO.",
             ".OWWO......OWWO.",
@@ -364,7 +364,7 @@ enum TemplateLibrary {
             "......OWWO......",
             "................",
         ]),
-        PatternTemplate(name: "小鸡", category: "像素小动物", rows: [
+        PatternTemplate(name: L10n.s("小鸡"), category: L10n.s("像素小动物"), rows: [
             "......YYYY......",
             ".....YYYYYY.....",
             "....YYYYYYYY....",
@@ -382,7 +382,7 @@ enum TemplateLibrary {
             "....OO....OO....",
             "................",
         ]),
-        PatternTemplate(name: "小企鹅", category: "像素小动物", rows: [
+        PatternTemplate(name: L10n.s("小企鹅"), category: L10n.s("像素小动物"), rows: [
             ".....KKKKKK.....",
             "....KKKKKKKK....",
             "...KKWWWWWWKK...",
@@ -402,7 +402,7 @@ enum TemplateLibrary {
         ]),
 
         // ----- 表情包 -----
-        PatternTemplate(name: "大笑", category: "表情包", rows: [
+        PatternTemplate(name: L10n.s("大笑"), category: L10n.s("表情包"), rows: [
             "....YYYYYYYY....",
             "..YYYYYYYYYYYY..",
             ".YYYYYYYYYYYYYY.",
@@ -418,7 +418,7 @@ enum TemplateLibrary {
             "....YYYYYYYY....",
             "................",
         ]),
-        PatternTemplate(name: "哭泣", category: "表情包", rows: [
+        PatternTemplate(name: L10n.s("哭泣"), category: L10n.s("表情包"), rows: [
             "....YYYYYYYY....",
             "..YYYYYYYYYYYY..",
             ".YYYYYYYYYYYYYY.",
@@ -434,7 +434,7 @@ enum TemplateLibrary {
             "....YYYYYYYY....",
             "................",
         ]),
-        PatternTemplate(name: "爱心眼", category: "表情包", rows: [
+        PatternTemplate(name: L10n.s("爱心眼"), category: L10n.s("表情包"), rows: [
             "....YYYYYYYY....",
             "..YYYYYYYYYYYY..",
             ".YYYYYYYYYYYYYY.",
@@ -450,7 +450,7 @@ enum TemplateLibrary {
             "....YYYYYYYY....",
             "................",
         ]),
-        PatternTemplate(name: "wink", category: "表情包", rows: [
+        PatternTemplate(name: "wink", category: L10n.s("表情包"), rows: [
             "....YYYYYYYY....",
             "..YYYYYYYYYYYY..",
             ".YYYYYYYYYYYYYY.",
@@ -466,7 +466,7 @@ enum TemplateLibrary {
             "....YYYYYYYY....",
             "................",
         ]),
-        PatternTemplate(name: "无语", category: "表情包", rows: [
+        PatternTemplate(name: L10n.s("无语"), category: L10n.s("表情包"), rows: [
             "....YYYYYYYY....",
             "..YYYYYYYYYYYY..",
             ".YYYYYYYYYYYYYY.",
@@ -484,7 +484,7 @@ enum TemplateLibrary {
         ]),
 
         // ----- 自然风景 -----
-        PatternTemplate(name: "太阳", category: "自然风景", rows: [
+        PatternTemplate(name: L10n.s("太阳"), category: L10n.s("自然风景"), rows: [
             "..Y..YYYYYY..Y..",
             "...YYYYYYYYYY...",
             "..YYYYYYYYYYYY..",
@@ -500,7 +500,7 @@ enum TemplateLibrary {
             "................",
             "................",
         ]),
-        PatternTemplate(name: "云朵", category: "自然风景", rows: [
+        PatternTemplate(name: L10n.s("云朵"), category: L10n.s("自然风景"), rows: [
             "......WWWW......",
             "....WWWWWWWW....",
             "...WWWWWWWWWW...",
@@ -516,7 +516,7 @@ enum TemplateLibrary {
             "................",
             "................",
         ]),
-        PatternTemplate(name: "山峰", category: "自然风景", rows: [
+        PatternTemplate(name: L10n.s("山峰"), category: L10n.s("自然风景"), rows: [
             ".......WW.......",
             "......WWWW......",
             ".....WWWWWW.....",
@@ -532,7 +532,7 @@ enum TemplateLibrary {
             "dddddddddddddddd",
             "................",
         ]),
-        PatternTemplate(name: "海浪", category: "自然风景", rows: [
+        PatternTemplate(name: L10n.s("海浪"), category: L10n.s("自然风景"), rows: [
             "................",
             "..cccc..cccc....",
             ".cccccc.cccccc..",
@@ -548,7 +548,7 @@ enum TemplateLibrary {
             "................",
             "................",
         ]),
-        PatternTemplate(name: "向日葵", category: "自然风景", rows: [
+        PatternTemplate(name: L10n.s("向日葵"), category: L10n.s("自然风景"), rows: [
             "..Y...OOOO...Y..",
             "...Y.OOOOOO.Y...",
             "..Y.OOAOOAOO.Y..",
@@ -568,7 +568,7 @@ enum TemplateLibrary {
         ]),
 
         // ----- 节日 -----
-        PatternTemplate(name: "圣诞袜", category: "节日", rows: [
+        PatternTemplate(name: L10n.s("圣诞袜"), category: L10n.s("节日"), rows: [
             "..RRRR..RRRRRR..",
             ".RRRRRR.RRRRRRR.",
             ".RWWWWR.RWWWWWR.",
@@ -586,7 +586,7 @@ enum TemplateLibrary {
             ".....WWWW.......",
             "................",
         ]),
-        PatternTemplate(name: "雪人", category: "节日", rows: [
+        PatternTemplate(name: L10n.s("雪人"), category: L10n.s("节日"), rows: [
             "......WWWW......",
             ".....WWWWWW.....",
             "....WWKKKKWW....",
@@ -604,7 +604,7 @@ enum TemplateLibrary {
             ".....WWWWWW.....",
             "................",
         ]),
-        PatternTemplate(name: "礼物盒", category: "节日", rows: [
+        PatternTemplate(name: L10n.s("礼物盒"), category: L10n.s("节日"), rows: [
             "....Y..YY..Y....",
             "...YY..YY..YY...",
             "..YYY.YYYY.YYY..",
@@ -622,7 +622,7 @@ enum TemplateLibrary {
             "................",
             "................",
         ]),
-        PatternTemplate(name: "生日蛋糕", category: "节日", rows: [
+        PatternTemplate(name: L10n.s("生日蛋糕"), category: L10n.s("节日"), rows: [
             "....Y...Y...Y...",
             "...YYY.YYY.YYY..",
             "...Y.Y.Y.Y.Y.Y..",
@@ -638,7 +638,7 @@ enum TemplateLibrary {
             "YYYYYYYYYYYYYYYY",
             "................",
         ]),
-        PatternTemplate(name: "新年灯笼", category: "节日", rows: [
+        PatternTemplate(name: L10n.s("新年灯笼"), category: L10n.s("节日"), rows: [
             "......AAAA......",
             "......AAAA......",
             "....AAAAAAAA....",
@@ -657,7 +657,7 @@ enum TemplateLibrary {
         ]),
 
         // ----- 食物甜点 -----
-        PatternTemplate(name: "甜甜圈", category: "食物甜点", rows: [
+        PatternTemplate(name: L10n.s("甜甜圈"), category: L10n.s("食物甜点"), rows: [
             "..HHHHHHHHHHHH..",
             ".HHHHHHHHHHHHHH.",
             "HHPPHHPHHPPHHPHH",
@@ -673,7 +673,7 @@ enum TemplateLibrary {
             "................",
             "................",
         ]),
-        PatternTemplate(name: "棒棒糖", category: "食物甜点", rows: [
+        PatternTemplate(name: L10n.s("棒棒糖"), category: L10n.s("食物甜点"), rows: [
             "....RRRRRRRR....",
             "..RRPPPPPPPPRR..",
             ".RPPPPPPPPPPPPR.",
@@ -691,7 +691,7 @@ enum TemplateLibrary {
             "......WW........",
             "......WW........",
         ]),
-        PatternTemplate(name: "草莓", category: "食物甜点", rows: [
+        PatternTemplate(name: L10n.s("草莓"), category: L10n.s("食物甜点"), rows: [
             "....gg..gg......",
             "....gggggg..dd..",
             "...gggggggg.dd..",
@@ -709,7 +709,7 @@ enum TemplateLibrary {
             "......RR........",
             "................",
         ]),
-        PatternTemplate(name: "咖啡杯", category: "食物甜点", rows: [
+        PatternTemplate(name: L10n.s("咖啡杯"), category: L10n.s("食物甜点"), rows: [
             "..BBBBBBBBBBBB..",
             ".BWWWWWWWWWWWWB.",
             ".BWWWWWWWWWWWWB.",
@@ -726,7 +726,7 @@ enum TemplateLibrary {
             "................",
             "................",
         ]),
-        PatternTemplate(name: "纸杯蛋糕", category: "食物甜点", rows: [
+        PatternTemplate(name: L10n.s("纸杯蛋糕"), category: L10n.s("食物甜点"), rows: [
             "......RRRR......",
             "....RRRRRRRR....",
             "...RPPPPPPPPR...",
@@ -744,7 +744,7 @@ enum TemplateLibrary {
             "................",
             "................",
         ]),
-        PatternTemplate(name: "寿司", category: "食物甜点", rows: [
+        PatternTemplate(name: L10n.s("寿司"), category: L10n.s("食物甜点"), rows: [
             "..WWWWWWWWWWWW..",
             ".WOOOOOOOOOOOOW.",
             ".WOOdddddddOOOW.",
@@ -762,7 +762,7 @@ enum TemplateLibrary {
         ]),
 
         // ----- 字母数字 -----
-        PatternTemplate(name: "字母 A", category: "字母数字", rows: [
+        PatternTemplate(name: L10n.s("字母 A"), category: L10n.s("字母数字"), rows: [
             "......bbbb......",
             ".....bbbbbb.....",
             "....bb....bb....",
@@ -778,7 +778,7 @@ enum TemplateLibrary {
             "................",
             "................",
         ]),
-        PatternTemplate(name: "字母 K", category: "字母数字", rows: [
+        PatternTemplate(name: L10n.s("字母 K"), category: L10n.s("字母数字"), rows: [
             "bb..........bb..",
             "bb........bb....",
             "bb......bb......",
@@ -794,7 +794,7 @@ enum TemplateLibrary {
             "................",
             "................",
         ]),
-        PatternTemplate(name: "数字 8", category: "字母数字", rows: [
+        PatternTemplate(name: L10n.s("数字 8"), category: L10n.s("字母数字"), rows: [
             "....VVVVVVVV....",
             "..VVVVVVVVVVVV..",
             ".VVVV......VVVV.",
@@ -810,7 +810,7 @@ enum TemplateLibrary {
             "................",
             "................",
         ]),
-        PatternTemplate(name: "数字 0", category: "字母数字", rows: [
+        PatternTemplate(name: L10n.s("数字 0"), category: L10n.s("字母数字"), rows: [
             "....OOOOOOOO....",
             "..OOOOOOOOOOOO..",
             ".OOOO......OOOO.",
@@ -828,7 +828,7 @@ enum TemplateLibrary {
         ]),
 
         // ----- 爱心系 -----
-        PatternTemplate(name: "双心", category: "爱心系", rows: [
+        PatternTemplate(name: L10n.s("双心"), category: L10n.s("爱心系"), rows: [
             "................",
             "..RRR....RRR....",
             ".RRRRR..RRRRR...",
@@ -844,7 +844,7 @@ enum TemplateLibrary {
             "................",
             "................",
         ]),
-        PatternTemplate(name: "粉色爱心", category: "爱心系", rows: [
+        PatternTemplate(name: L10n.s("粉色爱心"), category: L10n.s("爱心系"), rows: [
             "................",
             "..PPPP....PPPP..",
             ".PPPPPP..PPPPPP.",
@@ -860,7 +860,7 @@ enum TemplateLibrary {
             ".......PP.......",
             "................",
         ]),
-        PatternTemplate(name: "碎花爱心", category: "爱心系", rows: [
+        PatternTemplate(name: L10n.s("碎花爱心"), category: L10n.s("爱心系"), rows: [
             "................",
             "..RRRR....RRRR..",
             ".RWRWRR..RRWRWR.",
@@ -878,7 +878,7 @@ enum TemplateLibrary {
         ]),
 
         // ----- 植物花语 -----
-        PatternTemplate(name: "郁金香", category: "植物花语", rows: [
+        PatternTemplate(name: L10n.s("郁金香"), category: L10n.s("植物花语"), rows: [
             "..V..VV..VV..V..",
             "..VVVVVVVVVVVV..",
             "..VVVVVVVVVVVV..",
@@ -894,7 +894,7 @@ enum TemplateLibrary {
             "......gggg......",
             "................",
         ]),
-        PatternTemplate(name: "樱花", category: "植物花语", rows: [
+        PatternTemplate(name: L10n.s("樱花"), category: L10n.s("植物花语"), rows: [
             "......PPPP......",
             "..PPP.PPPP.PPP..",
             ".PPPPP.PP.PPPPP.",
@@ -912,7 +912,7 @@ enum TemplateLibrary {
             "................",
             "................",
         ]),
-        PatternTemplate(name: "仙人掌", category: "植物花语", rows: [
+        PatternTemplate(name: L10n.s("仙人掌"), category: L10n.s("植物花语"), rows: [
             "......gggg......",
             "......gggg......",
             "..gg..gggg..gg..",
@@ -930,7 +930,7 @@ enum TemplateLibrary {
             "................",
             "................",
         ]),
-        PatternTemplate(name: "枫叶", category: "植物花语", rows: [
+        PatternTemplate(name: L10n.s("枫叶"), category: L10n.s("植物花语"), rows: [
             "......BB........",
             "....BBBBBB......",
             "...BBDBBBBB.....",
@@ -949,7 +949,7 @@ enum TemplateLibrary {
         ]),
 
         // ----- 太空星球 -----
-        PatternTemplate(name: "土星", category: "太空星球", rows: [
+        PatternTemplate(name: L10n.s("土星"), category: L10n.s("太空星球"), rows: [
             "......CCCC......",
             "....CCnnnnCC....",
             "...CnnnnnnnnC...",
@@ -967,7 +967,7 @@ enum TemplateLibrary {
             "................",
             "................",
         ]),
-        PatternTemplate(name: "月牙星", category: "太空星球", rows: [
+        PatternTemplate(name: L10n.s("月牙星"), category: L10n.s("太空星球"), rows: [
             "......YYYY......",
             "....YYYYYY......",
             "...YYYYY........",
@@ -985,7 +985,7 @@ enum TemplateLibrary {
             "................",
             "................",
         ]),
-        PatternTemplate(name: "火箭", category: "太空星球", rows: [
+        PatternTemplate(name: L10n.s("火箭"), category: L10n.s("太空星球"), rows: [
             ".......RR.......",
             "......RWRR......",
             ".....RRWWRR.....",
@@ -1003,7 +1003,7 @@ enum TemplateLibrary {
             ".....OOYYOO.....",
             "......OOOO......",
         ]),
-        PatternTemplate(name: "星星点点", category: "太空星球", rows: [
+        PatternTemplate(name: L10n.s("星星点点"), category: L10n.s("太空星球"), rows: [
             ".Y....Y.....Y...",
             "YYY..YYY...YYY..",
             ".Y....Y.....Y...",
@@ -1023,7 +1023,7 @@ enum TemplateLibrary {
         ]),
 
         // ----- 日常物件 -----
-        PatternTemplate(name: "咖啡杯日常", category: "日常物件", rows: [
+        PatternTemplate(name: L10n.s("咖啡杯日常"), category: L10n.s("日常物件"), rows: [
             "..cccccccccccc..",
             ".cbbbbbbbbbbbc..",
             ".cbbbbbbbbbbbc..",
@@ -1041,7 +1041,7 @@ enum TemplateLibrary {
             "................",
             "................",
         ]),
-        PatternTemplate(name: "钱包", category: "日常物件", rows: [
+        PatternTemplate(name: L10n.s("钱包"), category: L10n.s("日常物件"), rows: [
             "..BBBBBBBBBBBB..",
             ".BBBBBBBBBBBBBB.",
             "BBBBBBBBBBBBBBBB",
@@ -1059,7 +1059,7 @@ enum TemplateLibrary {
             "................",
             "................",
         ]),
-        PatternTemplate(name: "雨伞", category: "日常物件", rows: [
+        PatternTemplate(name: L10n.s("雨伞"), category: L10n.s("日常物件"), rows: [
             "......RRRR......",
             "....RRRRRRRR....",
             "...RRRRRRRRRR...",
@@ -1077,7 +1077,7 @@ enum TemplateLibrary {
             ".........BB.....",
             "................",
         ]),
-        PatternTemplate(name: "钥匙", category: "日常物件", rows: [
+        PatternTemplate(name: L10n.s("钥匙"), category: L10n.s("日常物件"), rows: [
             "....AAAA........",
             "...AA..AA.......",
             "..AA....AA......",
@@ -1095,7 +1095,7 @@ enum TemplateLibrary {
             "......AAAAAA....",
             "................",
         ]),
-        PatternTemplate(name: "闹钟", category: "日常物件", rows: [
+        PatternTemplate(name: L10n.s("闹钟"), category: L10n.s("日常物件"), rows: [
             ".RR..........RR.",
             "RRRR........RRRR",
             "..RR.RRRRRR.RR..",

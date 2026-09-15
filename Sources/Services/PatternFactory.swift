@@ -76,8 +76,8 @@ enum PatternFactory {
     ///   - tiles: 该父图的全部子图
     /// - Returns: 汇总文案；无子图时返回"未拆板"
     static func splitProgressSummary(root: Pattern, tiles: [Pattern]) -> String {
-        guard !tiles.isEmpty else { return "未拆板" }
+        guard !tiles.isEmpty else { return L10n.s("未拆板") }
         let done = tiles.filter { $0.status == .done || $0.progressPercent >= 1 }.count
-        return "\(done)/\(tiles.count) 块已完成"
+        return L10n.p("{0}/{1} 块已完成", "\(done)", "\(tiles.count)")
     }
 }

@@ -15,7 +15,7 @@ struct DouPinApp: App {
                 BeadStock.self
             )
         } catch {
-            fatalError("无法初始化数据库：\(error)")
+            fatalError(L10n.p("无法初始化数据库：{0}", "\(error)"))
         }
     }
 

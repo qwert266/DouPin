@@ -9,9 +9,9 @@ enum WorkStatus: String, Codable {
 
     var label: String {
         switch self {
-        case .pending: return "待拼"
-        case .inProgress: return "拼制中"
-        case .done: return "已完成"
+        case .pending: return L10n.s("待拼")
+        case .inProgress: return L10n.s("拼制中")
+        case .done: return L10n.s("已完成")
         }
     }
 
@@ -28,7 +28,7 @@ enum WorkStatus: String, Codable {
 @Model
 final class Pattern {
     @Attribute(.unique) var id: UUID = UUID()
-    var name: String = "未命名"
+    var name: String = L10n.s("未命名")
     var createdAt: Date = Date()
     var updatedAt: Date = Date()
     /// photo / manual / template / import

@@ -121,17 +121,17 @@ enum XiaohongshuExtractor {
     static func extract(from input: String) async -> ExtractResult {
         // ---------- Level 1：文本清洗 ----------
         guard let rawLink = firstLink(in: input) else {
-            return .failure("未识别到链接，请重新复制小红书分享文案后再试。", suggestAlbum: false)
+            return .failure(L10n.s("未识别到链接，请重新复制小红书分享文案后再试。"), suggestAlbum: false)
         }
         // 优先升级 http → https（避免改 ATS 配置；架构师 §A.5.4 工程约定）
         guard let startURL = normalizeToHTTPS(rawLink) else {
-            return .failure("链接格式无法解析，请重新复制分享链接。", suggestAlbum: false)
+            return .failure(L10n.s("链接格式无法解析，请重新复制分享链接。"), suggestAlbum: false)
         }
 
         // ---------- Level 2：跟随跳转抓最终页 ----------
         guard let (finalURL, html) = await fetchHTMLFollowingRedirects(from: startURL) else {
             // 超时 / 403 / 网络失败 → 降级到相册
-            return .failure("抓取失败（可能网络超时或分享页受限）。可改用「从相册选择图片」。",
+            return .failure(L10n.s("抓取失败（可能网络超时或分享页受限）。可改用「从相册选择图片」。"),
                             suggestAlbum: true)
         }
         // 记录最终页 URL（供"下载失败保留链接可重试"提示用；此处不回传，仅用于日志语义）
@@ -140,7 +140,7 @@ enum XiaohongshuExtractor {
         let urls = extractImageURLs(fromHTML: html, baseURL: finalURL)
         guard !urls.isEmpty else {
             // 抓到页面但无图 → 降级到相册
-            return .failure("未能从分享页解析到图片。可改用「从相册选择图片」。",
+            return .failure(L10n.s("未能从分享页解析到图片。可改用「从相册选择图片」。"),
                             suggestAlbum: true)
         }
 

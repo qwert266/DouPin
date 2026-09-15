@@ -7,9 +7,9 @@ enum BoardError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .notConnected: return "板子未连接"
-        case .handshakeFailed(let s): return "握手失败：\(s)"
-        case .sendFailed(let s): return "发送失败：\(s)"
+        case .notConnected: return L10n.s("板子未连接")
+        case .handshakeFailed(let s): return L10n.p("握手失败：{0}", "\(s)")
+        case .sendFailed(let s): return L10n.p("发送失败：{0}", "\(s)")
         }
     }
 }
@@ -35,15 +35,15 @@ final class BoardSession: ObservableObject {
         guard central.linkState == .connected else { throw BoardError.notConnected }
         await central.writeCmd(BLEProtocol.connect())
         guard await central.nextNotificationWithTimeout(2.0) != nil else {
-            throw BoardError.handshakeFailed("Connect 无应答")
+            throw BoardError.handshakeFailed(L10n.s("Connect 无应答"))
         }
         await central.writeCmd(BLEProtocol.testPass())
         guard let passAck = await central.nextNotificationWithTimeout(2.0) else {
-            throw BoardError.handshakeFailed("TestPass 无应答")
+            throw BoardError.handshakeFailed(L10n.s("TestPass 无应答"))
         }
         // PassCheck 字节：0x02 = 密码错误；其他（0x00/0x01/0x03）视为通过
         if passAck.count >= 3 && passAck[passAck.count - 3] == 0x02 {
-            throw BoardError.handshakeFailed("板子设置了密码，请先用官方 app 清除密码")
+            throw BoardError.handshakeFailed(L10n.s("板子设置了密码，请先用官方 app 清除密码"))
         }
     }
 
@@ -52,7 +52,7 @@ final class BoardSession: ObservableObject {
     /// 发送 RGB 图（row-major，宽×高×3 字节）
     func sendImage(width: Int, height: Int, rgb: [UInt8]) async throws {
         guard central.linkState == .connected else { throw BoardError.notConnected }
-        guard rgb.count == width * height * 3 else { throw BoardError.sendFailed("像素数据长度不符") }
+        guard rgb.count == width * height * 3 else { throw BoardError.sendFailed(L10n.s("像素数据长度不符")) }
 
         isSending = true
         sendProgress = 0

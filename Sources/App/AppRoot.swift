@@ -209,7 +209,7 @@ struct HomeView: View {
                 .padding(.bottom, 24)
             }
             .background(Theme.pageFill)
-            .navigationTitle("豆绘小栈")
+            .navigationTitle(L10n.s("豆绘小栈"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 // 全局一键连接拼豆板（所有 Tab 统一放置）
@@ -229,16 +229,16 @@ struct HomeView: View {
             BeadDots()
                 .padding(.top, 18).padding(.trailing, 20)
             VStack(alignment: .leading, spacing: 10) {
-                Text("豆绘小栈")
+                Text(L10n.s("豆绘小栈"))
                     .font(.title2.bold())
                     .foregroundStyle(.white)
-                Text("照片变图纸，图纸点亮拼豆板")
+                Text(L10n.s("照片变图纸，图纸点亮拼豆板"))
                     .font(.subheadline)
                     .foregroundStyle(.white.opacity(0.85))
                 HStack(spacing: 8) {
                     // 只用 board.isConnected（BoardSession 自己的 @Published，已验证会驱动本视图刷新）；
                     // 不直接读 board.central.linkState —— central 的变化不一定触发 HomeView 重渲染。
-                    heroCapsule(board.isConnected ? "拼豆板已连接" : "拼豆板未连接",
+                    heroCapsule(board.isConnected ? L10n.s("拼豆板已连接") : L10n.s("拼豆板未连接"),
                                 systemImage: board.isConnected ? "lightbulb.fill" : "lightbulb")
                 }
                 // 一排彩色小豆：品牌俏皮感（对标 PIXDOU 的多巴胺配色）
@@ -263,10 +263,10 @@ struct HomeView: View {
     private var quickStart: some View {
         VStack(spacing: 12) {
             HStack(spacing: 12) {
-                entryCard(title: "照片转图纸", subtitle: "一键生成像素图",
+                entryCard(title: L10n.s("照片转图纸"), subtitle: L10n.s("一键生成像素图"),
                           icon: "photo.on.rectangle.angled", gradient: Theme.mint)
                 { ConvertView() }
-                entryCard(title: "手绘画布", subtitle: "自由绘制创作",
+                entryCard(title: L10n.s("手绘画布"), subtitle: L10n.s("自由绘制创作"),
                           icon: "square.and.pencil", gradient: Theme.amber)
                 { EditorView(pattern: nil, initialSize: 29) }
             }
@@ -278,8 +278,8 @@ struct HomeView: View {
                         .frame(width: 44, height: 44)
                         .background(.white.opacity(0.22), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("从模板开始").font(.headline).foregroundStyle(.white)
-                        Text("内置图纸模板，直接开拼").font(.caption).foregroundStyle(.white.opacity(0.85))
+                        Text(L10n.s("从模板开始")).font(.headline).foregroundStyle(.white)
+                        Text(L10n.s("内置图纸模板，直接开拼")).font(.caption).foregroundStyle(.white.opacity(0.85))
                     }
                     Spacer()
                     Image(systemName: "chevron.right").font(.caption.bold()).foregroundStyle(.white.opacity(0.7))
@@ -298,8 +298,8 @@ struct HomeView: View {
                         .frame(width: 44, height: 44)
                         .background(.white.opacity(0.22), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("合并图纸").font(.headline).foregroundStyle(.white)
-                        Text("多图拼一张大图（PIXDOU 同款排版）").font(.caption).foregroundStyle(.white.opacity(0.85))
+                        Text(L10n.s("合并图纸")).font(.headline).foregroundStyle(.white)
+                        Text(L10n.s("多图拼一张大图（PIXDOU 同款排版）")).font(.caption).foregroundStyle(.white.opacity(0.85))
                     }
                     Spacer()
                     Image(systemName: "chevron.right").font(.caption.bold()).foregroundStyle(.white.opacity(0.7))
@@ -349,7 +349,7 @@ struct HomeView: View {
 
     private var inProgressRow: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionTitle("拼制中", systemImage: "progresscircle")
+            sectionTitle(L10n.s("拼制中"), systemImage: "progresscircle")
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(inProgress) { p in
@@ -418,8 +418,8 @@ struct HomeView: View {
                         .frame(width: 42, height: 42)
                         .background(.white.opacity(0.22), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("该补豆啦").font(.headline).foregroundStyle(.white)
-                        Text("缺 \(summary.kinds) 种色号 · 共 \(summary.beads) 颗，点看补豆清单")
+                        Text(L10n.s("该补豆啦")).font(.headline).foregroundStyle(.white)
+                        Text(L10n.p("缺 {0} 种色号 · 共 {1} 颗，点看补豆清单", "\(summary.kinds)", "\(summary.beads)"))
                             .font(.caption)
                             .foregroundStyle(.white.opacity(0.88))
                             .lineLimit(1)
@@ -444,18 +444,18 @@ struct HomeView: View {
         NavigationLink { StatsView() } label: {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    sectionTitle("统计", systemImage: "chart.bar.fill")
+                    sectionTitle(L10n.s("统计"), systemImage: "chart.bar.fill")
                     Spacer()
                     Image(systemName: "chevron.right")
                         .font(.caption.bold())
                         .foregroundStyle(.tertiary)
                 }
                 HStack(spacing: 0) {
-                    statBlock("\(patterns.count)", "全部图纸")
+                    statBlock("\(patterns.count)", L10n.s("全部图纸"))
                     statDivider
-                    statBlock("\(inProgress.count)", "拼制中")
+                    statBlock("\(inProgress.count)", L10n.s("拼制中"))
                     statDivider
-                    statBlock("\(done.count)", "已完成")
+                    statBlock("\(done.count)", L10n.s("已完成"))
                 }
             }
             .cardStyle()
@@ -465,11 +465,11 @@ struct HomeView: View {
 
     private var stockCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionTitle("库存", systemImage: "square.stack.3d.up.fill")
+            sectionTitle(L10n.s("库存"), systemImage: "square.stack.3d.up.fill")
             if stocks.isEmpty {
                 HStack(spacing: 8) {
                     Image(systemName: "tray").foregroundStyle(.tertiary)
-                    Text("还没录入库存，去「库存」Tab 添加")
+                    Text(L10n.s("还没录入库存，去「库存」Tab 添加"))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -477,9 +477,9 @@ struct HomeView: View {
                 .padding(.vertical, 6)
             } else {
                 HStack(spacing: 0) {
-                    statBlock("\(stocks.count)", "已录入色号")
+                    statBlock("\(stocks.count)", L10n.s("已录入色号"))
                     statDivider
-                    statBlock("\(totalStockQuantity)", "总豆量")
+                    statBlock("\(totalStockQuantity)", L10n.s("总豆量"))
                 }
                 Text(binSummaryText)
                     .font(.caption)
@@ -493,8 +493,8 @@ struct HomeView: View {
     private var binSummaryText: String {
         let bins = BeadBinCatalog.customBinNames(from: stocks).count + 1
         return bins > 1
-            ? "分 \(bins) 个豆仓管理 · 图纸详情可查看消耗预估"
-            : "库存充足，图纸详情可查看消耗预估"
+            ? L10n.p("分 {0} 个豆仓管理 · 图纸详情可查看消耗预估", "\(bins)")
+            : L10n.s("库存充足，图纸详情可查看消耗预估")
     }
 
     private var statDivider: some View {

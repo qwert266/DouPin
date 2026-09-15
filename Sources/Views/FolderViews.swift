@@ -37,33 +37,33 @@ struct FolderListView: View {
                 }
             }
         }
-        .alert("新建文件夹", isPresented: $showCreate) {
-            TextField("文件夹名称", text: $newName)
-            Button("创建") { createFolder() }
-            Button("取消", role: .cancel) { newName = "" }
+        .alert(L10n.s("新建文件夹"), isPresented: $showCreate) {
+            TextField(L10n.s("文件夹名称"), text: $newName)
+            Button(L10n.s("创建")) { createFolder() }
+            Button(L10n.s("取消"), role: .cancel) { newName = "" }
         }
-        .alert("重命名文件夹", isPresented: Binding(
+        .alert(L10n.s("重命名文件夹"), isPresented: Binding(
             get: { renameTarget != nil },
             set: { if !$0 { renameTarget = nil } })) {
-            TextField("文件夹名称", text: $renameText)
-            Button("确定") {
+            TextField(L10n.s("文件夹名称"), text: $renameText)
+            Button(L10n.s("确定")) {
                 let t = renameText.trimmingCharacters(in: .whitespacesAndNewlines)
                 if !t.isEmpty { renameTarget?.rename(to: t) }
                 renameTarget = nil
             }
-            Button("取消", role: .cancel) { renameTarget = nil }
+            Button(L10n.s("取消"), role: .cancel) { renameTarget = nil }
         }
-        .confirmationDialog("删除文件夹？",
+        .confirmationDialog(L10n.s("删除文件夹？"),
                             isPresented: Binding(get: { deleteTarget != nil },
                                                  set: { if !$0 { deleteTarget = nil } }),
                             titleVisibility: .visible) {
-            Button("删除", role: .destructive) {
+            Button(L10n.s("删除"), role: .destructive) {
                 if let f = deleteTarget { deleteFolder(f) }
                 deleteTarget = nil
             }
-            Button("取消", role: .cancel) { deleteTarget = nil }
+            Button(L10n.s("取消"), role: .cancel) { deleteTarget = nil }
         } message: {
-            Text("文件夹内的图纸不会被删除，将被移出到「全部」。")
+            Text(L10n.s("文件夹内的图纸不会被删除，将被移出到「全部」。"))
         }
     }
 
@@ -82,20 +82,20 @@ struct FolderListView: View {
                         Button(role: .destructive) {
                             deleteTarget = folder
                         } label: {
-                            Label("删除", systemImage: "trash")
+                            Label(L10n.s("删除"), systemImage: "trash")
                         }
                         Button {
                             renameText = folder.name
                             renameTarget = folder
                         } label: {
-                            Label("重命名", systemImage: "pencil")
+                            Label(L10n.s("重命名"), systemImage: "pencil")
                         }
                         .tint(.blue)
                     }
                     .cardRow()
                 }
             } footer: {
-                Text("长按拖动排序为 P2（暂未实现，见 TODO）。")
+                Text(L10n.s("长按拖动排序为 P2（暂未实现，见 TODO）。"))
             }
         }
         .themedListPage()
@@ -103,15 +103,15 @@ struct FolderListView: View {
 
     private var emptyState: some View {
         ContentUnavailableView {
-            Label("还没有文件夹", systemImage: "folder")
+            Label(L10n.s("还没有文件夹"), systemImage: "folder")
         } description: {
-            Text("用文件夹给图纸归档，找图更快")
+            Text(L10n.s("用文件夹给图纸归档，找图更快"))
         } actions: {
             Button {
                 newName = ""
                 showCreate = true
             } label: {
-                Label("新建文件夹", systemImage: "folder.badge.plus")
+                Label(L10n.s("新建文件夹"), systemImage: "folder.badge.plus")
             }
             .buttonStyle(.borderedProminent)
         }
@@ -162,7 +162,7 @@ struct FolderRow: View {
                 .frame(width: 32)
             VStack(alignment: .leading, spacing: 2) {
                 Text(folder.name).font(.headline)
-                Text("\(count) 张图纸").font(.caption).foregroundStyle(.secondary)
+                Text(L10n.p("{0} 张图纸", "\(count)")).font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
         }
@@ -191,12 +191,12 @@ struct FolderDetailView: View {
         Group {
             if items.isEmpty {
                 ContentUnavailableView {
-                    Label("文件夹是空的", systemImage: "folder")
+                    Label(L10n.s("文件夹是空的"), systemImage: "folder")
                 } description: {
-                    Text("点右上角「+」导入图纸，将自动归入「\(folder.name)」")
+                    Text(L10n.p("点右上角「+」导入图纸，将自动归入「{0}」", "\(folder.name)"))
                 } actions: {
                     PhotosPicker(selection: $importItem, matching: .images) {
-                        Label("从相册导入", systemImage: "photo.on.rectangle.angled")
+                        Label(L10n.s("从相册导入"), systemImage: "photo.on.rectangle.angled")
                     }
                     .buttonStyle(.borderedProminent)
                 }
@@ -213,7 +213,7 @@ struct FolderDetailView: View {
                         }
                         .onDelete(perform: remove)
                     } footer: {
-                        Text("共 \(items.count) 张图纸")
+                        Text(L10n.p("共 {0} 张图纸", "\(items.count)"))
                     }
                 }
                 .themedListPage()
@@ -227,12 +227,12 @@ struct FolderDetailView: View {
                     NavigationLink {
                         ConvertView(bindFolderId: folder.id)
                     } label: {
-                        Label("照片转图纸", systemImage: "photo.on.rectangle.angled")
+                        Label(L10n.s("照片转图纸"), systemImage: "photo.on.rectangle.angled")
                     }
                     NavigationLink {
                         EditorView(pattern: nil, initialSize: 29)
                     } label: {
-                        Label("新建手绘（导入后手动归入）", systemImage: "square.and.pencil")
+                        Label(L10n.s("新建手绘（导入后手动归入）"), systemImage: "square.and.pencil")
                     }
                 } label: {
                     Image(systemName: "plus")
@@ -250,7 +250,7 @@ struct FolderDetailView: View {
                     opts.colorLimit = 24
                     let res = PixelConverter.convert(image: ui, options: opts)
                     if !res.cells.isEmpty {
-                        let p = Pattern(name: "\(folder.name) 图纸 \(Date().formatted(.dateTime.month().day()))",
+                        let p = Pattern(name: L10n.p("{0} 图纸 {1}", "\(folder.name)", "\(Date().formatted(.dateTime.month().day()))"),
                                         width: res.width, height: res.height,
                                         cells: res.cells, source: "photo")
                         p.folderId = folder.id
@@ -302,13 +302,13 @@ struct TagFilterView: View {
         Group {
             if allTags.isEmpty {
                 ContentUnavailableView {
-                    Label("还没有标签", systemImage: "tag")
+                    Label(L10n.s("还没有标签"), systemImage: "tag")
                 } description: {
-                    Text("在图纸详情里「编辑标签」，即可按标签归档")
+                    Text(L10n.s("在图纸详情里「编辑标签」，即可按标签归档"))
                 }
             } else {
                 List {
-                    Section("全部标签") {
+                    Section(L10n.k("全部标签")) {
                         TagCloud(tags: allTags, selected: $selectedTag)
                             .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
                             .cardRow()
@@ -317,7 +317,7 @@ struct TagFilterView: View {
                     if let tag = selectedTag {
                         Section {
                             if filtered.isEmpty {
-                                Text("没有含「\(tag)」的图纸")
+                                Text(L10n.p("没有含「{0}」的图纸", "\(tag)"))
                                     .foregroundStyle(.secondary)
                                     .cardRow()
                             } else {
@@ -332,9 +332,9 @@ struct TagFilterView: View {
                             }
                         } header: {
                             HStack {
-                                Text("标签「\(tag)」")
+                                Text(L10n.p("标签「{0}」", "\(tag)"))
                                 Spacer()
-                                Button("清除") { selectedTag = nil }
+                                Button(L10n.s("清除")) { selectedTag = nil }
                                     .font(.caption)
                             }
                         }
@@ -415,16 +415,16 @@ struct XiaohongshuImportView: View {
                     Task { await runExtract() }
                 } label: {
                     if extracting {
-                        HStack { ProgressView().controlSize(.small); Text("解析中…") }
+                        HStack { ProgressView().controlSize(.small); Text(L10n.s("解析中…")) }
                     } else {
-                        Label("解析链接", systemImage: "sparkle.magnifyingglass")
+                        Label(L10n.s("解析链接"), systemImage: "sparkle.magnifyingglass")
                     }
                 }
                 .disabled(extracting || input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             } header: {
-                Text("粘贴小红书分享链接 / 文案")
+                Text(L10n.s("粘贴小红书分享链接 / 文案"))
             } footer: {
-                Text("打开小红书笔记 →「分享」→「复制链接」，粘贴到这里即可。\n仅抓取公开分享页图片，供个人自用参考，请尊重原作者版权。")
+                Text(L10n.s("打开小红书笔记 →「分享」→「复制链接」，粘贴到这里即可。\\n仅抓取公开分享页图片，供个人自用参考，请尊重原作者版权。"))
             }
 
             if let result {
@@ -437,36 +437,36 @@ struct XiaohongshuImportView: View {
             }
 
             if let previewImage {
-                Section("预览（像素化后）") {
+                Section(L10n.k("预览（像素化后）")) {
                     Image(uiImage: previewImage)
                         .interpolation(.none)
                         .resizable()
                         .scaledToFit()
                         .frame(maxHeight: 220)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
-                    TextField("图纸名称", text: $patternName)
-                    LabeledContent("尺寸（最大边格数）", value: "\(maxSide) 格")
+                    TextField(L10n.s("图纸名称"), text: $patternName)
+                    LabeledContent(L10n.k("尺寸（最大边格数）"), value: L10n.p("{0} 格", "\(maxSide)"))
                     Slider(value: Binding(get: { Double(maxSide) }, set: { maxSide = Int($0);
                             regeneratePreview() }), in: 16...64, step: 4)
-                    Picker("颜色数量", selection: Binding(get: { colorLimit }, set: {
+                    Picker(L10n.s("颜色数量"), selection: Binding(get: { colorLimit }, set: {
                         colorLimit = $0; regeneratePreview() })) {
-                        Text("全部（295 色）").tag(0)
-                        Text("≤ 48 色").tag(48)
-                        Text("≤ 24 色").tag(24)
-                        Text("≤ 16 色").tag(16)
+                        Text(L10n.s("全部（295 色）")).tag(0)
+                        Text(L10n.s("≤ 48 色")).tag(48)
+                        Text(L10n.s("≤ 24 色")).tag(24)
+                        Text(L10n.s("≤ 16 色")).tag(16)
                     }
                 }
                 Section {
                     Button {
                         savePattern()
                     } label: {
-                        Label("保存为图纸", systemImage: "square.and.arrow.down")
+                        Label(L10n.s("保存为图纸"), systemImage: "square.and.arrow.down")
                     }
                     .disabled(patternName.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
         }
-        .navigationTitle("从小红书链接导入")
+        .navigationTitle(L10n.s("从小红书链接导入"))
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -480,14 +480,14 @@ struct XiaohongshuImportView: View {
                 NavigationLink {
                     ConvertView(bindFolderId: bindFolderId)
                 } label: {
-                    Label("改用「从相册选择图片」", systemImage: "photo.on.rectangle.angled")
+                    Label(L10n.s("改用「从相册选择图片」"), systemImage: "photo.on.rectangle.angled")
                 }
-                Text("提示：在 App 中把感兴趣的内容截图或保存图片，再走相册导入即可。")
+                Text(L10n.s("提示：在 App 中把感兴趣的内容截图或保存图片，再走相册导入即可。"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
         } header: {
-            Text("未成功提取")
+            Text(L10n.s("未成功提取"))
         }
     }
 
@@ -496,7 +496,7 @@ struct XiaohongshuImportView: View {
             if let title {
                 Text(title).font(.subheadline).foregroundStyle(.secondary)
             }
-            Text("共 \(urls.count) 张候选图片，请选择一张：")
+            Text(L10n.p("共 {0} 张候选图片，请选择一张：", "\(urls.count)"))
                 .font(.caption).foregroundStyle(.secondary)
             ForEach(Array(urls.enumerated()), id: \.offset) { _, url in
                 Button {
@@ -516,10 +516,10 @@ struct XiaohongshuImportView: View {
                 .disabled(downloading)
             }
             if downloading {
-                HStack { ProgressView().controlSize(.small); Text("下载中…") }
+                HStack { ProgressView().controlSize(.small); Text(L10n.s("下载中…")) }
             }
         } header: {
-            Text("选择图片")
+            Text(L10n.s("选择图片"))
         }
     }
 
@@ -544,13 +544,13 @@ struct XiaohongshuImportView: View {
         downloading = false
         guard let data, let ui = UIImage(data: data) else {
             // 下载失败：提示网络问题，保留链接可重试（result 不重置）
-            result?.error = "图片下载失败，请检查网络后重试（可直接再次点击该图片）。"
+            result?.error = L10n.s("图片下载失败，请检查网络后重试（可直接再次点击该图片）。")
             result?.suggestAlbum = true
             return
         }
         downloadedData = data
         if patternName.isEmpty {
-            patternName = result?.noteTitle ?? "小红书图纸 \(Date().formatted(.dateTime.month().day()))"
+            patternName = result?.noteTitle ?? L10n.p("小红书图纸 {0}", "\(Date().formatted(.dateTime.month().day()))")
         }
         regeneratePreview(image: ui)
     }

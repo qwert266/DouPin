@@ -216,7 +216,7 @@ struct CompareGridView: View {
         VStack(spacing: 8) {
             HStack {
                 Toggle(isOn: $overlayMode) {
-                    Label("叠加半透明", systemImage: "square.on.square.dashed")
+                    Label(L10n.s("叠加半透明"), systemImage: "square.on.square.dashed")
                         .font(.caption)
                 }
                 .toggleStyle(.switch)
@@ -225,7 +225,7 @@ struct CompareGridView: View {
                     scale = 1
                     offset = .zero
                 } label: {
-                    Label("复位", systemImage: "arrow.counterclockwise")
+                    Label(L10n.s("复位"), systemImage: "arrow.counterclockwise")
                         .font(.caption)
                 }
                 .buttonStyle(.bordered)
@@ -260,7 +260,7 @@ struct CompareGridView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .clipShape(RoundedRectangle(cornerRadius: 10))
-            .overlay(alignment: .topLeading) { tag("原图") }
+            .overlay(alignment: .topLeading) { tag(L10n.s("原图")) }
 
             // 右：像素网格（同一份 scale/offset → 联动）
             ZStack {
@@ -273,7 +273,7 @@ struct CompareGridView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .overlay(alignment: .topLeading) { tag("像素图") }
+            .overlay(alignment: .topLeading) { tag(L10n.s("像素图")) }
         }
         .padding(.horizontal, 8)
     }
@@ -299,16 +299,16 @@ struct CompareGridView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 8)
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        .overlay(alignment: .topLeading) { tag("叠加对比") }
+        .overlay(alignment: .topLeading) { tag(L10n.s("叠加对比")) }
     }
 
     // MARK: - 小组件
 
     private var noSourcePlaceholder: some View {
         ContentUnavailableView {
-            Label("该图纸无原图", systemImage: "photo.badge.exclamationmark")
+            Label(L10n.s("该图纸无原图"), systemImage: "photo.badge.exclamationmark")
         } description: {
-            Text("仅「照片转图纸」来源的图纸支持原图对比。")
+            Text(L10n.s("仅「照片转图纸」来源的图纸支持原图对比。"))
         }
     }
 

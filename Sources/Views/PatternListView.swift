@@ -40,24 +40,24 @@ struct PatternListView: View {
                     listContent
                 }
             }
-            .navigationTitle("我的图纸")
+            .navigationTitle(L10n.s("我的图纸"))
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     Menu {
                         NavigationLink {
                             ConvertView()
                         } label: {
-                            Label("照片转图纸", systemImage: "photo.on.rectangle.angled")
+                            Label(L10n.s("照片转图纸"), systemImage: "photo.on.rectangle.angled")
                         }
                         NavigationLink {
                             EditorView(pattern: nil, initialSize: 29)
                         } label: {
-                            Label("新建手绘", systemImage: "square.and.pencil")
+                            Label(L10n.s("新建手绘"), systemImage: "square.and.pencil")
                         }
                         NavigationLink {
                             TemplateGalleryView()
                         } label: {
-                            Label("从模板开始", systemImage: "gift")
+                            Label(L10n.s("从模板开始"), systemImage: "gift")
                         }
                     } label: {
                         Image(systemName: "plus")
@@ -70,9 +70,9 @@ struct PatternListView: View {
     private var listContent: some View {
         List {
             Section {
-                Picker("筛选", selection: $filter) {
+                Picker(L10n.s("筛选"), selection: $filter) {
                     ForEach(PatternFilter.allCases) { f in
-                        Text(f.rawValue).tag(f)
+                        Text(L10n.s(f.rawValue)).tag(f)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -81,7 +81,7 @@ struct PatternListView: View {
 
             if filtered.isEmpty {
                 Section {
-                    Text("没有符合筛选的图纸")
+                    Text(L10n.s("没有符合筛选的图纸"))
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .center)
                 }
@@ -98,19 +98,19 @@ struct PatternListView: View {
                 }
             }
         }
-        .searchable(text: $searchText, prompt: "搜索图纸名称")
+        .searchable(text: $searchText, prompt: L10n.s("搜索图纸名称"))
     }
 
     private var emptyState: some View {
         ContentUnavailableView {
-            Label("还没有图纸", systemImage: "square.grid.3x3")
+            Label(L10n.s("还没有图纸"), systemImage: "square.grid.3x3")
         } description: {
-            Text("用照片转换、手绘或模板创建第一张图纸")
+            Text(L10n.s("用照片转换、手绘或模板创建第一张图纸"))
         } actions: {
             NavigationLink {
                 ConvertView()
             } label: {
-                Label("照片转图纸", systemImage: "photo.on.rectangle.angled")
+                Label(L10n.s("照片转图纸"), systemImage: "photo.on.rectangle.angled")
             }
             .buttonStyle(.borderedProminent)
         }

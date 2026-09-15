@@ -151,14 +151,14 @@ enum StockTextParser {
     private static func reason(for line: String) -> String {
         let tokens = splitTokens(line)
         if tokens.count < 2 {
-            return "无法识别：需要「色号 数量」两个字段"
+            return L10n.s("无法识别：需要「色号 数量」两个字段")
         }
         if colorId(forMard: tokens[0]) == nil {
-            return "无法识别：色号「\(tokens[0])」不在 295 色板中"
+            return L10n.p("无法识别：色号「{0}」不在 295 色板中", "\(tokens[0])")
         }
         if Int(tokens[1]) == nil {
-            return "无法识别：数量「\(tokens[1])」不是整数"
+            return L10n.p("无法识别：数量「{0}」不是整数", "\(tokens[1])")
         }
-        return "无法识别"
+        return L10n.s("无法识别")
     }
 }

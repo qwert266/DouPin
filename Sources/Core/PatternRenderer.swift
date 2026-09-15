@@ -32,7 +32,7 @@ enum PatternRenderer {
     // MARK: - 作品分享卡（竖版 2:3，对标 AI豆仓「作品集」分享）
 
     struct ShareCardOptions {
-        var title: String = "未命名作品"
+        var title: String = L10n.s("未命名作品")
         /// 元信息行（尺寸 / 颗数 / 日期）
         var meta: String = ""
         init() {}
@@ -122,11 +122,11 @@ enum PatternRenderer {
             }
 
             // 落款
-            ("豆绘小栈" as NSString).draw(
+            (L10n.s("豆绘小栈") as NSString).draw(
                 at: CGPoint(x: 36, y: H - 54),
                 withAttributes: [.font: UIFont.boldSystemFont(ofSize: 15),
                                  .foregroundColor: UIColor.white.withAlphaComponent(0.92)])
-            ("照片变图纸 · 图纸点亮拼豆板" as NSString).draw(
+            (L10n.s("照片变图纸 · 图纸点亮拼豆板") as NSString).draw(
                 at: CGPoint(x: 38, y: H - 34),
                 withAttributes: [.font: UIFont.systemFont(ofSize: 11),
                                  .foregroundColor: UIColor.white.withAlphaComponent(0.7)])
@@ -197,7 +197,7 @@ enum PatternRenderer {
                     .foregroundColor: UIColor.black
                 ]
                 (options.title as NSString).draw(at: CGPoint(x: margin, y: margin), withAttributes: attrs)
-                let sub = "宽 \(width) × 高 \(height) 格 · 共 \(cells.filter { $0 > 0 }.count) 颗 · 豆绘小栈"
+                let sub = L10n.p("宽 {0} × 高 {1} 格 · 共 {2} 颗 · 豆绘小栈", "\(width)", "\(height)", "\(cells.filter { $0 > 0 }.count)")
                 let subAttrs: [NSAttributedString.Key: Any] = [
                     .font: UIFont.systemFont(ofSize: 13),
                     .foregroundColor: UIColor.darkGray
@@ -305,14 +305,14 @@ enum PatternRenderer {
     /// 豆子清单文本（可复制）
     static func beadListText(name: String, cells: [Int]) -> String {
         let legend = legendCounts(cells: cells)
-        var lines = ["【\(name)】豆子清单", ""]
+        var lines = [L10n.p("【{0}】豆子清单", "\(name)"), ""]
         var total = 0
         for (i, item) in legend.enumerated() {
             lines.append("\(i + 1). \(item.mard) × \(item.count)")
             total += item.count
         }
         lines.append("")
-        lines.append("共 \(legend.count) 种颜色，\(total) 颗")
+        lines.append(L10n.p("共 {0} 种颜色，{1} 颗", "\(legend.count)", "\(total)"))
         return lines.joined(separator: "\n")
     }
 }

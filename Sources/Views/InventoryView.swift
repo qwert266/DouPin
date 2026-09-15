@@ -93,7 +93,7 @@ struct InventoryView: View {
                     stockList
                 }
             }
-            .navigationTitle("库存")
+            .navigationTitle(L10n.s("库存"))
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     BoardConnectCapsule()
@@ -102,7 +102,7 @@ struct InventoryView: View {
                     addMenu
                 }
             }
-            .searchable(text: $searchText, prompt: "搜索色号（Mard/可可/漫漫…）")
+            .searchable(text: $searchText, prompt: L10n.s("搜索色号（Mard/可可/漫漫…）"))
         }
         .sheet(isPresented: $showAdd) {
             StockQuickAddView(onSaved: { msg in toast = msg }, binName: activeBin)
@@ -116,24 +116,24 @@ struct InventoryView: View {
         .sheet(item: $editing) { stock in
             StockQuantityEditSheet(stock: stock) { msg in toast = msg }
         }
-        .alert("新建豆仓", isPresented: $showNewBinAlert) {
-            TextField("仓名，如「Mard 主仓」", text: $newBinName)
-            Button("创建") { createBin() }
-            Button("取消", role: .cancel) { newBinName = "" }
+        .alert(L10n.s("新建豆仓"), isPresented: $showNewBinAlert) {
+            TextField(L10n.s("仓名，如「Mard 主仓」"), text: $newBinName)
+            Button(L10n.s("创建")) { createBin() }
+            Button(L10n.s("取消"), role: .cancel) { newBinName = "" }
         } message: {
-            Text("按品牌或用途给豆子分区，各仓独立管理与统计。")
+            Text(L10n.s("按品牌或用途给豆子分区，各仓独立管理与统计。"))
         }
-        .confirmationDialog("删除该色号库存？",
+        .confirmationDialog(L10n.s("删除该色号库存？"),
                             isPresented: Binding(get: { pendingDelete != nil },
                                                  set: { if !$0 { pendingDelete = nil } }),
                             titleVisibility: .visible) {
-            Button("删除", role: .destructive) {
+            Button(L10n.s("删除"), role: .destructive) {
                 if let s = pendingDelete { delete(s) }
                 pendingDelete = nil
             }
-            Button("取消", role: .cancel) { pendingDelete = nil }
+            Button(L10n.s("取消"), role: .cancel) { pendingDelete = nil }
         } message: {
-            Text(pendingDelete.map { "将移除 \($0.displayName) 的库存记录" } ?? "")
+            Text(pendingDelete.map { L10n.p("将移除 {0} 的库存记录", "\($0.displayName)") } ?? "")
         }
         .overlay(alignment: .bottom) {
             if let toast {
@@ -181,12 +181,12 @@ struct InventoryView: View {
                             Button(role: .destructive) {
                                 pendingDelete = stock
                             } label: {
-                                Label("删除", systemImage: "trash")
+                                Label(L10n.s("删除"), systemImage: "trash")
                             }
                             Button {
                                 editing = stock
                             } label: {
-                                Label("编辑", systemImage: "pencil")
+                                Label(L10n.s("编辑"), systemImage: "pencil")
                             }
                             .tint(.blue)
                         }
@@ -195,8 +195,8 @@ struct InventoryView: View {
             } footer: {
                 if filteredStocks.isEmpty {
                     Text(currentBinStocks.isEmpty
-                         ? "「\(BeadBinCatalog.displayName(activeBin))」还没有库存，点右上角「+」添加或批量导入"
-                         : "没有匹配的色号")
+                         ? L10n.p("「{0}」还没有库存，点右上角「+」添加或批量导入", "\(BeadBinCatalog.displayName(activeBin))")
+                         : L10n.s("没有匹配的色号"))
                 }
             }
         }
@@ -217,7 +217,7 @@ struct InventoryView: View {
                     newBinName = ""
                     showNewBinAlert = true
                 } label: {
-                    Label("新建仓", systemImage: "plus")
+                    Label(L10n.s("新建仓"), systemImage: "plus")
                         .font(.caption.bold())
                         .padding(.horizontal, 11).padding(.vertical, 7)
                         .background(Theme.cardFill, in: Capsule())
@@ -229,7 +229,7 @@ struct InventoryView: View {
                 Button {
                     showBinManager = true
                 } label: {
-                    Label("管理", systemImage: "slider.horizontal.3")
+                    Label(L10n.s("管理"), systemImage: "slider.horizontal.3")
                         .font(.caption.bold())
                         .padding(.horizontal, 11).padding(.vertical, 7)
                         .background(Theme.cardFill, in: Capsule())
@@ -272,7 +272,7 @@ struct InventoryView: View {
         newBinName = ""
         guard !name.isEmpty, name != BeadBinCatalog.defaultName else { return }
         activeBin = name
-        toast = "已切到新仓「\(name)」，录入的豆子会归入此仓"
+        toast = L10n.p("已切到新仓「{0}」，录入的豆子会归入此仓", "\(name)")
     }
 
     /// 顶部英雄统计：品牌渐变 + 豆点装饰 + 当前仓名 + 三栏数字
@@ -285,16 +285,16 @@ struct InventoryView: View {
             VStack(spacing: 10) {
                 HStack(spacing: 6) {
                     Image(systemName: "shippingbox.fill").font(.caption2.bold())
-                    Text("当前豆仓 · \(BeadBinCatalog.displayName(activeBin))")
+                    Text(L10n.p("当前豆仓 · {0}", "\(BeadBinCatalog.displayName(activeBin))"))
                         .font(.caption.bold())
                     Spacer()
                 }
                 .foregroundStyle(.white.opacity(0.92))
 
                 HStack(spacing: 0) {
-                    heroCell("\(currentBinStocks.count)", "已录入色号")
-                    heroCell("\(totalQuantity)", "总豆量")
-                    heroCell("\(lowCount)", lowCount > 0 ? "缺色 ⚠︎" : "缺色")
+                    heroCell("\(currentBinStocks.count)", L10n.s("已录入色号"))
+                    heroCell("\(totalQuantity)", L10n.s("总豆量"))
+                    heroCell("\(lowCount)", lowCount > 0 ? L10n.s("缺色 ⚠︎") : L10n.s("缺色"))
                 }
             }
             .padding(16)
@@ -324,7 +324,7 @@ struct InventoryView: View {
     private var seriesPicker: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                chip(title: "全部", active: seriesFilter.isEmpty) { seriesFilter = "" }
+                chip(title: L10n.s("全部"), active: seriesFilter.isEmpty) { seriesFilter = "" }
                 ForEach(allSeries, id: \.self) { letter in
                     chip(title: letter, active: seriesFilter == letter) { seriesFilter = letter }
                 }
@@ -371,14 +371,14 @@ struct InventoryView: View {
                     HStack(spacing: 4) {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .font(.system(size: 9))
-                        Text(stock.quantity == 0 ? "缺色（库存为 0）" : "低于阈值 \(stock.threshold)")
+                        Text(stock.quantity == 0 ? L10n.s("缺色（库存为 0）") : L10n.p("低于阈值 {0}", "\(stock.threshold)"))
                     }
                     .font(.caption2)
                     .foregroundStyle(.white)
                     .padding(.horizontal, 7).padding(.vertical, 2)
                     .background(Color(red: 1.00, green: 0.42, blue: 0.34), in: Capsule())
                 } else {
-                    Text("充足")
+                    Text(L10n.s("充足"))
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
@@ -400,14 +400,14 @@ struct InventoryView: View {
 
     private var emptyState: some View {
         ContentUnavailableView {
-            Label("库存还是空的", systemImage: "shippingbox")
+            Label(L10n.s("库存还是空的"), systemImage: "shippingbox")
         } description: {
-            Text("可以先「逐条添加」几个常用色号，或把一段「色号 数量」文本「批量导入」。豆子多的话，还能按品牌/用途建多个豆仓分区管理。")
+            Text(L10n.s("可以先「逐条添加」几个常用色号，或把一段「色号 数量」文本「批量导入」。豆子多的话，还能按品牌/用途建多个豆仓分区管理。"))
         } actions: {
             Button {
                 showAdd = true
             } label: {
-                Label("逐条添加", systemImage: "plus.circle")
+                Label(L10n.s("逐条添加"), systemImage: "plus.circle")
             }
             .buttonStyle(.borderedProminent)
             .tint(.pink)
@@ -415,7 +415,7 @@ struct InventoryView: View {
             Button {
                 showImport = true
             } label: {
-                Label("批量导入", systemImage: "doc.on.clipboard")
+                Label(L10n.s("批量导入"), systemImage: "doc.on.clipboard")
             }
             .buttonStyle(.bordered)
 
@@ -423,7 +423,7 @@ struct InventoryView: View {
                 newBinName = ""
                 showNewBinAlert = true
             } label: {
-                Label("新建豆仓", systemImage: "shippingbox")
+                Label(L10n.s("新建豆仓"), systemImage: "shippingbox")
             }
             .buttonStyle(.bordered)
         }
@@ -436,24 +436,24 @@ struct InventoryView: View {
             Button {
                 showAdd = true
             } label: {
-                Label("逐条添加", systemImage: "plus.circle")
+                Label(L10n.s("逐条添加"), systemImage: "plus.circle")
             }
             Button {
                 showImport = true
             } label: {
-                Label("批量导入", systemImage: "doc.on.clipboard")
+                Label(L10n.s("批量导入"), systemImage: "doc.on.clipboard")
             }
             Divider()
             Button {
                 showBinManager = true
             } label: {
-                Label("管理豆仓", systemImage: "shippingbox")
+                Label(L10n.s("管理豆仓"), systemImage: "shippingbox")
             }
             Button {
                 newBinName = ""
                 showNewBinAlert = true
             } label: {
-                Label("新建豆仓", systemImage: "plus.rectangle.on.folder")
+                Label(L10n.s("新建豆仓"), systemImage: "plus.rectangle.on.folder")
             }
         } label: {
             Image(systemName: "plus.circle.fill")
@@ -465,7 +465,7 @@ struct InventoryView: View {
     private func delete(_ stock: BeadStock) {
         context.delete(stock)
         try? context.save()
-        toast = "已删除 \(stock.displayName)"
+        toast = L10n.p("已删除 {0}", "\(stock.displayName)")
     }
 }
 
@@ -497,7 +497,7 @@ struct StockQuickAddView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("色号") {
+                Section(L10n.k("色号")) {
                     Button {
                         showPalette = true
                     } label: {
@@ -507,9 +507,9 @@ struct StockQuickAddView: View {
                                 .frame(width: 40, height: 40)
                                 .overlay(RoundedRectangle(cornerRadius: 6).stroke(.gray.opacity(0.3)))
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(selectedColor.map { "Mard \($0.mard)" } ?? "点击选择色号")
+                                Text(selectedColor.map { "Mard \($0.mard)" } ?? L10n.s("点击选择色号"))
                                     .font(.headline)
-                                Text("从 295 色板中挑选")
+                                Text(L10n.s("从 295 色板中挑选"))
                                     .font(.caption).foregroundStyle(.secondary)
                             }
                             Spacer()
@@ -519,34 +519,34 @@ struct StockQuickAddView: View {
                     .buttonStyle(.plain)
                 }
 
-                Section("数量") {
-                    TextField("例如 500", text: $quantityText)
+                Section(L10n.k("数量")) {
+                    TextField(L10n.s("例如 500"), text: $quantityText)
                         .keyboardType(.numberPad)
                     if let c = selectedColor, let existing = existingStock(c.id) {
-                        Text("该色号在本仓已有 \(existing.quantity) 颗（保存将累加）")
+                        Text(L10n.p("该色号在本仓已有 {0} 颗（保存将累加）", "\(existing.quantity)"))
                             .font(.caption).foregroundStyle(.secondary)
                     }
-                    LabeledContent("归入豆仓", value: BeadBinCatalog.displayName(binName))
+                    LabeledContent(L10n.k("归入豆仓"), value: BeadBinCatalog.displayName(binName))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
 
                 if addedCount > 0 {
                     Section {
-                        Label("本次已添加 \(addedCount) 条", systemImage: "checkmark.circle.fill")
+                        Label(L10n.p("本次已添加 {0} 条", "\(addedCount)"), systemImage: "checkmark.circle.fill")
                             .foregroundStyle(.green)
                             .font(.subheadline)
                     }
                 }
             }
-            .navigationTitle("逐条添加")
+            .navigationTitle(L10n.s("逐条添加"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("完成") { dismiss() }
+                    Button(L10n.s("完成")) { dismiss() }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("保存") { save() }
+                    Button(L10n.s("保存")) { save() }
                         .disabled(!canSave)
                 }
             }
@@ -573,7 +573,7 @@ struct StockQuickAddView: View {
         try? context.save()
         addedCount += 1
         let mard = BeadPalette.byId[selectedId]?.mard ?? ""
-        onSaved(isUpdate ? "已更新 \(mard)" : "已新增 \(mard)")
+        onSaved(isUpdate ? L10n.p("已更新 {0}", "\(mard)") : L10n.p("已新增 {0}", "\(mard)"))
         quantityText = ""
     }
 }
@@ -604,32 +604,32 @@ struct StockQuantityEditSheet: View {
                             .font(.headline.monospaced())
                     }
                 }
-                Section("数量（覆盖）") {
-                    TextField("数量", text: $quantityText)
+                Section(L10n.k("数量（覆盖）")) {
+                    TextField(L10n.s("数量"), text: $quantityText)
                         .keyboardType(.numberPad)
                 }
                 Section {
                     Button(role: .destructive) {
                         context.delete(stock)
                         try? context.save()
-                        onSaved("已删除 \(stock.displayName)")
+                        onSaved(L10n.p("已删除 {0}", "\(stock.displayName)"))
                         dismiss()
                     } label: {
-                        Label("删除该色号库存", systemImage: "trash")
+                        Label(L10n.s("删除该色号库存"), systemImage: "trash")
                     }
                 }
             }
-            .navigationTitle("编辑库存")
+            .navigationTitle(L10n.s("编辑库存"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("取消") { dismiss() }
+                    Button(L10n.s("取消")) { dismiss() }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("保存") {
+                    Button(L10n.s("保存")) {
                         stock.setQuantity(Int(quantityText.trimmingCharacters(in: .whitespaces)) ?? 0)
                         try? context.save()
-                        onSaved("已更新 \(stock.displayName)")
+                        onSaved(L10n.p("已更新 {0}", "\(stock.displayName)"))
                         dismiss()
                     }
                 }
@@ -672,45 +672,45 @@ struct BinManagerSheet: View {
             List {
                 Section {
                     HStack(spacing: 10) {
-                        TextField("仓名，如「漫漫 补充仓」", text: $newName)
+                        TextField(L10n.s("仓名，如「漫漫 补充仓」"), text: $newName)
                             .textFieldStyle(.plain)
                         Button {
                             createBin()
                         } label: {
-                            Label("创建", systemImage: "plus.circle.fill")
+                            Label(L10n.s("创建"), systemImage: "plus.circle.fill")
                         }
                         .disabled(newName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     }
                 } header: {
-                    Text("新建豆仓")
+                    Text(L10n.s("新建豆仓"))
                 } footer: {
-                    Text("按品牌或用途分区后，各仓的色号与豆量独立管理与统计；补豆清单仍按全部豆仓汇总。")
+                    Text(L10n.s("按品牌或用途分区后，各仓的色号与豆量独立管理与统计；补豆清单仍按全部豆仓汇总。"))
                 }
 
                 Section {
                     binRow(name: "", label: BeadBinCatalog.defaultName, icon: "tray.full.fill",
                            deletable: false)
                 } header: {
-                    Text("默认仓")
+                    Text(L10n.s("默认仓"))
                 } footer: {
-                    Text("删除自定义仓时，其中的库存会归回默认仓，不会丢数据。")
+                    Text(L10n.s("删除自定义仓时，其中的库存会归回默认仓，不会丢数据。"))
                 }
 
                 if !customBins.isEmpty {
-                    Section("自定义豆仓（\(customBins.count)）") {
+                    Section(L10n.pk("自定义豆仓（{0}）", "\(customBins.count)")) {
                         ForEach(customBins, id: \.self) { raw in
                             binRow(name: raw, label: raw, icon: "shippingbox.fill", deletable: true)
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     Button(role: .destructive) {
                                         pendingDissolve = raw
                                     } label: {
-                                        Label("解散", systemImage: "trash")
+                                        Label(L10n.s("解散"), systemImage: "trash")
                                     }
                                     Button {
                                         renaming = raw
                                         renameText = raw
                                     } label: {
-                                        Label("重命名", systemImage: "pencil")
+                                        Label(L10n.s("重命名"), systemImage: "pencil")
                                     }
                                     .tint(.blue)
                                 }
@@ -719,29 +719,29 @@ struct BinManagerSheet: View {
                 }
             }
             .themedListPage()
-            .navigationTitle("豆仓管理")
+            .navigationTitle(L10n.s("豆仓管理"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("完成") { dismiss() }
+                    Button(L10n.s("完成")) { dismiss() }
                 }
             }
-            .alert("重命名豆仓", isPresented: Binding(get: { renaming != nil },
+            .alert(L10n.s("重命名豆仓"), isPresented: Binding(get: { renaming != nil },
                                                set: { if !$0 { renaming = nil } })) {
-                TextField("新的仓名", text: $renameText)
-                Button("保存") { applyRename() }
-                Button("取消", role: .cancel) { renaming = nil }
+                TextField(L10n.s("新的仓名"), text: $renameText)
+                Button(L10n.s("保存")) { applyRename() }
+                Button(L10n.s("取消"), role: .cancel) { renaming = nil }
             } message: {
-                Text("重命名后，该仓内所有色号记录一并更新。")
+                Text(L10n.s("重命名后，该仓内所有色号记录一并更新。"))
             }
-            .confirmationDialog("解散该豆仓？",
+            .confirmationDialog(L10n.s("解散该豆仓？"),
                                 isPresented: Binding(get: { pendingDissolve != nil },
                                                      set: { if !$0 { pendingDissolve = nil } }),
                                 titleVisibility: .visible) {
-                Button("解散，库存归回默认仓", role: .destructive) { dissolve() }
-                Button("取消", role: .cancel) { pendingDissolve = nil }
+                Button(L10n.s("解散，库存归回默认仓"), role: .destructive) { dissolve() }
+                Button(L10n.s("取消"), role: .cancel) { pendingDissolve = nil }
             } message: {
-                Text(pendingDissolve.map { "「\($0)」中的库存会移动到「\(BeadBinCatalog.defaultName)」，记录不会删除。" } ?? "")
+                Text(pendingDissolve.map { L10n.p("「{0}」中的库存会移动到「{1}」，记录不会删除。", "\($0)", "\(BeadBinCatalog.defaultName)") } ?? "")
             }
         }
     }
@@ -751,7 +751,7 @@ struct BinManagerSheet: View {
         let active = activeBin == name
         return Button {
             activeBin = name
-            onFinished("已切到「\(BeadBinCatalog.displayName(name))」")
+            onFinished(L10n.p("已切到「{0}」", "\(BeadBinCatalog.displayName(name))"))
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: icon)
@@ -764,13 +764,13 @@ struct BinManagerSheet: View {
                     Text(label)
                         .font(.subheadline.weight(active ? .bold : .medium))
                         .foregroundStyle(.primary)
-                    Text("\(count(name)) 个色号 · \(total(name)) 颗")
+                    Text(L10n.p("{0} 个色号 · {1} 颗", "\(count(name))", "\(total(name))"))
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
                 if active {
-                    Text("当前")
+                    Text(L10n.s("当前"))
                         .font(.caption2.bold())
                         .foregroundStyle(.white)
                         .padding(.horizontal, 8).padding(.vertical, 3)
@@ -792,7 +792,7 @@ struct BinManagerSheet: View {
         newName = ""
         guard !name.isEmpty, name != BeadBinCatalog.defaultName else { return }
         activeBin = name
-        onFinished("已新建并切到「\(name)」")
+        onFinished(L10n.p("已新建并切到「{0}」", "\(name)"))
     }
 
     private func applyRename() {
@@ -806,7 +806,7 @@ struct BinManagerSheet: View {
             let trimmed = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
             activeBin = (trimmed == BeadBinCatalog.defaultName) ? "" : trimmed
         }
-        onFinished(n > 0 ? "已重命名为「\(BeadBinCatalog.displayName(newValue))」" : "没有需要更新的记录")
+        onFinished(n > 0 ? L10n.p("已重命名为「{0}」", "\(BeadBinCatalog.displayName(newValue))") : L10n.s("没有需要更新的记录"))
     }
 
     private func dissolve() {
@@ -815,6 +815,6 @@ struct BinManagerSheet: View {
         let n = BeadBinCatalog.dissolve(in: stocks, bin: raw)
         try? context.save()
         if activeBin == raw { activeBin = "" }
-        onFinished(n > 0 ? "「\(raw)」的 \(n) 条库存已归回默认仓" : "该仓没有库存记录")
+        onFinished(n > 0 ? L10n.p("「{0}」的 {1} 条库存已归回默认仓", "\(raw)", "\(n)") : L10n.s("该仓没有库存记录"))
     }
 }

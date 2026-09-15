@@ -100,8 +100,8 @@ enum PDFExporter {
         let format = UIGraphicsPDFRendererFormat()
         // 元数据（可选，便于打印/分享时识别）
         format.documentInfo = [
-            kCGPDFContextTitle as String: options.title.isEmpty ? "豆绘小栈图纸" : options.title,
-            kCGPDFContextCreator as String: "豆绘小栈"
+            kCGPDFContextTitle as String: options.title.isEmpty ? L10n.s("豆绘小栈图纸") : options.title,
+            kCGPDFContextCreator as String: L10n.s("豆绘小栈")
         ]
         let renderer = UIGraphicsPDFRenderer(bounds: bounds, format: format)
 
@@ -155,7 +155,7 @@ enum PDFExporter {
     /// - Returns: 临时文件 URL；写入失败返回 `nil`
     static func writePDFToTemp(_ data: Data, name: String) -> URL? {
         let safeName = sanitizeFileName(name)
-        let fileName = safeName.isEmpty ? "豆绘小栈图纸.pdf" : "\(safeName).pdf"
+        let fileName = safeName.isEmpty ? L10n.s("豆绘小栈图纸.pdf") : "\(safeName).pdf"
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
         do {
             // 覆盖旧同名临时文件
@@ -217,7 +217,7 @@ enum PDFExporter {
             .font: UIFont.boldSystemFont(ofSize: 14),
             .foregroundColor: UIColor.black
         ]
-        let titleText = options.title.isEmpty ? "豆绘小栈图纸" : options.title
+        let titleText = options.title.isEmpty ? L10n.s("豆绘小栈图纸") : options.title
         (titleText as NSString).draw(at: CGPoint(x: originX, y: originY + 4),
                                      withAttributes: titleAttrs)
 
@@ -225,7 +225,7 @@ enum PDFExporter {
             .font: UIFont.systemFont(ofSize: 11),
             .foregroundColor: UIColor.darkGray
         ]
-        let pageText = "第 \(pageNo)/\(totalPages) 页" as NSString
+        let pageText = L10n.p("第 {0}/{1} 页", "\(pageNo)", "\(totalPages)") as NSString
         let size = pageText.size(withAttributes: pageAttrs)
         let x = a4Width - options.pageMargin - size.width
         pageText.draw(at: CGPoint(x: x, y: originY + 6), withAttributes: pageAttrs)
@@ -304,7 +304,7 @@ enum PDFExporter {
             .font: UIFont.boldSystemFont(ofSize: 11),
             .foregroundColor: UIColor.black
         ]
-        ("图例" as NSString).draw(at: CGPoint(x: originX, y: topY), withAttributes: titleAttrs)
+        (L10n.s("图例") as NSString).draw(at: CGPoint(x: originX, y: topY), withAttributes: titleAttrs)
 
         let cols = 3
         let rowH: CGFloat = 18
@@ -339,11 +339,11 @@ enum PDFExporter {
             .font: UIFont.systemFont(ofSize: 9),
             .foregroundColor: UIColor.gray
         ]
-        let info = "板尺寸 \(options.boardSize)×\(options.boardSize) · 本页 行\(plan.rowStart + 1)-\(plan.rowStart + plan.rows) 列\(plan.colStart + 1)-\(plan.colStart + plan.cols)"
+        let info = L10n.p("板尺寸 {0}×{1} · 本页 行{2}-{3} 列{4}-{5}", "\(options.boardSize)", "\(options.boardSize)", "\(plan.rowStart + 1)", "\(plan.rowStart + plan.rows)", "\(plan.colStart + 1)", "\(plan.colStart + plan.cols)")
         (info as NSString).draw(at: CGPoint(x: originX, y: a4Height - options.pageMargin - footerHeight + 8),
                                 withAttributes: attr)
 
-        let pageText = "第 \(pageNo)/\(totalPages) 页" as NSString
+        let pageText = L10n.p("第 {0}/{1} 页", "\(pageNo)", "\(totalPages)") as NSString
         let size = pageText.size(withAttributes: attr)
         pageText.draw(at: CGPoint(x: a4Width - options.pageMargin - size.width,
                                   y: a4Height - options.pageMargin - footerHeight + 8),

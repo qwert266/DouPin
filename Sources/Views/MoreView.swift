@@ -64,13 +64,13 @@ struct MoreView: View {
                         .foregroundStyle(.white)
                 }
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("豆绘小栈")
+                    Text(L10n.s("豆绘小栈"))
                         .font(.headline)
                         .foregroundStyle(.white)
-                    Text("照片变图纸 · 图纸点亮拼豆板")
+                    Text(L10n.s("照片变图纸 · 图纸点亮拼豆板"))
                         .font(.caption)
                         .foregroundStyle(.white.opacity(0.85))
-                    Text("版本 1.2 · 本地优先 · 无账户")
+                    Text(L10n.s("版本 1.2 · 本地优先 · 无账户"))
                         .font(.caption2)
                         .foregroundStyle(.white.opacity(0.7))
                 }
@@ -91,8 +91,8 @@ struct MoreView: View {
             } label: {
                 Label {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("设置").font(.headline)
-                        Text("板规格 · 色板档位 · 语言 · 更新").font(.caption).foregroundStyle(.secondary)
+                        Text(L10n.s("设置")).font(.headline)
+                        Text(L10n.s("板规格 · 色板档位 · 语言 · 更新")).font(.caption).foregroundStyle(.secondary)
                     }
                 } icon: {
                     Image(systemName: "gearshape.fill")
@@ -108,8 +108,8 @@ struct MoreView: View {
             } label: {
                 Label {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("作品集").font(.headline)
-                        Text("成品归档 · 作品分享卡").font(.caption).foregroundStyle(.secondary)
+                        Text(L10n.s("作品集")).font(.headline)
+                        Text(L10n.s("成品归档 · 作品分享卡")).font(.caption).foregroundStyle(.secondary)
                     }
                 } icon: {
                     Image(systemName: "photo.stack.fill")
@@ -125,8 +125,8 @@ struct MoreView: View {
             } label: {
                 Label {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("数据中心").font(.headline)
-                        Text("消耗排行 · 补豆清单 · 色系分布").font(.caption).foregroundStyle(.secondary)
+                        Text(L10n.s("数据中心")).font(.headline)
+                        Text(L10n.s("消耗排行 · 补豆清单 · 色系分布")).font(.caption).foregroundStyle(.secondary)
                     }
                 } icon: {
                     Image(systemName: "chart.pie.fill")
@@ -142,8 +142,8 @@ struct MoreView: View {
             } label: {
                 Label {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("合并图纸").font(.headline)
-                        Text("多图拼一张大图").font(.caption).foregroundStyle(.secondary)
+                        Text(L10n.s("合并图纸")).font(.headline)
+                        Text(L10n.s("多图拼一张大图")).font(.caption).foregroundStyle(.secondary)
                     }
                 } icon: {
                     Image(systemName: "square.on.square.dashed")
@@ -154,7 +154,7 @@ struct MoreView: View {
             }
             .cardRow()
         } header: {
-            Text("工具")
+            Text(L10n.s("工具"))
         }
     }
 
@@ -163,19 +163,19 @@ struct MoreView: View {
     private var aboutSection: some View {
         Section {
             LabeledContent {
-                Text("豆绘小栈").font(.headline)
+                Text(L10n.s("豆绘小栈")).font(.headline)
             } label: {
-                Label("应用名", systemImage: "app.badge")
+                Label(L10n.s("应用名"), systemImage: "app.badge")
             }
             .cardRow()
 
-            LabeledContent("版本", value: "1.2")
+            LabeledContent(L10n.k("版本"), value: "1.2")
                 .cardRow()
 
-            LabeledContent("构建", value: UpdateChecker.localCommit)
+            LabeledContent(L10n.k("构建"), value: UpdateChecker.localCommit)
                 .cardRow()
 
-            Text("本地优先 · 无账户 · 数据只存在你的设备上")
+            Text(L10n.s("本地优先 · 无账户 · 数据只存在你的设备上"))
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .cardRow()
@@ -183,16 +183,16 @@ struct MoreView: View {
             NavigationLink {
                 BoardLogView()
             } label: {
-                Label("蓝牙日志控制台", systemImage: "terminal")
+                Label(L10n.s("蓝牙日志控制台"), systemImage: "terminal")
             }
             .cardRow()
 
             Link(destination: UpdateChecker.repoURL) {
-                Label("项目仓库", systemImage: "link")
+                Label(L10n.s("项目仓库"), systemImage: "link")
             }
             .cardRow()
         } header: {
-            Text("关于")
+            Text(L10n.s("关于"))
         }
     }
 }

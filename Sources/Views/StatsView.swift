@@ -107,7 +107,7 @@ struct StatsView: View {
             .padding(.bottom, 24)
         }
         .background(Theme.pageFill)
-        .navigationTitle("数据中心")
+        .navigationTitle(L10n.s("数据中心"))
         .navigationBarTitleDisplayMode(.inline)
         .overlay(alignment: .bottom) {
             if let toast {
@@ -133,13 +133,13 @@ struct StatsView: View {
             BeadDots()
                 .padding(.top, 18).padding(.trailing, 20)
             VStack(alignment: .leading, spacing: 14) {
-                Label("创作总览", systemImage: "chart.pie.fill")
+                Label(L10n.s("创作总览"), systemImage: "chart.pie.fill")
                     .font(.subheadline.bold())
                     .foregroundStyle(.white.opacity(0.9))
                 HStack(spacing: 0) {
-                    heroStat("\(patterns.count)", "图纸")
-                    heroStat("\(totalBeads)", "累计颗数")
-                    heroStat("\(donePatterns.count)", "已完成")
+                    heroStat("\(patterns.count)", L10n.s("图纸"))
+                    heroStat("\(totalBeads)", L10n.s("累计颗数"))
+                    heroStat("\(donePatterns.count)", L10n.s("已完成"))
                 }
             }
             .padding(20)
@@ -168,7 +168,7 @@ struct StatsView: View {
     private var restockCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Label("补豆清单", systemImage: "cart.fill")
+                Label(L10n.s("补豆清单"), systemImage: "cart.fill")
                     .font(.subheadline.bold())
                     .foregroundStyle(.primary)
                 Spacer()
@@ -176,7 +176,7 @@ struct StatsView: View {
                     Button {
                         copyRestockList()
                     } label: {
-                        Label("复制清单", systemImage: "doc.on.doc")
+                        Label(L10n.s("复制清单"), systemImage: "doc.on.doc")
                             .font(.caption.bold())
                             .foregroundStyle(.white)
                             .padding(.horizontal, 10).padding(.vertical, 6)
@@ -191,14 +191,14 @@ struct StatsView: View {
                     Image(systemName: "checkmark.seal.fill")
                         .font(.title3)
                         .foregroundStyle(.green)
-                    Text("库存充足，暂时不需要补豆")
+                    Text(L10n.s("库存充足，暂时不需要补豆"))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.vertical, 6)
             } else {
-                Text("缺 \(restockRows.count) 种色号 · 共 \(totalShortage) 颗（按全部图纸需求汇总）")
+                Text(L10n.p("缺 {0} 种色号 · 共 {1} 颗（按全部图纸需求汇总）", "\(restockRows.count)", "\(totalShortage)"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
@@ -208,11 +208,11 @@ struct StatsView: View {
                         Text(row.color.mard)
                             .font(.caption.monospaced().weight(.semibold))
                             .frame(minWidth: 34, alignment: .leading)
-                        Text("需\(row.need) · 有\(row.have)")
+                        Text(L10n.p("需{0} · 有{1}", "\(row.need)", "\(row.have)"))
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                         Spacer()
-                        Text("缺 \(row.shortage)")
+                        Text(L10n.p("缺 {0}", "\(row.shortage)"))
                             .font(.caption.bold().monospacedDigit())
                             .foregroundStyle(.white)
                             .padding(.horizontal, 8).padding(.vertical, 3)
@@ -221,7 +221,7 @@ struct StatsView: View {
                     .padding(.vertical, 2)
                 }
                 if restockRows.count > 12 {
-                    Text("还有 \(restockRows.count - 12) 种缺口，点「复制清单」查看全部")
+                    Text(L10n.p("还有 {0} 种缺口，点「复制清单」查看全部", "\(restockRows.count - 12)"))
                         .font(.caption2)
                         .foregroundStyle(.tertiary)
                 }
@@ -232,24 +232,24 @@ struct StatsView: View {
 
     /// 复制补豆清单文本（沿用消耗预估清单格式）
     private func copyRestockList() {
-        var lines = ["【豆绘小栈】补豆清单（全部图纸汇总）"]
+        var lines = [L10n.s("【豆绘小栈】补豆清单（全部图纸汇总）")]
         for row in restockRows {
-            lines.append("\(row.color.mard)  需\(row.need) 有\(row.have) 缺\(row.shortage)")
+            lines.append(L10n.p("{0}  需{1} 有{2} 缺{3}", "\(row.color.mard)", "\(row.need)", "\(row.have)", "\(row.shortage)"))
         }
-        lines.append("共 \(restockRows.count) 种色号，缺 \(totalShortage) 颗")
+        lines.append(L10n.p("共 {0} 种色号，缺 {1} 颗", "\(restockRows.count)", "\(totalShortage)"))
         UIPasteboard.general.string = lines.joined(separator: "\n")
-        toast = "补豆清单已复制"
+        toast = L10n.s("补豆清单已复制")
     }
 
     // MARK: 消耗排行 Top 15（AI豆仓：消耗排行，看清哪些色号用得最快）
 
     private var rankingCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("消耗排行", systemImage: "flame.fill")
+            Label(L10n.s("消耗排行"), systemImage: "flame.fill")
                 .font(.subheadline.bold())
                 .foregroundStyle(.primary)
             if aggregatedUsage.isEmpty {
-                Text("还没有图纸用量数据")
+                Text(L10n.s("还没有图纸用量数据"))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .padding(.vertical, 6)
@@ -299,11 +299,11 @@ struct StatsView: View {
 
     private var seriesCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("库存色系分布", systemImage: "paintpalette.fill")
+            Label(L10n.s("库存色系分布"), systemImage: "paintpalette.fill")
                 .font(.subheadline.bold())
                 .foregroundStyle(.primary)
             if seriesDistribution.isEmpty {
-                Text("还没有库存数据，去「库存」Tab 录入")
+                Text(L10n.s("还没有库存数据，去「库存」Tab 录入"))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .padding(.vertical, 6)
@@ -339,7 +339,7 @@ struct StatsView: View {
 
     private var recentCard: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label("最近完成", systemImage: "party.popper.fill")
+            Label(L10n.s("最近完成"), systemImage: "party.popper.fill")
                 .font(.subheadline.bold())
                 .foregroundStyle(.primary)
             ScrollView(.horizontal, showsIndicators: false) {

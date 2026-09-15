@@ -36,7 +36,7 @@ struct PatternMergeView: View {
     @State private var layout: MergeLayout = .horizontal
     /// 图纸间隔空白格数（0～3）
     @State private var gap: Int = 1
-    @State private var mergedName: String = "合并图纸"
+    @State private var mergedName: String = L10n.s("合并图纸")
 
     /// 生成结果（用于 push 到作品详情）
     @State private var created: Pattern?
@@ -72,7 +72,7 @@ struct PatternMergeView: View {
             .padding(.bottom, 24)
         }
         .background(Theme.pageFill)
-        .navigationTitle("合并图纸")
+        .navigationTitle(L10n.s("合并图纸"))
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $navigateToResult) {
             if let created {
@@ -99,16 +99,16 @@ struct PatternMergeView: View {
     private var pickSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Label("选择图纸", systemImage: "square.on.square.dashed")
+                Label(L10n.s("选择图纸"), systemImage: "square.on.square.dashed")
                     .font(.subheadline.bold())
                 Spacer()
-                Text("已选 \(pickedIds.count)/9")
+                Text(L10n.p("已选 {0}/9", "\(pickedIds.count)"))
                     .font(.caption)
                     .foregroundStyle(pickedIds.isEmpty ? .secondary : Theme.accent)
             }
 
             if patterns.isEmpty {
-                Text("还没有图纸，先去创建")
+                Text(L10n.s("还没有图纸，先去创建"))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity)
@@ -180,22 +180,22 @@ struct PatternMergeView: View {
 
     private var layoutSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("拼接方式", systemImage: "rectangle.compress.vertical")
+            Label(L10n.s("拼接方式"), systemImage: "rectangle.compress.vertical")
                 .font(.subheadline.bold())
 
-            Picker("拼接方式", selection: $layout) {
+            Picker(L10n.s("拼接方式"), selection: $layout) {
                 ForEach(MergeLayout.allCases) { l in
-                    Label(l.rawValue, systemImage: l.icon).tag(l)
+                    Label(L10n.s(l.rawValue), systemImage: l.icon).tag(l)
                 }
             }
             .pickerStyle(.segmented)
 
             Stepper(value: $gap, in: 0...3) {
-                LabeledContent("图纸间隔", value: "\(gap) 格空白")
+                LabeledContent(L10n.k("图纸间隔"), value: L10n.p("{0} 格空白", "\(gap)"))
             }
             .font(.subheadline)
 
-            TextField("合并图纸名称", text: $mergedName)
+            TextField(L10n.s("合并图纸名称"), text: $mergedName)
                 .font(.subheadline)
                 .textFieldStyle(.roundedBorder)
         }
@@ -207,11 +207,11 @@ struct PatternMergeView: View {
     private var previewSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Label("实时预览", systemImage: "eye")
+                Label(L10n.s("实时预览"), systemImage: "eye")
                     .font(.subheadline.bold())
                 Spacer()
                 if let g = mergedGrid {
-                    Text("\(g.w) × \(g.h) 格 · 约 \(mergedBeadCount) 颗")
+                    Text(L10n.p("{0} × {1} 格 · 约 {2} 颗", "\(g.w)", "\(g.h)", "\(mergedBeadCount)"))
                         .font(.caption.monospacedDigit())
                         .foregroundStyle(.secondary)
                 }
@@ -229,7 +229,7 @@ struct PatternMergeView: View {
                     Image(systemName: "arrow.triangle.merge")
                         .font(.title)
                         .foregroundStyle(.tertiary)
-                    Text("选 2 张以上图纸开始合并")
+                    Text(L10n.s("选 2 张以上图纸开始合并"))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -246,7 +246,7 @@ struct PatternMergeView: View {
         Button {
             createMerged()
         } label: {
-            Label("生成合并图纸", systemImage: "plus.square.on.square")
+            Label(L10n.s("生成合并图纸"), systemImage: "plus.square.on.square")
                 .font(.headline)
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
@@ -263,13 +263,13 @@ struct PatternMergeView: View {
     private func createMerged() {
         guard let g = mergedGrid, g.w > 0, g.h > 0 else { return }
         let name = mergedName.trimmingCharacters(in: .whitespaces)
-        let p = Pattern(name: name.isEmpty ? "合并图纸" : name,
+        let p = Pattern(name: name.isEmpty ? L10n.s("合并图纸") : name,
                         width: g.w, height: g.h, cells: g.cells, source: "manual")
         context.insert(p)
         try? context.save()
         created = p
         navigateToResult = true
-        toast = "已生成合并图纸"
+        toast = L10n.s("已生成合并图纸")
     }
 
     // MARK: - 合并算法（纯函数，供预览与生成共用）

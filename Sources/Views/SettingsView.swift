@@ -13,8 +13,8 @@ enum AppLanguage: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .system: return "跟随系统"
-        case .zh: return "简体中文"
+        case .system: return L10n.s("跟随系统")
+        case .zh: return L10n.s("简体中文")
         case .en: return "English"
         }
     }
@@ -87,7 +87,7 @@ final class UpdateChecker: ObservableObject {
 
     /// 当前构建号（短 SHA）；CI 注入，本地/旧包为 "dev"
     static var localCommit: String {
-        BuildInfo.commit.isEmpty ? "未知" : BuildInfo.commit
+        BuildInfo.commit.isEmpty ? L10n.s("未知") : BuildInfo.commit
     }
 
     /// 构建时间（CI 注入的 ISO8601 UTC 串；本地为空）
@@ -108,7 +108,7 @@ final class UpdateChecker: ObservableObject {
             guard let arr = try JSONSerialization.jsonObject(with: data) as? [[String: Any]],
                   let first = arr.first,
                   let sha = first["sha"] as? String else {
-                state = .failed("返回数据无法解析")
+                state = .failed(L10n.s("返回数据无法解析"))
                 return
             }
             let remote = String(sha.prefix(7))
@@ -169,13 +169,13 @@ struct SettingsView: View {
         .themedListPage()
         .navigationTitle(L10n.t("设置", "Settings"))
         .navigationBarTitleDisplayMode(.inline)
-        .confirmationDialog("清除全部原图？",
+        .confirmationDialog(L10n.s("清除全部原图？"),
                             isPresented: $showClearImagesConfirm,
                             titleVisibility: .visible) {
-            Button("清除全部原图", role: .destructive) { clearAllSourceImages() }
-            Button("取消", role: .cancel) { }
+            Button(L10n.s("清除全部原图"), role: .destructive) { clearAllSourceImages() }
+            Button(L10n.s("取消"), role: .cancel) { }
         } message: {
-            Text("将删除所有图纸保留的原图缓存（\(Self.formatBytes(imageCacheBytes))）。图纸本身、色号与进度都会保留。此操作不可撤销。")
+            Text(L10n.p("将删除所有图纸保留的原图缓存（{0}）。图纸本身、色号与进度都会保留。此操作不可撤销。", "\(Self.formatBytes(imageCacheBytes))"))
         }
         .overlay(alignment: .bottom) {
             if let toast {
@@ -196,7 +196,7 @@ struct SettingsView: View {
 
     private var boardSection: some View {
         Section {
-            Picker("板规格", selection: $boardPreset) {
+            Picker(L10n.s("板规格"), selection: $boardPreset) {
                 boardOption(BoardPreset.pd25)
                 boardOption(BoardPreset.pd52)
                 boardOption(BoardPreset.pd78)
@@ -211,15 +211,15 @@ struct SettingsView: View {
 
             if BoardPreset(rawValue: boardPreset)?.side == nil {
                 Stepper(value: $defaultBoardSide, in: 16...104, step: 1) {
-                    LabeledContent("边长", value: "\(defaultBoardSide) 格")
+                    LabeledContent(L10n.k("边长"), value: L10n.p("{0} 格", "\(defaultBoardSide)"))
                 }
             }
 
-            LabeledContent("当前默认板", value: "\(defaultBoardSide) × \(defaultBoardSide) 格")
+            LabeledContent(L10n.k("当前默认板"), value: L10n.p("{0} × {1} 格", "\(defaultBoardSide)", "\(defaultBoardSide)"))
         } header: {
-            Text("拼豆板规格")
+            Text(L10n.s("拼豆板规格"))
         } footer: {
-            Text("52 钉 ≈ 14cm、78 钉 ≈ 21cm、104 钉 ≈ 28cm。新建手绘、拆板与尺寸分离以此作为默认板尺寸；灯板发图尺寸始终按图纸本身。")
+            Text(L10n.s("52 钉 ≈ 14cm、78 钉 ≈ 21cm、104 钉 ≈ 28cm。新建手绘、拆板与尺寸分离以此作为默认板尺寸；灯板发图尺寸始终按图纸本身。"))
         }
     }
 
@@ -232,15 +232,15 @@ struct SettingsView: View {
 
     private var colorSection: some View {
         Section {
-            Picker("色板档位", selection: $paletteTier) {
+            Picker(L10n.s("色板档位"), selection: $paletteTier) {
                 ForEach(PaletteTier.allCases) { tier in
-                    Text(tier.title).tag(tier.rawValue)
+                    Text(L10n.s(tier.title)).tag(tier.rawValue)
                 }
             }
 
-            LabeledContent("可用于匹配", value: "\(availableColorCount) 种颜色")
+            LabeledContent(L10n.k("可用于匹配"), value: L10n.p("{0} 种颜色", "\(availableColorCount)"))
         } header: {
-            Text("颜色")
+            Text(L10n.s("颜色"))
         } footer: {
             Text(paletteTierNote)
         }
@@ -248,9 +248,9 @@ struct SettingsView: View {
 
     private var paletteTierNote: String {
         if paletteTier == PaletteTier.stockOnly.rawValue {
-            return "仅使用库存中数量大于 0 的色号——转图与选色只会用到你手上有的颜色，避免配不到色。"
+            return L10n.s("仅使用库存中数量大于 0 的色号——转图与选色只会用到你手上有的颜色，避免配不到色。")
         }
-        return "档位按 Mard 色号顺序取前 N 色，与出厂套装一致；若与你的实物色卡不符，请选「仅我的库存色」，或在库存页录入你实际拥有的色号。"
+        return L10n.s("档位按 Mard 色号顺序取前 N 色，与出厂套装一致；若与你的实物色卡不符，请选「仅我的库存色」，或在库存页录入你实际拥有的色号。")
     }
 
     private var availableColorCount: Int {
@@ -261,11 +261,11 @@ struct SettingsView: View {
 
     private var connectionSection: some View {
         Section {
-            Toggle("自动连接拼豆板", isOn: $autoConnectBLE)
+            Toggle(L10n.s("自动连接拼豆板"), isOn: $autoConnectBLE)
 
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    Text("默认亮度").font(.subheadline)
+                    Text(L10n.s("默认亮度")).font(.subheadline)
                     Spacer()
                     Text("\(guideDefaultBrightness)%")
                         .font(.subheadline.bold().monospacedDigit())
@@ -277,11 +277,11 @@ struct SettingsView: View {
                     .tint(Theme.accent)
             }
 
-            Toggle("引导时微亮相邻行", isOn: $guideUseNeighborRows)
+            Toggle(L10n.s("引导时微亮相邻行"), isOn: $guideUseNeighborRows)
         } header: {
-            Text("连接与灯板")
+            Text(L10n.s("连接与灯板"))
         } footer: {
-            Text("开启自动连接后，点任意页面右上角的「连接」会直接搜索并连上 PIXDOU 板子；关闭后改为弹出面板手动选择。亮度与相邻行微亮用于行/分色引导。")
+            Text(L10n.s("开启自动连接后，点任意页面右上角的「连接」会直接搜索并连上 PIXDOU 板子；关闭后改为弹出面板手动选择。亮度与相邻行微亮用于行/分色引导。"))
         }
     }
 
@@ -289,21 +289,21 @@ struct SettingsView: View {
 
     private var appearanceSection: some View {
         Section {
-            Picker("主题", selection: $appTheme) {
-                Text("跟随系统").tag("system")
-                Text("浅色").tag("light")
-                Text("深色").tag("dark")
+            Picker(L10n.s("主题"), selection: $appTheme) {
+                Text(L10n.s("跟随系统")).tag("system")
+                Text(L10n.s("浅色")).tag("light")
+                Text(L10n.s("深色")).tag("dark")
             }
-            Picker("语言", selection: $appLanguage) {
+            Picker(L10n.s("语言"), selection: $appLanguage) {
                 ForEach(AppLanguage.allCases) { lang in
                     Text(lang.title).tag(lang.rawValue)
                 }
             }
-            Toggle("触觉反馈", isOn: $hapticsEnabled)
+            Toggle(L10n.s("触觉反馈"), isOn: $hapticsEnabled)
         } header: {
-            Text("外观与反馈")
+            Text(L10n.s("外观与反馈"))
         } footer: {
-            Text("英文界面正在逐步补齐（当前覆盖标签栏、设置页与首页主文案）。")
+            Text(L10n.s("英文界面正在逐步补齐（当前覆盖标签栏、设置页与首页主文案）。"))
         }
     }
 
@@ -311,17 +311,17 @@ struct SettingsView: View {
 
     private var updateSection: some View {
         Section {
-            LabeledContent("当前版本", value: versionText)
-            LabeledContent("构建", value: UpdateChecker.localCommit)
+            LabeledContent(L10n.k("当前版本"), value: versionText)
+            LabeledContent(L10n.k("构建"), value: UpdateChecker.localCommit)
             if !UpdateChecker.localBuiltAt.isEmpty {
-                LabeledContent("构建时间", value: Self.formatBuiltAt(UpdateChecker.localBuiltAt))
+                LabeledContent(L10n.k("构建时间"), value: Self.formatBuiltAt(UpdateChecker.localBuiltAt))
             }
 
             Button {
                 Task { await updater.check() }
             } label: {
                 HStack {
-                    Label("检测更新", systemImage: "arrow.triangle.2.circlepath")
+                    Label(L10n.s("检测更新"), systemImage: "arrow.triangle.2.circlepath")
                     Spacer()
                     if updater.state == .checking { ProgressView() }
                 }
@@ -335,12 +335,12 @@ struct SettingsView: View {
             }
 
             Link(destination: UpdateChecker.repoURL) {
-                Label("打开项目仓库（下载最新 IPA）", systemImage: "link")
+                Label(L10n.s("打开项目仓库（下载最新 IPA）"), systemImage: "link")
             }
         } header: {
-            Text("更新")
+            Text(L10n.s("更新"))
         } footer: {
-            Text("构建号来自云端构建注入的提交短 SHA；与仓库最新提交一致即为最新版。")
+            Text(L10n.s("构建号来自云端构建注入的提交短 SHA；与仓库最新提交一致即为最新版。"))
         }
     }
 
@@ -354,15 +354,15 @@ struct SettingsView: View {
         case .idle:
             return nil
         case .checking:
-            return ("正在检查…", "clock", .secondary)
+            return (L10n.s("正在检查…"), "clock", .secondary)
         case .upToDate(let sha):
-            return ("已是最新版本（\(sha)）", "checkmark.seal.fill", .green)
+            return (L10n.p("已是最新版本（{0}）", "\(sha)"), "checkmark.seal.fill", .green)
         case .available(let sha):
-            return ("发现新版本（远端 \(sha)）——点上方仓库链接下载最新 IPA", "arrow.down.circle.fill", .orange)
+            return (L10n.p("发现新版本（远端 {0}）——点上方仓库链接下载最新 IPA", "\(sha)"), "arrow.down.circle.fill", .orange)
         case .unknownLocal(let sha):
-            return ("远端最新提交 \(sha)（本包未注入构建号，无法精确对比）", "info.circle.fill", .secondary)
+            return (L10n.p("远端最新提交 {0}（本包未注入构建号，无法精确对比）", "\(sha)"), "info.circle.fill", .secondary)
         case .failed(let reason):
-            return ("检查失败：\(reason)", "exclamationmark.triangle.fill", .orange)
+            return (L10n.p("检查失败：{0}", "\(reason)"), "exclamationmark.triangle.fill", .orange)
         }
     }
 
@@ -370,31 +370,31 @@ struct SettingsView: View {
 
     private var storageSection: some View {
         Section {
-            LabeledContent("原图缓存占用", value: Self.formatBytes(imageCacheBytes))
+            LabeledContent(L10n.k("原图缓存占用"), value: Self.formatBytes(imageCacheBytes))
             Button(role: .destructive) {
                 showClearImagesConfirm = true
             } label: {
-                Label("清除全部原图", systemImage: "photo.badge.exclamationmark")
+                Label(L10n.s("清除全部原图"), systemImage: "photo.badge.exclamationmark")
             }
             .disabled(imageCacheBytes == 0)
 
             Button(role: .destructive) {
                 showClearTempConfirm = true
             } label: {
-                Label("清理临时导出文件", systemImage: "trash")
+                Label(L10n.s("清理临时导出文件"), systemImage: "trash")
             }
         } header: {
-            Text("存储")
+            Text(L10n.s("存储"))
         } footer: {
-            Text("「原图缓存」仅指照片转图纸时保留的原图；清除后图纸本身与进度不受影响。临时导出文件指应用临时目录下的 PDF 导出件。")
+            Text(L10n.s("「原图缓存」仅指照片转图纸时保留的原图；清除后图纸本身与进度不受影响。临时导出文件指应用临时目录下的 PDF 导出件。"))
         }
-        .confirmationDialog("清理临时导出文件？",
+        .confirmationDialog(L10n.s("清理临时导出文件？"),
                             isPresented: $showClearTempConfirm,
                             titleVisibility: .visible) {
-            Button("清理", role: .destructive) { clearTemporaryExports() }
-            Button("取消", role: .cancel) { }
+            Button(L10n.s("清理"), role: .destructive) { clearTemporaryExports() }
+            Button(L10n.s("取消"), role: .cancel) { }
         } message: {
-            Text("将删除应用临时目录下的 PDF 导出文件（不影响已保存到「文件」的副本）。")
+            Text(L10n.s("将删除应用临时目录下的 PDF 导出文件（不影响已保存到「文件」的副本）。"))
         }
     }
 
@@ -409,7 +409,7 @@ struct SettingsView: View {
         for url in contents where url.pathExtension.lowercased() == "pdf" {
             if (try? manager.removeItem(at: url)) != nil { deleted += 1 }
         }
-        toast = deleted > 0 ? "已清理 \(deleted) 个临时导出文件" : "没有发现临时导出文件"
+        toast = deleted > 0 ? L10n.p("已清理 {0} 个临时导出文件", "\(deleted)") : L10n.s("没有发现临时导出文件")
     }
 
     private var imageCacheBytes: Int {
@@ -423,7 +423,7 @@ struct SettingsView: View {
             removed += 1
         }
         try? context.save()
-        toast = removed > 0 ? "已清除 \(removed) 张原图缓存" : "没有可清除的原图缓存"
+        toast = removed > 0 ? L10n.p("已清除 {0} 张原图缓存", "\(removed)") : L10n.s("没有可清除的原图缓存")
     }
 
     /// ISO8601(UTC) → 本地「yyyy-MM-dd HH:mm」

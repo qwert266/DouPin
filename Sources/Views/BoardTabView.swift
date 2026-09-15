@@ -67,16 +67,16 @@ struct BoardSendSheet: View {
                 .padding(.bottom, 24)
             }
             .background(Theme.pageFill)
-            .navigationTitle("开始拼豆")
+            .navigationTitle(L10n.s("开始拼豆"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("关闭") { dismiss() }
+                    Button(L10n.s("关闭")) { dismiss() }
                 }
             }
-            .alert("拼豆板", isPresented: Binding(get: { infoMessage != nil },
+            .alert(L10n.s("拼豆板"), isPresented: Binding(get: { infoMessage != nil },
                                              set: { if !$0 { infoMessage = nil } })) {
-                Button("好", role: .cancel) { infoMessage = nil }
+                Button(L10n.s("好"), role: .cancel) { infoMessage = nil }
             } message: {
                 Text(infoMessage ?? "")
             }
@@ -93,7 +93,7 @@ struct BoardSendSheet: View {
             HStack {
                 Text(pattern.name).font(.headline)
                 Spacer()
-                Text("\(pattern.width)×\(pattern.height) · \(pattern.totalBeads) 颗")
+                Text(L10n.p("{0}×{1} · {2} 颗", "\(pattern.width)", "\(pattern.height)", "\(pattern.totalBeads)"))
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
             }
@@ -112,10 +112,10 @@ struct BoardSendSheet: View {
             HStack(spacing: 10) {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(.green)
-                Text("已连接 \(central.connectedName)")
+                Text(L10n.p("已连接 {0}", "\(central.connectedName)"))
                     .font(.subheadline)
                 Spacer()
-                Text(didHandshakeReady ? "可发送" : "准备握手…")
+                Text(didHandshakeReady ? L10n.s("可发送") : L10n.s("准备握手…"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -128,8 +128,8 @@ struct BoardSendSheet: View {
                     .frame(width: 36, height: 36)
                     .background(Theme.amber, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("拼豆板未连接").font(.subheadline.weight(.medium))
-                    Text("点右上角「连接」按钮连上拼豆板后，这里就能发送")
+                    Text(L10n.s("拼豆板未连接")).font(.subheadline.weight(.medium))
+                    Text(L10n.s("点右上角「连接」按钮连上拼豆板后，这里就能发送"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -145,16 +145,16 @@ struct BoardSendSheet: View {
 
     private var modeCard: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Picker("发送模式", selection: $mode) {
+            Picker(L10n.s("发送模式"), selection: $mode) {
                 ForEach(SendMode.allCases) { m in
-                    Text(m.rawValue).tag(m)
+                    Text(L10n.s(m.rawValue)).tag(m)
                 }
             }
             .pickerStyle(.segmented)
 
             if mode == .color {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("选一种颜色，灯板只亮这种颜色的位置")
+                    Text(L10n.s("选一种颜色，灯板只亮这种颜色的位置"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -171,7 +171,7 @@ struct BoardSendSheet: View {
 
             if board.isSending {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("正在发送… \(Int(board.sendProgress * 100))%")
+                    Text(L10n.p("正在发送… {0}%", "\(Int(board.sendProgress * 100))"))
                         .font(.subheadline)
                         .monospacedDigit()
                     ProgressView(value: board.sendProgress)
@@ -181,7 +181,7 @@ struct BoardSendSheet: View {
                 Button {
                     sendCurrent()
                 } label: {
-                    Label(mode == .full ? "发送完整图，开始拼豆" : "点亮该色，开始拼豆",
+                    Label(mode == .full ? L10n.s("发送完整图，开始拼豆") : L10n.s("点亮该色，开始拼豆"),
                           systemImage: "paperplane.fill")
                         .font(.headline)
                         .foregroundStyle(.white)
@@ -199,7 +199,7 @@ struct BoardSendSheet: View {
                     Button {
                         finishColorAndAdvance()
                     } label: {
-                        Label("此色拼完 → 下一色", systemImage: "checkmark.circle.badge.arrow.forward")
+                        Label(L10n.s("此色拼完 → 下一色"), systemImage: "checkmark.circle.badge.arrow.forward")
                             .font(.subheadline.bold())
                             .foregroundStyle(Theme.accent)
                             .frame(height: 18)
@@ -212,8 +212,8 @@ struct BoardSendSheet: View {
                 }
 
                 Text(mode == .full
-                     ? "完整预览：已拼的格子以暗色显示。"
-                     : "分色点亮：只亮选中色号；「此色拼完」会自动打卡整色并点亮下一色。")
+                     ? L10n.s("完整预览：已拼的格子以暗色显示。")
+                     : L10n.s("分色点亮：只亮选中色号；「此色拼完」会自动打卡整色并点亮下一色。"))
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
             }
@@ -234,7 +234,7 @@ struct BoardSendSheet: View {
                 BeadDot(color: row.color, size: 20)
                 Text(row.color.mard)
                     .font(.caption.monospaced().weight(.semibold))
-                Text("剩\(row.remaining)")
+                Text(L10n.p("剩{0}", "\(row.remaining)"))
                     .font(.caption2.monospacedDigit())
                     .foregroundStyle(.secondary)
             }
@@ -265,7 +265,7 @@ struct BoardSendSheet: View {
                 try await board.sendImage(width: pattern.width, height: pattern.height, rgb: rgb)
                 Haptics.success()
             } catch {
-                infoMessage = "发送失败：\(error.localizedDescription)"
+                infoMessage = L10n.p("发送失败：{0}", "\(error.localizedDescription)")
             }
         }
     }
@@ -313,11 +313,11 @@ struct BoardConnectSheet: View {
                 if central.linkState == .connected { controlSection }
             }
             .themedListPage()
-            .navigationTitle("连接拼豆板")
+            .navigationTitle(L10n.s("连接拼豆板"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("完成") { dismiss() }
+                    Button(L10n.s("完成")) { dismiss() }
                 }
             }
             .onChange(of: central.linkState) { _, state in
@@ -339,9 +339,9 @@ struct BoardConnectSheet: View {
             .onAppear {
                 if central.linkState == .connected { didHandshake = true }
             }
-            .alert("拼豆板", isPresented: Binding(get: { infoMessage != nil },
+            .alert(L10n.s("拼豆板"), isPresented: Binding(get: { infoMessage != nil },
                                              set: { if !$0 { infoMessage = nil } })) {
-                Button("好", role: .cancel) { infoMessage = nil }
+                Button(L10n.s("好"), role: .cancel) { infoMessage = nil }
             } message: {
                 Text(infoMessage ?? "")
             }
@@ -373,7 +373,7 @@ struct BoardConnectSheet: View {
                         central.autoConnect()
                     }
                 } label: {
-                    Label(central.autoConnecting ? "正在搜索 PIXDOU…（点此取消）" : "自动连接拼豆板",
+                    Label(central.autoConnecting ? L10n.s("正在搜索 PIXDOU…（点此取消）") : L10n.s("自动连接拼豆板"),
                           systemImage: "bolt.horizontal.circle.fill")
                 }
                 .disabled(central.linkState == .poweredOff)
@@ -386,20 +386,20 @@ struct BoardConnectSheet: View {
             case .connecting:
                 HStack {
                     ProgressView()
-                    Text("连接中 \(central.pendingConnectName)…").font(.subheadline)
+                    Text(L10n.p("连接中 {0}…", "\(central.pendingConnectName)")).font(.subheadline)
                 }
             case .connected:
                 Button(role: .destructive) {
                     central.disconnect()
                 } label: {
-                    Label("断开连接", systemImage: "minus.circle.fill")
+                    Label(L10n.s("断开连接"), systemImage: "minus.circle.fill")
                 }
             }
         } header: {
-            Text("状态")
+            Text(L10n.s("状态"))
         } footer: {
             if central.linkState != .connected {
-                Text("点「自动连接拼豆板」会自动搜索并连接名字带 PIXDOU 的板子（也兼容 iLEDColor / Wofan）；没连上时可在下方列表手动选择。")
+                Text(L10n.s("点「自动连接拼豆板」会自动搜索并连接名字带 PIXDOU 的板子（也兼容 iLEDColor / Wofan）；没连上时可在下方列表手动选择。"))
             }
         }
     }
@@ -415,10 +415,10 @@ struct BoardConnectSheet: View {
 
     private var statusText: String {
         switch central.linkState {
-        case .poweredOff: return "蓝牙未开启"
-        case .idle: return "未连接"
-        case .scanning: return "扫描中…"
-        case .connecting: return "连接中…"
+        case .poweredOff: return L10n.s("蓝牙未开启")
+        case .idle: return L10n.s("未连接")
+        case .scanning: return L10n.s("扫描中…")
+        case .connecting: return L10n.s("连接中…")
         case .connected: return central.connectedName
         }
     }
@@ -426,15 +426,15 @@ struct BoardConnectSheet: View {
     private var statusHint: String {
         switch central.linkState {
         case .connected:
-            return didHandshake ? "已握手，可以发图和点亮引导" : "已连接，正在握手…"
+            return didHandshake ? L10n.s("已握手，可以发图和点亮引导") : L10n.s("已连接，正在握手…")
         case .scanning:
-            return "请确保拼豆板已通电"
+            return L10n.s("请确保拼豆板已通电")
         case .idle:
-            return "点下方按钮搜索附近的拼豆板"
+            return L10n.s("点下方按钮搜索附近的拼豆板")
         case .connecting:
-            return "首次连接需要几秒"
+            return L10n.s("首次连接需要几秒")
         case .poweredOff:
-            return "请在系统设置中打开蓝牙"
+            return L10n.s("请在系统设置中打开蓝牙")
         }
     }
 
@@ -446,10 +446,10 @@ struct BoardConnectSheet: View {
                 if central.linkState == .scanning {
                     HStack(spacing: 10) {
                         ProgressView()
-                        Text("正在搜索拼豆板…").font(.subheadline).foregroundStyle(.secondary)
+                        Text(L10n.s("正在搜索拼豆板…")).font(.subheadline).foregroundStyle(.secondary)
                     }
                 } else {
-                    Text("还没有扫描结果")
+                    Text(L10n.s("还没有扫描结果"))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -467,7 +467,7 @@ struct BoardConnectSheet: View {
                                     Text(b.summary).font(.subheadline.weight(.medium))
                                         .foregroundStyle(.primary)
                                     if b.looksLikeBoard {
-                                        Text("疑似拼豆板")
+                                        Text(L10n.s("疑似拼豆板"))
                                             .font(.caption2.bold())
                                             .padding(.horizontal, 6).padding(.vertical, 2)
                                             .background(Theme.brand, in: Capsule())
@@ -493,17 +493,17 @@ struct BoardConnectSheet: View {
                 get: { central.showAllDevices },
                 set: { central.setShowAllDevices($0) })) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("显示全部蓝牙设备").font(.subheadline)
-                    Text("找不到板子时打开，查看是否被名称过滤挡掉")
+                    Text(L10n.s("显示全部蓝牙设备")).font(.subheadline)
+                    Text(L10n.s("找不到板子时打开，查看是否被名称过滤挡掉"))
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
             }
             .disabled(central.linkState == .connecting || central.linkState == .connected)
         } header: {
-            Text("附近设备")
+            Text(L10n.s("附近设备"))
         } footer: {
-            Text("默认只显示 PIXDOU / iLEDColor / Wofan 前缀或带 A950 服务的设备。")
+            Text(L10n.s("默认只显示 PIXDOU / iLEDColor / Wofan 前缀或带 A950 服务的设备。"))
         }
     }
 
@@ -513,7 +513,7 @@ struct BoardConnectSheet: View {
         Section {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    Text("亮度").font(.subheadline)
+                    Text(L10n.s("亮度")).font(.subheadline)
                     Spacer()
                     Text("\(brightness)%")
                         .font(.subheadline.bold().monospacedDigit())
@@ -533,7 +533,7 @@ struct BoardConnectSheet: View {
                     }
             }
 
-            Toggle("点亮灯板", isOn: Binding(
+            Toggle(L10n.s("点亮灯板"), isOn: Binding(
                 get: { displayOn },
                 set: { on in
                     displayOn = on
@@ -541,9 +541,9 @@ struct BoardConnectSheet: View {
                 }))
                 .font(.subheadline)
         } header: {
-            Text("快捷控制")
+            Text(L10n.s("快捷控制"))
         } footer: {
-            Text("连上后可直接回到图纸页点「开始拼豆」发送完整图或分色点亮。")
+            Text(L10n.s("连上后可直接回到图纸页点「开始拼豆」发送完整图或分色点亮。"))
         }
     }
 }
@@ -566,9 +566,9 @@ struct BoardConnectCapsule: View {
     @State private var showSheet = false
 
     private var label: String {
-        if board.isConnected { return "已连接" }
-        if central.autoConnecting { return "搜索中" }
-        return "连接"
+        if board.isConnected { return L10n.s("已连接") }
+        if central.autoConnecting { return L10n.s("搜索中") }
+        return L10n.s("连接")
     }
 
     var body: some View {
@@ -630,31 +630,31 @@ struct BoardLogView: View {
                     .frame(minHeight: 60)
                     .overlay(alignment: .topLeading) {
                         if hexInput.isEmpty {
-                            Text("十六进制帧，如 54 0d 00 02 00 57")
+                            Text(L10n.s("十六进制帧，如 54 0d 00 02 00 57"))
                                 .font(.caption)
                                 .foregroundStyle(.tertiary)
                                 .padding(.top, 8).padding(.leading, 4)
                                 .allowsHitTesting(false)
                         }
                     }
-                Picker("写入特征", selection: $charChoice) {
-                    Text("A951 指令").tag(0)
-                    Text("A952 数据").tag(1)
+                Picker(L10n.s("写入特征"), selection: $charChoice) {
+                    Text(L10n.s("A951 指令")).tag(0)
+                    Text(L10n.s("A952 数据")).tag(1)
                 }
                 .pickerStyle(.segmented)
                 Button {
                     sendHex()
                 } label: {
-                    Label("发送", systemImage: "paperplane.fill")
+                    Label(L10n.s("发送"), systemImage: "paperplane.fill")
                 }
                 .disabled(hexInput.trimmingCharacters(in: .whitespaces).isEmpty)
                 if let hexError {
                     Text(hexError).font(.caption).foregroundStyle(.red)
                 }
             } header: {
-                Text("手动发送指令")
+                Text(L10n.s("手动发送指令"))
             } footer: {
-                Text("常用指令（含校验，可直接粘贴）：握手 Connect = 54 0d 00 03 00 00 64；校验密码 TestPass = 54 0f 00 08 00 00 00 00 00 00 00 6b；亮度 5 级 = 54 09 00 0b 05 00 00 00 00 00 00 00 00 00 6d；开屏 = 54 0a 00 0b 01 00 00 00 00 00 00 00 00 00 70。用于协议排查。")
+                Text(L10n.s("常用指令（含校验，可直接粘贴）：握手 Connect = 54 0d 00 03 00 00 64；校验密码 TestPass = 54 0f 00 08 00 00 00 00 00 00 00 6b；亮度 5 级 = 54 09 00 0b 05 00 00 00 00 00 00 00 00 00 6d；开屏 = 54 0a 00 0b 01 00 00 00 00 00 00 00 00 00 70。用于协议排查。"))
             }
 
             Section {
@@ -666,14 +666,14 @@ struct BoardLogView: View {
                 }
             } header: {
                 HStack {
-                    Text("日志（最新在前）")
+                    Text(L10n.s("日志（最新在前）"))
                     Spacer()
-                    Button("清空") { central.logLines.removeAll() }
+                    Button(L10n.s("清空")) { central.logLines.removeAll() }
                         .font(.caption)
                 }
             }
         }
-        .navigationTitle("蓝牙控制台")
+        .navigationTitle(L10n.s("蓝牙控制台"))
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -684,7 +684,7 @@ struct BoardLogView: View {
             .split(separator: " ")
             .compactMap { UInt8($0, radix: 16) }
         guard !cleaned.isEmpty else {
-            hexError = "无法解析十六进制字节"
+            hexError = L10n.s("无法解析十六进制字节")
             return
         }
         hexError = nil
