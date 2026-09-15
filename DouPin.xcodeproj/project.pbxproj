@@ -944,13 +944,15 @@
 			<key>name</key>
 			<string>Generate Pattern Library</string>
 			<key>outputPaths</key>
-			<array/>
+			<array>
+				<string>$(SRCROOT)/Sources/Resources/PatternLibrary/catalog.json</string>
+			</array>
 			<key>runOnlyForDeploymentPostprocessing</key>
 			<string>0</string>
 			<key>shellPath</key>
 			<string>/bin/sh</string>
 			<key>shellScript</key>
-			<string>echo "== Generate Pattern Library =="\nLIB_DIR="${SRCROOT}/Sources/Resources/PatternLibrary"\nif [ ! -f "$LIB_DIR/catalog.json" ]; then\n  VENV=/tmp/doupin-pv\n  python3 -m venv "$VENV" || echo "WARN: venv 创建失败"\n  "$VENV/bin/pip" install --quiet --upgrade pip || true\n  "$VENV/bin/pip" install --quiet pillow || echo "WARN: pillow 安装失败"\n  "$VENV/bin/python" "${SRCROOT}/scripts/gen_pattern_library.py" || echo "WARN: 素材生成失败"\nfi\ndu -sh "$LIB_DIR" 2>/dev/null || true\nls "$LIB_DIR/thumb" 2>/dev/null | wc -l || true\necho "== done =="</string>
+			<string>echo ==Gen Pattern Library==; LIB_DIR=${SRCROOT}/Sources/Resources/PatternLibrary; if [ ! -f $LIB_DIR/catalog.json ]; then python3 -m venv /tmp/doupin-pv || echo WARN-venv; /tmp/doupin-pv/bin/pip install --quiet pillow || echo WARN-pillow; /tmp/doupin-pv/bin/python ${SRCROOT}/scripts/gen_pattern_library.py || echo WARN-gen; fi; du -sh $LIB_DIR 2>/dev/null; ls $LIB_DIR/thumb 2>/dev/null | wc -l; echo ==done==</string>
 		</dict>
 		<key>A00000000000000000000006</key>
 		<dict>
