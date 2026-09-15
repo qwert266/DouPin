@@ -21,16 +21,16 @@ struct TemplateGalleryView: View {
     /// 套装名 → SF Symbol 映射（T05）。未知套装回落到通用图标。
     static func setIcon(for category: String) -> String {
         switch category {
-        case "像素小动物": return "pawprint.fill"
-        case "表情包": return "face.smiling.fill"
-        case "自然风景": return "leaf.fill"
-        case "节日": return "party.popper.fill"
-        case "食物甜点": return "cup.and.saucer.fill"
-        case "植物花语": return "camera.macro"
-        case "太空星球": return "sparkles"
-        case "字母数字": return "textformat"
-        case "爱心系": return "heart.fill"
-        case "日常物件": return "shippingbox.fill"
+        case L10n.s("像素小动物"): return "pawprint.fill"
+        case L10n.s("表情包"): return "face.smiling.fill"
+        case L10n.s("自然风景"): return "leaf.fill"
+        case L10n.s("节日"): return "party.popper.fill"
+        case L10n.s("食物甜点"): return "cup.and.saucer.fill"
+        case L10n.s("植物花语"): return "camera.macro"
+        case L10n.s("太空星球"): return "sparkles"
+        case L10n.s("字母数字"): return "textformat"
+        case L10n.s("爱心系"): return "heart.fill"
+        case L10n.s("日常物件"): return "shippingbox.fill"
         default: return "square.grid.2x2"
         }
     }

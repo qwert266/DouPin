@@ -113,9 +113,9 @@ struct PatternsTabView: View {
                 Label(L10n.s("新建手绘"), systemImage: "square.and.pencil")
             }
             NavigationLink {
-                XiaohongshuImportView()
+                SocialImportView()
             } label: {
-                Label(L10n.s("从小红书链接导入"), systemImage: "link")
+                Label(L10n.s("从社交平台导入"), systemImage: "link")
             }
             NavigationLink {
                 PatternMergeView()

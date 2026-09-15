@@ -100,15 +100,15 @@ struct SplitBoardView: View {
 
             if showCustom {
                 Stepper(value: $boardW, in: 1...104) {
-                    LabeledContent(L10n.k("板宽"), value: L10n.p("{0} 格", "\(boardW)"))
+                    LabeledContent(L10n.k(L10n.s("板宽")), value: L10n.p("{0} 格", "\(boardW)"))
                 }
                 Stepper(value: $boardH, in: 1...104) {
-                    LabeledContent(L10n.k("板高"), value: L10n.p("{0} 格", "\(boardH)"))
+                    LabeledContent(L10n.k(L10n.s("板高")), value: L10n.p("{0} 格", "\(boardH)"))
                 }
             }
 
             Stepper(value: $overlap, in: 0...maxOverlap) {
-                LabeledContent(L10n.k("重叠行（对齐用）"), value: L10n.p("{0} 行", "\(overlap)"))
+                LabeledContent(L10n.k(L10n.s("重叠行（对齐用）")), value: L10n.p("{0} 行", "\(overlap)"))
             }
 
             HStack {
@@ -153,7 +153,7 @@ struct SplitBoardView: View {
     // MARK: - 拼板布局图
 
     private func layoutSection(_ result: BoardSplitter.SplitResult) -> some View {
-        Section(L10n.k("拼板布局")) {
+        Section(L10n.k(L10n.s("拼板布局"))) {
             Canvas { ctx, size in
                 drawLayout(ctx: &ctx, size: size, result: result)
             }
@@ -199,7 +199,7 @@ struct SplitBoardView: View {
     // MARK: - 子块列表
 
     private func tilesSection(_ result: BoardSplitter.SplitResult) -> some View {
-        Section(L10n.pk("子块（{0} 块）", "\(result.tiles.count)")) {
+        Section(L10n.pk(L10n.s("子块（{0} 块）"), "\(result.tiles.count)")) {
             ForEach(result.tiles, id: \.index) { tile in
                 Button {
                     previewTile = tile
@@ -257,21 +257,21 @@ struct SplitBoardView: View {
     private func tilePreviewSheet(_ tile: BoardSplitter.SplitTile) -> some View {
         NavigationStack {
             List {
-                Section(L10n.k("预览")) {
+                Section(L10n.k(L10n.s("预览"))) {
                     GridView(cells: tile.cells, width: tile.width, height: tile.height)
                         .frame(maxHeight: 320)
                         .listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
                 }
-                Section(L10n.k("信息")) {
-                    LabeledContent(L10n.k("编号"), value: tile.index)
-                    LabeledContent(L10n.k("尺寸"), value: "\(tile.width) × \(tile.height)")
-                    LabeledContent(L10n.k("豆子总数"), value: L10n.p("{0} 颗", "\(tile.beadTotal)"))
-                    LabeledContent(L10n.k("使用颜色"), value: L10n.p("{0} 种", "\(tile.colorCount)"))
+                Section(L10n.k(L10n.s("信息"))) {
+                    LabeledContent(L10n.k(L10n.s("编号")), value: tile.index)
+                    LabeledContent(L10n.k(L10n.s("尺寸")), value: "\(tile.width) × \(tile.height)")
+                    LabeledContent(L10n.k(L10n.s("豆子总数")), value: L10n.p("{0} 颗", "\(tile.beadTotal)"))
+                    LabeledContent(L10n.k(L10n.s("使用颜色")), value: L10n.p("{0} 种", "\(tile.colorCount)"))
                     if !tile.edgeHints.isEmpty {
-                        LabeledContent(L10n.k("接缝"), value: tile.edgeHints.joined(separator: " / "))
+                        LabeledContent(L10n.k(L10n.s("接缝")), value: tile.edgeHints.joined(separator: " / "))
                     }
                 }
-                Section(L10n.k("用色清单")) {
+                Section(L10n.k(L10n.s("用色清单"))) {
                     ForEach(tile.beadCounts, id: \.color.id) { item in
                         HStack(spacing: 10) {
                             RoundedRectangle(cornerRadius: 4)

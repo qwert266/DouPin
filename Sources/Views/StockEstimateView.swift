@@ -73,7 +73,7 @@ struct StockEstimateView: View {
     // MARK: - 顶部汇总
 
     private var summarySection: some View {
-        Section(L10n.k("汇总")) {
+        Section(L10n.k(L10n.s("汇总"))) {
             HStack(spacing: 20) {
                 summaryCell(L10n.s("总需豆量"), "\(estimate.totalNeed)")
                 summaryCell(L10n.s("库存总豆量"), "\(estimate.totalHave)")

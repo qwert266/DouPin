@@ -45,7 +45,7 @@ struct StockImportView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section(L10n.k("粘贴文本")) {
+                Section(L10n.k(L10n.s("粘贴文本"))) {
                     TextEditor(text: $text)
                         .frame(minHeight: 140)
                         .font(.body.monospaced())
@@ -70,7 +70,7 @@ struct StockImportView: View {
                 previewSection
 
                 Section {
-                    LabeledContent(L10n.k("归入豆仓"), value: BeadBinCatalog.displayName(binName))
+                    LabeledContent(L10n.k(L10n.s("归入豆仓")), value: BeadBinCatalog.displayName(binName))
                         .font(.subheadline)
                 } footer: {
                     Text(L10n.s("查重与写入都在该豆仓内进行；同色号在其他仓的记录不受影响。"))

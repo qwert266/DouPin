@@ -304,6 +304,13 @@
 			<key>fileRef</key>
 			<string>F00000000000000000000042</string>
 		</dict>
+		<key>B00000000000000000000043</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+			<key>fileRef</key>
+			<string>F00000000000000000000043</string>
+		</dict>
 		<key>F00000000000000000000001</key>
 		<dict>
 			<key>isa</key>
@@ -766,6 +773,17 @@
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
+		<key>F00000000000000000000043</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>SocialImageExtractor.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
 		<key>A00000000000000000000004</key>
 		<dict>
 			<key>isa</key>
@@ -924,6 +942,7 @@
 				<string>B00000000000000000000040</string>
 				<string>B00000000000000000000041</string>
 				<string>B00000000000000000000042</string>
+				<string>B00000000000000000000043</string>
 			</array>
 			<key>runOnlyForDeploymentPostprocessing</key>
 			<false/>
@@ -1066,6 +1085,7 @@
 				<string>F00000000000000000000027</string>
 				<string>F00000000000000000000030</string>
 				<string>F00000000000000000000031</string>
+				<string>F00000000000000000000043</string>
 			</array>
 			<key>path</key>
 			<string>Services</string>

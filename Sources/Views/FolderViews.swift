@@ -308,7 +308,7 @@ struct TagFilterView: View {
                 }
             } else {
                 List {
-                    Section(L10n.k("全部标签")) {
+                    Section(L10n.k(L10n.s("全部标签"))) {
                         TagCloud(tags: allTags, selected: $selectedTag)
                             .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
                             .cardRow()
@@ -388,7 +388,7 @@ struct TagCloud: View {
 /// - 多图：让用户选，不自动猜。
 ///
 /// **合规**：仅抓取公开分享页图片、不伪造登录态、不上传不分享、不缓存 HTML；界面明示仅供个人自用。
-struct XiaohongshuImportView: View {
+struct SocialImportView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
 
@@ -397,7 +397,7 @@ struct XiaohongshuImportView: View {
 
     @State private var input = ""
     @State private var extracting = false
-    @State private var result: XiaohongshuExtractor.ExtractResult?
+    @State private var result: SocialImageExtractor.Result?
     @State private var selectedImageURL: URL?
     @State private var downloadedData: Data?
     @State private var downloading = false
@@ -422,7 +422,7 @@ struct XiaohongshuImportView: View {
                 }
                 .disabled(extracting || input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             } header: {
-                Text(L10n.s("粘贴小红书分享链接 / 文案"))
+                Text(L10n.s("粘贴分享链接 / 文案"))
             } footer: {
                 Text(L10n.s("打开小红书笔记 →「分享」→「复制链接」，粘贴到这里即可。\\n仅抓取公开分享页图片，供个人自用参考，请尊重原作者版权。"))
             }
@@ -432,12 +432,12 @@ struct XiaohongshuImportView: View {
                     failureSection(result: result, error: err)
                 }
                 if !result.imageURLs.isEmpty {
-                    imageListSection(urls: result.imageURLs, title: result.noteTitle)
+                    imageListSection(urls: result.imageURLs, title: result.title)
                 }
             }
 
             if let previewImage {
-                Section(L10n.k("预览（像素化后）")) {
+                Section(L10n.k(L10n.s("预览（像素化后）"))) {
                     Image(uiImage: previewImage)
                         .interpolation(.none)
                         .resizable()
@@ -445,7 +445,7 @@ struct XiaohongshuImportView: View {
                         .frame(maxHeight: 220)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                     TextField(L10n.s("图纸名称"), text: $patternName)
-                    LabeledContent(L10n.k("尺寸（最大边格数）"), value: L10n.p("{0} 格", "\(maxSide)"))
+                    LabeledContent(L10n.k(L10n.s("尺寸（最大边格数）")), value: L10n.p("{0} 格", "\(maxSide)"))
                     Slider(value: Binding(get: { Double(maxSide) }, set: { maxSide = Int($0);
                             regeneratePreview() }), in: 16...64, step: 4)
                     Picker(L10n.s("颜色数量"), selection: Binding(get: { colorLimit }, set: {
@@ -466,13 +466,13 @@ struct XiaohongshuImportView: View {
                 }
             }
         }
-        .navigationTitle(L10n.s("从小红书链接导入"))
+        .navigationTitle(L10n.s("从社交平台导入"))
         .navigationBarTitleDisplayMode(.inline)
     }
 
     // MARK: - 子视图
 
-    private func failureSection(result: XiaohongshuExtractor.ExtractResult, error: String) -> some View {
+    private func failureSection(result: SocialImageExtractor.Result, error: String) -> some View {
         Section {
             Label(error, systemImage: "exclamationmark.triangle")
                 .foregroundStyle(.orange)
@@ -531,7 +531,7 @@ struct XiaohongshuImportView: View {
         selectedImageURL = nil
         downloadedData = nil
         previewImage = nil
-        let r = await XiaohongshuExtractor.extract(from: input)
+        let r = await SocialImageExtractor.extract(from: input)
         result = r
         extracting = false
     }
@@ -540,7 +540,7 @@ struct XiaohongshuImportView: View {
     private func choose(_ url: URL) async {
         downloading = true
         selectedImageURL = url
-        let data = await XiaohongshuExtractor.downloadImage(url)
+        let data = await SocialImageExtractor.downloadImage(url)
         downloading = false
         guard let data, let ui = UIImage(data: data) else {
             // 下载失败：提示网络问题，保留链接可重试（result 不重置）

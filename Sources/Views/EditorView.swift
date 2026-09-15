@@ -423,7 +423,7 @@ private struct ColorMergeSheet: View {
             List {
                 Section {
                     VStack(alignment: .leading, spacing: 6) {
-                        LabeledContent(L10n.k("相似度阈值"), value: String(format: "%.3f", threshold))
+                        LabeledContent(L10n.k(L10n.s("相似度阈值")), value: String(format: "%.3f", threshold))
                         Slider(value: $threshold, in: 0...0.30, step: 0.005)
                         Text(L10n.s("阈值越大合并越狠（0 = 不合并）。"))
                             .font(.caption)
@@ -433,7 +433,7 @@ private struct ColorMergeSheet: View {
                     Text(L10n.s("阈值"))
                 }
 
-                Section(L10n.k("预览")) {
+                Section(L10n.k(L10n.s("预览"))) {
                     GridView(cells: previewCells, width: model.width, height: model.height)
                         .frame(maxHeight: 280)
                         .listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
@@ -514,7 +514,7 @@ private struct ReplaceColorSheet: View {
     var body: some View {
         NavigationStack {
             List {
-                Section(L10n.k("原色号（要替换掉的）")) {
+                Section(L10n.k(L10n.s("原色号（要替换掉的）"))) {
                     ForEach(usedColors, id: \.color.id) { item in
                         HStack(spacing: 10) {
                             RoundedRectangle(cornerRadius: 4).fill(item.color.color)
@@ -532,7 +532,7 @@ private struct ReplaceColorSheet: View {
                     }
                 }
 
-                Section(L10n.k("新色号（替换为）")) {
+                Section(L10n.k(L10n.s("新色号（替换为）"))) {
                     Button {
                         showToPicker = true
                     } label: {
@@ -557,7 +557,7 @@ private struct ReplaceColorSheet: View {
                 }
 
                 Section {
-                    LabeledContent(L10n.k("受影响格数"), value: L10n.p("{0} 格", "\(affected)"))
+                    LabeledContent(L10n.k(L10n.s("受影响格数")), value: L10n.p("{0} 格", "\(affected)"))
                 }
             }
             .navigationTitle(L10n.s("替换配色"))

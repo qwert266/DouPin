@@ -497,7 +497,7 @@ struct StockQuickAddView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(L10n.k("色号")) {
+                Section(L10n.k(L10n.s("色号"))) {
                     Button {
                         showPalette = true
                     } label: {
@@ -519,14 +519,14 @@ struct StockQuickAddView: View {
                     .buttonStyle(.plain)
                 }
 
-                Section(L10n.k("数量")) {
+                Section(L10n.k(L10n.s("数量"))) {
                     TextField(L10n.s("例如 500"), text: $quantityText)
                         .keyboardType(.numberPad)
                     if let c = selectedColor, let existing = existingStock(c.id) {
                         Text(L10n.p("该色号在本仓已有 {0} 颗（保存将累加）", "\(existing.quantity)"))
                             .font(.caption).foregroundStyle(.secondary)
                     }
-                    LabeledContent(L10n.k("归入豆仓"), value: BeadBinCatalog.displayName(binName))
+                    LabeledContent(L10n.k(L10n.s("归入豆仓")), value: BeadBinCatalog.displayName(binName))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -604,7 +604,7 @@ struct StockQuantityEditSheet: View {
                             .font(.headline.monospaced())
                     }
                 }
-                Section(L10n.k("数量（覆盖）")) {
+                Section(L10n.k(L10n.s("数量（覆盖）"))) {
                     TextField(L10n.s("数量"), text: $quantityText)
                         .keyboardType(.numberPad)
                 }
@@ -697,7 +697,7 @@ struct BinManagerSheet: View {
                 }
 
                 if !customBins.isEmpty {
-                    Section(L10n.pk("自定义豆仓（{0}）", "\(customBins.count)")) {
+                    Section(L10n.pk(L10n.s("自定义豆仓（{0}）"), "\(customBins.count)")) {
                         ForEach(customBins, id: \.self) { raw in
                             binRow(name: raw, label: raw, icon: "shippingbox.fill", deletable: true)
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {

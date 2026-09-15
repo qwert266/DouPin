@@ -191,7 +191,7 @@ struct PatternMergeView: View {
             .pickerStyle(.segmented)
 
             Stepper(value: $gap, in: 0...3) {
-                LabeledContent(L10n.k("图纸间隔"), value: L10n.p("{0} 格空白", "\(gap)"))
+                LabeledContent(L10n.k(L10n.s("图纸间隔")), value: L10n.p("{0} 格空白", "\(gap)"))
             }
             .font(.subheadline)
 

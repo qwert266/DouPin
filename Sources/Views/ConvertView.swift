@@ -302,11 +302,11 @@ struct ConvertView: View {
                 .font(.subheadline.weight(.medium))
             if useBoard {
                 Stepper(value: $boardW, in: max(result.width, 1)...104) {
-                    LabeledContent(L10n.k("板宽"), value: L10n.p("{0} 格", "\(boardW)"))
+                    LabeledContent(L10n.k(L10n.s("板宽")), value: L10n.p("{0} 格", "\(boardW)"))
                 }
                 .font(.subheadline)
                 Stepper(value: $boardH, in: max(result.height, 1)...104) {
-                    LabeledContent(L10n.k("板高"), value: L10n.p("{0} 格", "\(boardH)"))
+                    LabeledContent(L10n.k(L10n.s("板高")), value: L10n.p("{0} 格", "\(boardH)"))
                 }
                 .font(.subheadline)
                 HStack {
@@ -330,11 +330,11 @@ struct ConvertView: View {
                     .controlSize(.small)
                 }
                 Stepper(value: $offsetX, in: 0...max(0, boardW - result.width)) {
-                    LabeledContent(L10n.k("水平偏移"), value: L10n.p("{0} 格", "\(offsetX)"))
+                    LabeledContent(L10n.k(L10n.s("水平偏移")), value: L10n.p("{0} 格", "\(offsetX)"))
                 }
                 .font(.subheadline)
                 Stepper(value: $offsetY, in: 0...max(0, boardH - result.height)) {
-                    LabeledContent(L10n.k("垂直偏移"), value: L10n.p("{0} 格", "\(offsetY)"))
+                    LabeledContent(L10n.k(L10n.s("垂直偏移")), value: L10n.p("{0} 格", "\(offsetY)"))
                 }
                 .font(.subheadline)
             }

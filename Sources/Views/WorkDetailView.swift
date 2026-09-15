@@ -315,7 +315,7 @@ struct WorkDetailView: View {
             }
 
             if let photo = pattern.resultPhoto, let ui = UIImage(data: photo) {
-                Section(L10n.k("成品")) {
+                Section(L10n.k(L10n.s("成品"))) {
                     Image(uiImage: ui)
                         .resizable()
                         .scaledToFit()
@@ -337,7 +337,7 @@ struct WorkDetailView: View {
     }
 
     private var resultPhotoSection: some View {
-        Section(L10n.k("成品照片")) {
+        Section(L10n.k(L10n.s("成品照片"))) {
             PhotosPicker(selection: $resultItem, matching: .images) {
                 Label(pattern.resultPhoto == nil ? L10n.s("添加成品照片") : L10n.s("更换成品照片"),
                       systemImage: "camera")
@@ -445,7 +445,7 @@ struct WorkDetailView: View {
                     .frame(maxHeight: 260)
                 }
             } else {
-                Section(L10n.k("当前行引导")) {
+                Section(L10n.k(L10n.s("当前行引导"))) {
                     HStack {
                         Button {
                             if guideRow > 0 { guideRow -= 1; sendRowGuide() }
@@ -599,7 +599,7 @@ struct WorkDetailView: View {
     }
 
     private var quickControls: some View {
-        Section(L10n.k("快捷控制")) {
+        Section(L10n.k(L10n.s("快捷控制"))) {
             QuickBrightnessRow()
             QuickDisplayToggleRow()
         }
@@ -910,7 +910,7 @@ private struct QuickBrightnessRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            LabeledContent(L10n.k("板子亮度"), value: "\(pct)%")
+            LabeledContent(L10n.k(L10n.s("板子亮度")), value: "\(pct)%")
             Slider(value: Binding(get: { Double(pct) }, set: { pct = Int($0) }),
                    in: 10...100, step: 5)
                 .onChange(of: pct) { _, v in
@@ -965,7 +965,7 @@ struct MoveFolderSheet: View {
                         }
                     }
                 }
-                Section(L10n.k("文件夹")) {
+                Section(L10n.k(L10n.s("文件夹"))) {
                     if folders.isEmpty {
                         Text(L10n.s("还没有文件夹，可到「图纸 → 文件夹」新建"))
                             .font(.subheadline)
