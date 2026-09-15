@@ -550,7 +550,8 @@ struct SocialImportView: View {
         }
         downloadedData = data
         if patternName.isEmpty {
-            patternName = result?.noteTitle ?? L10n.p("小红书图纸 {0}", "\(Date().formatted(.dateTime.month().day()))")
+            let platformName = result?.platform.displayName ?? ""
+            patternName = result?.title ?? L10n.p("{0}图纸 {1}", platformName, "\(Date().formatted(.dateTime.month().day()))")
         }
         regeneratePreview(image: ui)
     }
