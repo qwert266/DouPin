@@ -950,7 +950,7 @@
 			<key>shellPath</key>
 			<string>/bin/sh</string>
 			<key>shellScript</key>
-			<string>LIB_DIR="${SRCROOT}/Sources/Resources/PatternLibrary"\nif [ ! -f "$LIB_DIR/catalog.json" ]; then\n  echo "Generating built-in pattern library…"\n  python3 -m pip install --quiet pillow || true\n  python3 "${SRCROOT}/scripts/gen_pattern_library.py" || echo "note: pattern library generation skipped"\nfi\ndu -sh "$LIB_DIR" 2>/dev/null || true\nls "$LIB_DIR/thumb" 2>/dev/null | wc -l || true</string>
+			<string>echo "== Generate Pattern Library =="\nLIB_DIR="${SRCROOT}/Sources/Resources/PatternLibrary"\nif [ ! -f "$LIB_DIR/catalog.json" ]; then\n  VENV=/tmp/doupin-pv\n  python3 -m venv "$VENV" || echo "WARN: venv 创建失败"\n  "$VENV/bin/pip" install --quiet --upgrade pip || true\n  "$VENV/bin/pip" install --quiet pillow || echo "WARN: pillow 安装失败"\n  "$VENV/bin/python" "${SRCROOT}/scripts/gen_pattern_library.py" || echo "WARN: 素材生成失败"\nfi\ndu -sh "$LIB_DIR" 2>/dev/null || true\nls "$LIB_DIR/thumb" 2>/dev/null | wc -l || true\necho "== done =="</string>
 		</dict>
 		<key>A00000000000000000000006</key>
 		<dict>
