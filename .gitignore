@@ -4,3 +4,8 @@ build/
 xcuserdata/
 *.xcuserstate
 *.xcscmblueprint
+
+# 内置素材库由 CI 构建时生成（scripts/gen_pattern_library.py），不入库
+Sources/Resources/PatternLibrary/preview/
+Sources/Resources/PatternLibrary/thumb/
+Sources/Resources/PatternLibrary/catalog.json

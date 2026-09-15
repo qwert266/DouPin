@@ -20,6 +20,7 @@ struct PatternsTabView: View {
         case folder = "文件夹"
         case tag = "标签"
         case template = "模板"
+        case library = "素材"
         var id: String { rawValue }
     }
 
@@ -34,6 +35,7 @@ struct PatternsTabView: View {
                     case .folder:    FolderListView()
                     case .tag:       TagFilterView()
                     case .template:  TemplateGalleryView()
+                    case .library:   LibraryBrowserView()
                     }
                 }
             }
@@ -86,6 +88,7 @@ struct PatternsTabView: View {
         case .folder: return "folder.fill"
         case .tag: return "tag.fill"
         case .template: return "gift.fill"
+        case .library: return "square.grid.3x3.square"
         }
     }
 
@@ -96,6 +99,8 @@ struct PatternsTabView: View {
         case .folder: return L10n.s("文件夹")
         case .tag: return L10n.s("标签")
         case .template: return L10n.s("模板库")
+        case .library: return L10n.s("图纸素材库")
+        case .library: return L10n.s("图纸素材库")
         }
     }
 

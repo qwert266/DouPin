@@ -311,6 +311,20 @@
 			<key>fileRef</key>
 			<string>F00000000000000000000043</string>
 		</dict>
+		<key>B00000000000000000000044</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+			<key>fileRef</key>
+			<string>F00000000000000000000044</string>
+		</dict>
+		<key>B00000000000000000000045</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+			<key>fileRef</key>
+			<string>F00000000000000000000045</string>
+		</dict>
 		<key>F00000000000000000000001</key>
 		<dict>
 			<key>isa</key>
@@ -784,6 +798,28 @@
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
+		<key>F00000000000000000000044</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.swift</string>
+			<key>path</key>
+			<string>BuiltInPatternLibrary.swift</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>F00000000000000000000045</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>folder</string>
+			<key>path</key>
+			<string>PatternLibrary</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
 		<key>A00000000000000000000004</key>
 		<dict>
 			<key>isa</key>
@@ -816,6 +852,7 @@
 			<string>A00000000000000000000012</string>
 			<key>buildPhases</key>
 			<array>
+				<string>A00000000000000000000022</string>
 				<string>A00000000000000000000006</string>
 				<string>A00000000000000000000007</string>
 				<string>A00000000000000000000008</string>
@@ -889,9 +926,31 @@
 			<key>files</key>
 			<array>
 				<string>B00000000000000000000038</string>
+				<string>B00000000000000000000045</string>
 			</array>
 			<key>runOnlyForDeploymentPostprocessing</key>
 			<false/>
+		</dict>
+		<key>A00000000000000000000022</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXShellScriptBuildPhase</string>
+			<key>buildActionMask</key>
+			<string>2147483647</string>
+			<key>files</key>
+			<array/>
+			<key>inputPaths</key>
+			<array/>
+			<key>name</key>
+			<string>Generate Pattern Library</string>
+			<key>outputPaths</key>
+			<array/>
+			<key>runOnlyForDeploymentPostprocessing</key>
+			<string>0</string>
+			<key>shellPath</key>
+			<string>/bin/sh</string>
+			<key>shellScript</key>
+			<string>LIB_DIR="${SRCROOT}/Sources/Resources/PatternLibrary"\nif [ ! -f "$LIB_DIR/catalog.json" ]; then\n  echo "Generating built-in pattern library…"\n  python3 -m pip install --quiet pillow || true\n  python3 "${SRCROOT}/scripts/gen_pattern_library.py" || echo "note: pattern library generation skipped"\nfi\ndu -sh "$LIB_DIR" 2>/dev/null || true\nls "$LIB_DIR/thumb" 2>/dev/null | wc -l || true</string>
 		</dict>
 		<key>A00000000000000000000006</key>
 		<dict>
@@ -943,6 +1002,7 @@
 				<string>B00000000000000000000041</string>
 				<string>B00000000000000000000042</string>
 				<string>B00000000000000000000043</string>
+				<string>B00000000000000000000044</string>
 			</array>
 			<key>runOnlyForDeploymentPostprocessing</key>
 			<false/>
@@ -984,6 +1044,7 @@
 				<string>A00000000000000000000019</string>
 				<string>A00000000000000000000020</string>
 				<string>F00000000000000000000038</string>
+				<string>A00000000000000000000021</string>
 			</array>
 			<key>path</key>
 			<string>Sources</string>
@@ -1035,9 +1096,23 @@
 				<string>F00000000000000000000019</string>
 				<string>F00000000000000000000041</string>
 				<string>F00000000000000000000042</string>
+				<string>F00000000000000000000044</string>
 			</array>
 			<key>path</key>
 			<string>Core</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>A00000000000000000000021</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>children</key>
+			<array>
+				<string>F00000000000000000000045</string>
+			</array>
+			<key>path</key>
+			<string>Resources</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>

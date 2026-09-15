@@ -102,7 +102,10 @@ const pbxSet = new Set(pbxPaths);
 
 // 非源码资源引用（资产目录 / storyboard / plist 等）——它们也占 PBXFileReference 名额，
 // 计算「源码引用数」时必须剔除，否则磁盘 .swift 数永远对不上。
-const resourceRefs = [...raw.matchAll(/<key>path<\/key>\s*<string>([A-Za-z0-9_+.-]+\.(?:xcassets|storyboard|xib|strings|plist|json|png|jpg|pdf|ttf|otf|mlmodel|metal))<\/string>/g)].map((m) => m[1]);
+// 按 lastKnownFileType 判定资源引用（folder / xcassets 等无扩展名，不能只看 path）
+const resourceRefs = [...raw.matchAll(/<key>(F\d{23})<\/key>\s*<dict>([\s\S]*?)<\/dict>/g)]
+  .filter((m) => !/<string>sourcecode\.swift<\/string>/.test(m[2]))
+  .map((m) => m[1]);
 
 for (const f of diskSwift) {
   if (!pbxSet.has(f)) warn(`[P0] ${f} 在磁盘上但未注册到 pbxproj`);
