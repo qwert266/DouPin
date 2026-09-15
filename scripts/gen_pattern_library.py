@@ -41,7 +41,21 @@ THUMB_DIR = os.path.join(OUT_DIR, 'thumb')
 THUMB_DIR = os.path.join(OUT_DIR, 'thumb')
 PALETTE_SWIFT = os.path.join(ROOT, 'Sources', 'Core', 'Palette.swift')
 
-FONT_DIR = r'C:\Windows\Fonts'
+def candidate_fonts():
+    """跨平台字体候选（Windows 本地 / macOS CI 都能跑）"""
+    cands = []
+    if sys.platform.startswith('win'):
+        cands += [r'C:\Windows\Fonts\msyhbd.ttc', r'C:\Windows\Fonts\msyh.ttc',
+                  r'C:\Windows\Fonts\simhei.ttf', r'C:\Windows\Fonts\arialbd.ttf',
+                  r'C:\Windows\Fonts\arial.ttf']
+    else:
+        cands += ['/System/Library/Fonts/PingFang.ttc',
+                  '/System/Library/Fonts/STHeiti Medium.ttc',
+                  '/System/Library/Fonts/Supplemental/Arial Bold.ttf',
+                  '/System/Library/Fonts/Helvetica.ttc',
+                  '/System/Library/Fonts/Supplemental/Songti.ttc',
+                  '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf']
+    return [p for p in cands if os.path.exists(p)]
 random.seed(20260915)
 
 
