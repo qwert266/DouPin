@@ -24,7 +24,17 @@ import sys
 
 from PIL import Image, ImageDraw, ImageFont
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'doupin-src'))
+def find_repo_root(start):
+    """向上查找包含 Sources/Core/Palette.swift 的项目根（本地 i18n/ 与 CI scripts/ 都适用）"""
+    cur = os.path.abspath(start)
+    for _ in range(4):
+        if os.path.exists(os.path.join(cur, 'Sources', 'Core', 'Palette.swift')):
+            return cur
+        cur = os.path.dirname(cur)
+    raise SystemExit('找不到 Sources/Core/Palette.swift，请检查脚本位置')
+
+
+ROOT = find_repo_root(os.path.dirname(os.path.abspath(__file__)))
 OUT_DIR = os.path.join(ROOT, 'Sources', 'Resources', 'PatternLibrary')
 PREVIEW_DIR = os.path.join(OUT_DIR, 'preview')
 THUMB_DIR = os.path.join(OUT_DIR, 'thumb')
