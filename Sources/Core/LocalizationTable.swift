@@ -701,8 +701,13 @@ extension L10n {
         LocalizedStringKey(p(template, args))
     }
 
-    /// 模板翻译（含 {0}/{1} 占位符）：先按语言取模板，再依次填入参数
+    /// 变参重载（便于 `L10n.p("...", a, b)` 直接调用）
     static func p(_ template: String, _ args: String...) -> String {
+        p(template, Array(args))
+    }
+
+    /// 模板翻译（含 {0}/{1} 占位符）：先按语言取模板，再依次填入参数
+    static func p(_ template: String, _ args: [String]) -> String {
         var out = (resolved == .en ? (enTable[template] ?? template) : template)
         for (i, a) in args.enumerated() {
             out = out.replacingOccurrences(of: "{\(i)}", with: a)
